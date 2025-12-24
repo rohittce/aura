@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA // Analyzing Your Taste</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(2vw, -5vh) rotate(2deg); }
+            66% { transform: translate(-1vw, 3vh) rotate(-1deg); }
+        }
+        
+        .animate-aura {
+            animation: float 18s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-[#020202] text-white overflow-hidden" 
+      x-data="analyzeApp()" 
+      x-init="init()">
+
+    <div class="fixed inset-0 z-0">
+        <div class="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-600/20 rounded-full blur-[120px] animate-aura"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-600/15 rounded-full blur-[120px] animate-aura" style="animation-delay: -9s;"></div>
+    </div>
+
+    <div class="relative z-10 h-screen flex flex-col overflow-hidden">
+        
+        <nav class="flex justify-between items-center p-6 md:p-8">
+            <a href="/" class="text-2xl font-black tracking-tighter italic hover:opacity-80 transition-opacity">AURA.</a>
+            <div class="glass px-4 py-2 rounded-full text-xs font-mono tracking-widest uppercase opacity-70">
+                <span x-text="analysisStatus === 'complete' ? '✓ Complete' : 'Analyzing...'"></span>
+            </div>
+        </nav>
+
+        <main class="flex-1 overflow-y-auto px-6 pb-8">
+            
+            <!-- Analysis Status Section -->
+            <div class="max-w-4xl mx-auto mb-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Analyzing Your Taste</h1>
+                    <p class="text-gray-400" x-text="analysisStatus === 'complete' ? 'Analysis complete! Check your recommendations.' : 'We\'re analyzing your music preferences. Listen to some songs while you wait.'"></p>
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="glass rounded-2xl p-8 mb-8" x-show="analysisStatus !== 'complete'">
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-32 h-32 mb-6">
+                            <svg class="progress-ring w-32 h-32">
+                                <circle class="text-white/10" stroke="currentColor" stroke-width="8" fill="transparent" r="56" cx="64" cy="64"/>
+                                <circle class="progress-ring-circle text-indigo-500" 
+                                        stroke="currentColor" 
+                                        stroke-width="8" 
+                                        fill="transparent" 
+                                        r="56" 
+                                        cx="64" 
+                                        cy="64"
+                                        :stroke-dasharray="`${2 * Math.PI * 56}`"
+                                        :stroke-dashoffset="`${2 * Math.PI * 56 * (1 - progress / 100)}`"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-2xl font-bold" x-text="Math.round(progress) + '%'"></span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-400" x-text="currentStep"></p>
+                    </div>
+                </div>
+
+                <!-- Completion Message -->
+                <div class="glass rounded-2xl p-8 mb-8 fade-in" x-show="analysisStatus === 'complete'">
+                    <div class="text-center">
+                        <div class="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-2">Analysis Complete!</h2>
+                        <p class="text-gray-400 mb-6">Your music taste has been analyzed. Redirecting to recommendations...</p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a href="/#recommendations" class="glass px-8 py-4 rounded-full font-bold hover:bg-white hover:text-black transition-all active:scale-95">
+                                Go to Recommendations Now
+                            </a>
+                            <button @click="viewInsights()" class="glass px-8 py-4 rounded-full font-bold hover:bg-indigo-500/20 transition-all active:scale-95">
+                                View Insights
+                            </button>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <div class="inline-flex items-center space-x-2 text-sm text-gray-500">
+                                <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                <span>Redirecting automatically...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Songs to Listen Section -->
+            <div class="max-w-6xl mx-auto" x-show="analysisStatus !== 'complete'">
+                <h2 class="text-2xl font-bold mb-6">Songs to Explore</h2>
+                <p class="text-gray-400 mb-6">While we analyze your taste, discover these songs:</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    <template x-for="(song, index) in exploreSongs" :key="index">
+                        <div class="glass rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group relative fade-in"
+                             @click="playSong(song)">
+                            <!-- Song Image -->
+                            <div class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
+                                <img :src="song.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
+                                     :alt="song.title"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                                
+                                <!-- Play Overlay -->
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Song Info -->
+                            <div class="p-3">
+                                <h4 class="font-bold text-sm truncate mb-1" x-text="song.title"></h4>
+                                <p class="text-xs text-gray-400 truncate" x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Analysis Insights (when complete) -->
+            <div class="max-w-4xl mx-auto mt-8" x-show="analysisStatus === 'complete' && analysisResult">
+                <h2 class="text-2xl font-bold mb-6">Your Music Insights</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Top Artists -->
+                    <div class="glass rounded-2xl p-6" x-show="analysisResult?.top_artists?.length > 0">
+                        <h3 class="text-lg font-bold mb-4">Top Artists</h3>
+                        <div class="space-y-2">
+                            <template x-for="(artist, index) in (analysisResult?.top_artists || [])" :key="index">
+                                <div class="flex items-center justify-between">
+                                    <span x-text="artist.artist"></span>
+                                    <span class="text-sm text-gray-400" x-text="artist.count + ' songs'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Top Genres -->
+                    <div class="glass rounded-2xl p-6" x-show="analysisResult?.top_genres?.length > 0">
+                        <h3 class="text-lg font-bold mb-4">Top Genres</h3>
+                        <div class="space-y-2">
+                            <template x-for="(genre, index) in (analysisResult?.top_genres || [])" :key="index">
+                                <div class="flex items-center justify-between">
+                                    <span x-text="genre.genre"></span>
+                                    <span class="text-sm text-gray-400" x-text="genre.count + ' songs'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights -->
+                <div class="glass rounded-2xl p-6 mt-6" x-show="analysisResult?.insights?.length > 0">
+                    <h3 class="text-lg font-bold mb-4">Insights</h3>
+                    <ul class="space-y-2">
+                        <template x-for="(insight, index) in (analysisResult?.insights || [])" :key="index">
+                            <li class="flex items-start space-x-2">
+                                <svg class="w-5 h-5 text-indigo-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <span x-text="insight"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000/api/v1'
+            : window.location.origin + '/api/v1';
+        
+        function analyzeApp() {
+            return {
+                analysisStatus: 'analyzing', // analyzing, complete
+                progress: 0,
+                currentStep: 'Initializing analysis...',
+                exploreSongs: [],
+                analysisResult: {
+                    top_artists: [],
+                    top_genres: [],
+                    insights: []
+                },
+                userId: localStorage.getItem('aura_user_id') || 'user_' + Math.random().toString(36).substr(2, 9),
+
+                async init() {
+                    localStorage.setItem('aura_user_id', this.userId);
+                    
+                    // Load explore songs
+                    await this.loadExploreSongs();
+                    
+                    // Start analysis
+                    await this.startAnalysis();
+                },
+
+                async loadExploreSongs() {
+                    try {
+                        // Get some popular/trending songs to explore
+                        const response = await fetch(`${API_BASE}/songs/search?q=popular music&limit=20`);
+                        const data = await response.json();
+                        if (data.results) {
+                            this.exploreSongs = data.results.slice(0, 15);
+                        }
+                    } catch (error) {
+                        console.error('Error loading explore songs:', error);
+                    }
+                },
+
+                async startAnalysis() {
+                    // Start analysis in background
+                    try {
+                        const seedSongs = JSON.parse(localStorage.getItem('pending_seed_songs') || '[]');
+                        
+                        const response = await fetch(`${API_BASE}/taste/analyze`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: this.userId,
+                                seed_songs: seedSongs,
+                                context: { time_of_day: this.getTimeOfDay() }
+                            })
+                        });
+
+                        const data = await response.json();
+                        if (response.ok) {
+                            // Clear pending seed songs
+                            localStorage.removeItem('pending_seed_songs');
+                            
+                            // Poll for analysis status
+                            this.pollAnalysisStatus();
+                        } else {
+                            this.analysisStatus = 'complete';
+                            this.showNotification('Analysis started. Please wait...');
+                        }
+                    } catch (error) {
+                        console.error('Analysis error:', error);
+                        this.analysisStatus = 'complete';
+                    }
+                },
+
+                async pollAnalysisStatus() {
+                    // Poll for analysis status every 1 second
+                    const pollInterval = setInterval(async () => {
+                        try {
+                            const response = await fetch(`${API_BASE}/taste/analyze/status?user_id=${this.userId}`);
+                            const data = await response.json();
+                            
+                            if (data.status === 'complete') {
+                                // Update progress
+                                this.progress = 100;
+                                this.currentStep = 'Analysis complete!';
+                                this.analysisStatus = 'complete';
+                                this.analysisResult = {
+                                    top_artists: data.result?.top_artists || [],
+                                    top_genres: data.result?.top_genres || [],
+                                    insights: data.result?.insights || []
+                                };
+                                
+                                clearInterval(pollInterval);
+                                
+                                // Show completion notification
+                                this.showNotification('Analysis complete! Redirecting to recommendations...');
+                                
+                                // Redirect to recommendations page after 2 seconds
+                                setTimeout(() => {
+                                    window.location.href = '/#recommendations';
+                                }, 2000);
+                                
+                            } else if (data.status === 'processing') {
+                                // Update progress
+                                this.progress = data.progress || 0;
+                                this.currentStep = this.getProgressStep(data.progress || 0);
+                            } else if (data.status === 'error') {
+                                clearInterval(pollInterval);
+                                this.analysisStatus = 'complete';
+                                this.showNotification('Analysis completed with errors. Redirecting...');
+                                setTimeout(() => {
+                                    window.location.href = '/#recommendations';
+                                }, 2000);
+                            }
+                        } catch (error) {
+                            console.error('Error polling status:', error);
+                        }
+                    }, 1000); // Poll every second
+                },
+
+                getProgressStep(progress) {
+                    if (progress < 20) return 'Loading your seed songs...';
+                    if (progress < 40) return 'Analyzing listening patterns...';
+                    if (progress < 60) return 'Extracting music preferences...';
+                    if (progress < 80) return 'Building taste profile...';
+                    if (progress < 95) return 'Generating recommendations...';
+                    return 'Finalizing analysis...';
+                },
+
+                playSong(song) {
+                    // Track that user listened to this song
+                    fetch(`${API_BASE}/listening/track`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: this.userId,
+                            song_title: song.title,
+                            artists: song.artists || [],
+                            source: 'explore',
+                            platform: 'youtube',
+                            metadata: {}
+                        })
+                    }).catch(err => console.error('Error tracking:', err));
+                    
+                    // Navigate to play page
+                    window.location.href = `/play?song=${encodeURIComponent(JSON.stringify(song))}`;
+                },
+
+                viewInsights() {
+                    // Scroll to insights section
+                    const insights = document.querySelector('[x-show*="insights"]');
+                    if (insights) {
+                        insights.scrollIntoView({ behavior: 'smooth' });
+                    }
+                },
+
+                showNotification(message) {
+                    // Create a toast notification
+                    const toast = document.createElement('div');
+                    toast.className = 'fixed top-4 right-4 glass px-6 py-4 rounded-lg z-50 fade-in';
+                    toast.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(toast);
+                    
+                    setTimeout(() => {
+                        toast.style.opacity = '0';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 5000);
+                },
+
+                sleep(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms));
+                },
+
+                getTimeOfDay() {
+                    const hour = new Date().getHours();
+                    if (hour < 12) return 'morning';
+                    if (hour < 17) return 'afternoon';
+                    if (hour < 21) return 'evening';
+                    return 'night';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+

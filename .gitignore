@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Firebase
+.firebase/
+.firebaserc.local
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Google Cloud
+.gcloudignore
+*.key.json
+service-account.json
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
+*.db
+*.sqlite
+
+# Node (if using)
+node_modules/
+package-lock.json
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+modelss/

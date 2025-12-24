@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURA // The Future of Sound</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020202; }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+            mix-blend-mode: screen;
+            animation: drift 20s infinite alternate;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(100px, 50px) scale(1.2); }
+            100% { transform: translate(-50px, 100px) scale(0.8); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        }
+
+        .glass-hover:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .text-glow { text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #020202; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+
+        .pulse-ring {
+            animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulseRing {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+        }
+
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            animation: toastSlide 0.3s ease-out;
+        }
+        @keyframes toastSlide {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .progress-bar {
+            transition: width 0.3s ease-out;
+        }
+
+        input:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .section-transition {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        /* Chat Widget Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-window {
+            width: 380px;
+            height: 600px;
+            max-height: calc(100vh - 100px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            transform-origin: bottom left;
+        }
+
+        .chat-toggle-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .chat-toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .chat-toggle-btn::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #6366f1, #ec4899, #06b6d4);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .chat-toggle-btn:hover::before {
+            opacity: 0.3;
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .chat-widget {
+                bottom: 10px;
+                left: 10px;
+            }
+            .chat-window {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 80px);
+                max-height: calc(100vh - 80px);
+            }
+        }
+    </style>
+</head>
+<body class="text-white selection:bg-indigo-500/40" 
+      x-data="auraApp()" 
+      x-init="init()"
+      @keydown.escape="closeToast()">
+
+    <!-- Toast Notification -->
+    <div x-show="toast.show" 
+         x-transition:enter="toast"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed top-4 right-4 z-[200] glass px-6 py-4 rounded-xl shadow-2xl max-w-sm"
+         :class="toast.type === 'error' ? 'border-red-500/50' : toast.type === 'success' ? 'border-green-500/50' : 'border-indigo-500/50'">
+        <div class="flex items-center space-x-3">
+            <div x-show="toast.type === 'success'" class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            </div>
+            <div x-show="toast.type === 'error'" class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </div>
+            <div x-show="toast.type === 'info'" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+            </div>
+            <p class="flex-1 text-sm font-medium" x-text="toast.message"></p>
+            <button @click="closeToast()" class="text-gray-400 hover:text-white">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="orb w-[500px] h-[500px] bg-indigo-600 top-[-10%] left-[-10%]"></div>
+        <div class="orb w-[600px] h-[600px] bg-rose-600 bottom-[-10%] right-[-10%]" style="animation-delay: -5s;"></div>
+        <div class="orb w-[400px] h-[400px] bg-cyan-500 top-[30%] left-[40%]" style="animation-delay: -10s;"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="relative z-50 flex items-center justify-between px-6 md:px-10 py-6 md:py-8">
+        <a href="/" class="flex items-center space-x-2 group">
+            <div class="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-lg rotate-12 group-hover:rotate-45 transition-transform"></div>
+            <span class="text-xl font-extrabold tracking-tighter">AURA</span>
+        </a>
+        
+        <div class="hidden lg:flex items-center space-x-8 text-[11px] uppercase tracking-[0.3em] font-bold text-gray-400">
+            <a href="/chat" class="hover:text-white transition-all">
+                Chat
+            </a>
+            <a href="#search" @click.prevent="showSection('search')"
+               :class="currentSection === 'search' ? 'text-white' : 'hover:text-white'"
+               class="transition-all relative">
+                Search
+                <span x-show="currentSection === 'search'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+            </a>
+            <a href="#recommendations" @click.prevent="showSection('recommendations')" 
+               :class="currentSection === 'recommendations' ? 'text-white' : 'hover:text-white'"
+               class="transition-all relative">
+                Recommendations
+                <span x-show="currentSection === 'recommendations'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+            </a>
+            <a href="#taste" @click.prevent="showSection('taste')"
+               :class="currentSection === 'taste' ? 'text-white' : 'hover:text-white'"
+               class="transition-all relative">
+                Taste Profile
+                <span x-show="currentSection === 'taste'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+            </a>
+            <a href="#seed" @click.prevent="showSection('seed')"
+               :class="currentSection === 'seed' ? 'text-white' : 'hover:text-white'"
+               class="transition-all relative">
+                Seed Songs
+                <span x-show="currentSection === 'seed'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+            </a>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <button @click="showSection('seed')" 
+                    class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95">
+                <span class="hidden md:inline">GENERATE DNA</span>
+                <span class="md:hidden">DNA</span>
+            </button>
+            
+            <!-- User Menu -->
+            <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                <button @click="open = !open" class="glass px-3 py-2 rounded-full text-xs font-medium hover:bg-white/10 transition-all flex items-center space-x-2">
+                    <span class="hidden md:inline" x-text="userName || userEmail || 'Guest'"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </button>
+                <div x-show="open" 
+                     x-transition
+                     class="absolute right-0 mt-2 w-48 glass rounded-xl p-2 shadow-2xl z-50">
+                    <template x-if="userEmail || localStorage.getItem('aura_user_token')">
+                        <div>
+                            <div class="px-3 py-2 border-b border-white/10">
+                                <p class="text-xs text-gray-400">Signed in as</p>
+                                <p class="text-sm font-medium truncate" x-text="userName || userEmail || 'User'"></p>
+                            </div>
+                            <button @click="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </template>
+                    <template x-if="!userEmail && !localStorage.getItem('aura_user_token')">
+                        <div>
+                            <a href="/login" class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                </svg>
+                                <span>Login</span>
+                            </a>
+                            <a href="/register" class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2 mt-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                </svg>
+                                <span>Register</span>
+                            </a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Seed Songs Section -->
+    <section x-show="currentSection === 'seed'" 
+             x-transition:enter="section-transition"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+        
+        <div class="text-center mb-10 md:mb-12">
+            <div class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold tracking-widest uppercase mb-6">
+                Step 1: Build Your Taste Profile
+            </div>
+            <h1 class="text-5xl md:text-6xl lg:text-8xl font-extrabold tracking-tighter mb-4 leading-tight">
+                Build Your <span class="bg-gradient-to-r from-indigo-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent">Taste DNA</span>
+            </h1>
+            <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                Select 5-15 songs you love. We'll analyze your taste and create personalized recommendations.
+            </p>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="mb-8" x-show="seedSongs.length > 0">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-gray-500">Progress</span>
+                <span class="text-xs text-gray-500" x-text="`${seedSongs.length} / 15 songs`"></span>
+            </div>
+            <div class="h-2 bg-white/5 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 progress-bar rounded-full transition-all duration-300"
+                     :style="`width: ${(seedSongs.length / 15) * 100}%`"></div>
+            </div>
+            <p class="text-xs text-gray-500 mt-2" x-show="seedSongs.length < 5">
+                Add <span class="text-indigo-400 font-bold" x-text="5 - seedSongs.length"></span> more song<span x-show="5 - seedSongs.length > 1">s</span> to continue
+            </p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-8 glass-hover transition-all">
+            <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                Search Songs
+            </h2>
+            
+            <div class="relative mb-6">
+                <input x-model="searchQuery" 
+                       @input="handleSearchInput()"
+                       @keydown.enter.prevent="searchSongs()"
+                       type="text" 
+                       placeholder="Search for songs, artists, albums..." 
+                       class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <div x-show="searching" class="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div class="spinner w-5 h-5"></div>
+                </div>
+            </div>
+            
+            <p class="text-xs text-gray-500 text-center" x-show="!searchQuery && searchResults.length === 0">
+                Type to search for songs. Results will appear below.
+            </p>
+        </div>
+
+        <!-- Search Results - Song Flashcards -->
+        <div x-show="searchResults.length > 0" class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Search Results</h3>
+                <span class="text-sm text-gray-500" x-text="`${searchResults.length} songs found`"></span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <template x-for="(song, index) in searchResults" :key="index">
+                    <div @click="selectSong(song)"
+                         :class="isSongSelected(song) ? 'ring-2 ring-indigo-500 bg-indigo-500/10' : ''"
+                         class="glass rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group relative fade-in">
+                        
+                        <!-- Song Image -->
+                        <div class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
+                            <img :src="song.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
+                                 :alt="song.title"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                 @error="$el.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'">
+                            
+                            <!-- Selected Badge -->
+                            <div x-show="isSongSelected(song)" 
+                                 class="absolute top-2 right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Add Icon Overlay -->
+                            <div x-show="!isSongSelected(song)" 
+                                 class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Song Info -->
+                        <div class="p-3">
+                            <h4 class="font-bold text-sm truncate mb-1" x-text="song.title"></h4>
+                            <p class="text-xs text-gray-400 truncate" x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
+                            <p x-show="song.album" class="text-xs text-gray-500 truncate mt-1" x-text="song.album"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div x-show="searchQuery && searchResults.length === 0 && !searching" class="text-center py-12 glass rounded-2xl mb-8">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-gray-500 mb-2">No songs found</p>
+            <p class="text-sm text-gray-600">Try a different search term</p>
+        </div>
+
+        <!-- Selected Songs Grid -->
+        <div x-show="seedSongs.length > 0" class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Selected Songs</h3>
+                <span class="text-sm text-gray-500" x-text="`${seedSongs.length} / 15 selected`"></span>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <template x-for="(song, index) in seedSongs" :key="index">
+                    <div class="glass rounded-xl overflow-hidden group relative fade-in ring-2 ring-indigo-500/50">
+                        <!-- Song Image -->
+                        <div class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
+                            <img :src="song.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
+                                 :alt="song.title"
+                                 class="w-full h-full object-cover">
+                            
+                            <!-- Remove Button -->
+                            <button @click="removeSeedSong(index)"
+                                    class="absolute top-2 right-2 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Number Badge -->
+                            <div class="absolute top-2 left-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                                <span class="text-xs font-bold text-white" x-text="index + 1"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Song Info -->
+                        <div class="p-3">
+                            <h4 class="font-bold text-sm truncate mb-1" x-text="song.title"></h4>
+                            <p class="text-xs text-gray-400 truncate" x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Analyze Button (shown when ready) -->
+        <div x-show="seedSongs.length >= 5 && !analyzing" class="text-center mb-8">
+            <button @click="analyzeTaste()" 
+                    class="glass px-8 md:px-12 py-4 rounded-full text-base md:text-lg font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95 relative overflow-hidden group">
+                <span class="relative z-10 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    <span>Analyze My Taste</span>
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+            </button>
+            <p class="text-xs text-gray-500 mt-3" x-show="seedSongs.length >= 5 && seedSongs.length < 15">
+                💡 Tip: Add more songs (up to 15) for better recommendations
+            </p>
+        </div>
+
+        <!-- Analyzing State -->
+        <div class="text-center" x-show="analyzing">
+            <div class="mb-4">
+                <div class="inline-flex items-center space-x-3 glass px-6 py-3 rounded-full">
+                    <div class="spinner w-5 h-5"></div>
+                    <span class="text-sm font-medium">Analyzing your taste...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="seedSongs.length === 0" class="text-center py-16 glass rounded-2xl">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+            <p class="text-gray-500 mb-2">No songs added yet</p>
+            <p class="text-sm text-gray-600">Start by adding your favorite songs above</p>
+        </div>
+    </section>
+
+    <!-- Search & Play Section -->
+    <section x-show="currentSection === 'search'" 
+             x-transition:enter="section-transition"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+        
+        <div class="mb-8 md:mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Search & Play</h2>
+            <p class="text-gray-500 text-sm">Search for your favorite songs and play them instantly</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-8 glass-hover transition-all">
+            <div class="relative mb-6">
+                <input id="play-search-input"
+                       x-model="playSearchQuery" 
+                       @input="handlePlaySearchInput()"
+                       @keydown.enter.prevent="searchPlaySongs()"
+                       type="text" 
+                       placeholder="Search for songs, artists, albums..." 
+                       class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <div x-show="playSearching" class="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div class="spinner w-5 h-5"></div>
+                </div>
+            </div>
+            
+            <p class="text-xs text-gray-500 text-center" x-show="!playSearchQuery && playSearchResults.length === 0">
+                Type to search for songs. Results will appear below.
+            </p>
+        </div>
+
+        <!-- Search Results -->
+        <div x-show="playSearchResults.length > 0" class="mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold">Search Results</h3>
+                <span class="text-sm text-gray-500" x-text="`${playSearchResults.length} songs found`"></span>
+            </div>
+            
+            <div class="space-y-2">
+                <template x-for="(song, index) in playSearchResults" :key="index">
+                    <div class="glass rounded-xl p-4 hover:bg-white/5 transition-all cursor-pointer group fade-in"
+                         @click="playSongFromSearch(song)">
+                        <div class="flex items-center space-x-4">
+                            <!-- Song Image -->
+                            <div class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20 flex-shrink-0">
+                                <img :src="song.image || ''" 
+                                     :alt="song.title"
+                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                     @error="$el.style.display='none'">
+                                <div x-show="!song.image" class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            
+                            <!-- Song Info -->
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-base mb-1 truncate" x-text="song.title"></h4>
+                                <p class="text-sm text-gray-400 truncate" x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
+                                <p x-show="song.album" class="text-xs text-gray-500 truncate mt-1" x-text="song.album"></p>
+                            </div>
+                            
+                            <!-- Play Button -->
+                            <button @click.stop="playSongFromSearch(song)"
+                                    class="glass p-3 rounded-full hover:bg-indigo-500/20 transition-all active:scale-95 flex-shrink-0 group-hover:bg-indigo-500/30">
+                                <svg class="w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </button>
+                            
+                            <!-- Platform Links -->
+                            <div class="flex items-center space-x-2 flex-shrink-0">
+                                <a :href="`https://open.spotify.com/search/${encodeURIComponent((song.title || '') + ' ' + (song.artists?.[0] || ''))}`" 
+                                   target="_blank"
+                                   @click.stop
+                                   class="glass p-2 rounded-lg hover:bg-green-500/20 transition-all active:scale-95"
+                                   title="Open in Spotify">
+                                    <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div x-show="playSearchQuery && playSearchResults.length === 0 && !playSearching" class="text-center py-12 glass rounded-2xl mb-8">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-gray-500 mb-2">No songs found</p>
+            <p class="text-sm text-gray-600">Try a different search term</p>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!playSearchQuery && playSearchResults.length === 0" class="text-center py-20 glass rounded-2xl">
+            <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <p class="text-gray-500 mb-2 text-lg">Search for your favorite songs</p>
+            <p class="text-sm text-gray-600 mb-6">Type in the search bar above to find and play music</p>
+        </div>
+    </section>
+
+    <!-- Recommendations Section -->
+    <section x-show="currentSection === 'recommendations'" 
+             x-transition:enter="section-transition"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+        
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-8 md:mb-12 gap-4">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Your Recommendations</h2>
+                <p class="text-gray-500 text-sm" x-text="recommendations.length > 0 ? `${recommendations.length} songs recommended` : 'Get recommendations based on your taste'"></p>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button @click="loadRecommendations()" 
+                        :disabled="loadingRecommendations"
+                        class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 active:scale-95 flex items-center space-x-2">
+                    <svg x-show="!loadingRecommendations" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <div x-show="loadingRecommendations" class="spinner w-4 h-4"></div>
+                    <span x-show="!loadingRecommendations">Refresh</span>
+                    <span x-show="loadingRecommendations">Loading...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="loadingRecommendations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <template x-for="i in 6">
+                <div class="glass p-6 rounded-2xl animate-pulse">
+                    <div class="h-4 bg-white/10 rounded w-3/4 mb-3"></div>
+                    <div class="h-3 bg-white/10 rounded w-1/2 mb-4"></div>
+                    <div class="h-3 bg-white/10 rounded w-full mb-2"></div>
+                    <div class="h-3 bg-white/10 rounded w-2/3"></div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Recommendations Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="recommendations.length > 0 && !loadingRecommendations">
+            <template x-for="(rec, index) in recommendations" :key="index">
+                <div class="glass p-6 rounded-2xl hover:border-indigo-500/50 transition-all fade-in glass-hover group relative">
+                    <!-- Score Badge -->
+                    <div class="absolute top-4 right-4 glass px-2 py-1 rounded-full text-xs font-mono" x-show="rec.score">
+                        <span class="text-cyan-400" x-text="((rec.score || rec.confidence || 0) * 100).toFixed(0)"></span><span class="text-gray-500">%</span>
+                    </div>
+                    
+                    <!-- Song Image -->
+                    <div class="mb-4" x-show="rec.song?.image">
+                        <img :src="rec.song.image" 
+                             :alt="rec.song.title"
+                             class="w-full h-48 object-cover rounded-lg mb-3">
+                    </div>
+                    
+                    <div class="mb-4" :class="rec.song?.image ? '' : 'pr-16'">
+                        <h3 class="font-bold text-lg mb-1 truncate" x-text="rec.song?.title || rec.title || 'Unknown'"></h3>
+                        <p class="text-indigo-400 text-sm truncate" x-text="rec.song?.artists?.join(', ') || rec.artists?.join(', ') || 'Unknown Artist'"></p>
+                        <p class="text-gray-500 text-xs mt-1 truncate" x-show="rec.song?.album || rec.album" x-text="rec.song?.album || rec.album"></p>
+                    </div>
+                    
+                    <!-- Explanation -->
+                    <div class="mb-4 p-3 rounded-lg bg-white/5" x-show="rec.explanation">
+                        <p class="text-xs text-gray-400 mb-1 uppercase tracking-wider">Why recommended</p>
+                        <p class="text-sm leading-relaxed" x-text="rec.explanation.text || 'Based on your taste profile'"></p>
+                    </div>
+
+                    <!-- Platform Links -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex space-x-2">
+                            <button @click="playSong(rec)"
+                                    class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                                <span>Play</span>
+                            </button>
+                            <a :href="rec.platform_links?.spotify || `https://open.spotify.com/search/${encodeURIComponent((rec.song?.title || rec.title || '') + ' ' + (rec.song?.artists?.[0] || rec.artists?.[0] || ''))}`" 
+                               target="_blank"
+                               class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-green-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                                <span>Spotify</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Buttons -->
+                    <div class="flex space-x-2">
+                        <button @click="submitFeedback(rec.recommendation_id, 'like')" 
+                                class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-rose-500 transition-all active:scale-95 flex items-center justify-center space-x-1 group">
+                            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                            <span>Like</span>
+                        </button>
+                        <button @click="submitFeedback(rec.recommendation_id, 'skip')" 
+                                class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-gray-600 transition-all active:scale-95 flex items-center justify-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            <span>Skip</span>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="recommendations.length === 0 && !loadingRecommendations" class="text-center py-20 glass rounded-2xl">
+            <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+            </svg>
+            <p class="text-gray-500 mb-2 text-lg">No recommendations yet</p>
+            <p class="text-sm text-gray-600 mb-6">Analyze your taste first to get personalized recommendations</p>
+            <button @click="showSection('seed')" class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
+                Add Seed Songs
+            </button>
+        </div>
+    </section>
+
+    <!-- Taste Profile Section -->
+    <section x-show="currentSection === 'taste'" 
+             x-transition:enter="section-transition"
+             x-transition:enter-start="opacity-0 transform translate-y-4"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+        
+        <div class="mb-8 md:mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Your Neural Map</h2>
+            <p class="text-gray-500 text-sm">Your personalized taste profile based on your music preferences</p>
+        </div>
+
+        <!-- Taste Profile Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" x-show="tasteProfile">
+            <!-- Energy -->
+            <div class="glass p-6 rounded-2xl glass-hover transition-all">
+                <div class="w-12 h-12 bg-indigo-500/20 rounded-lg mb-4 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Energy</h4>
+                <div class="mb-2">
+                    <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 rounded-full"
+                             :style="`width: ${tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100) : 0}%`"></div>
+                    </div>
+                </div>
+                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100).toFixed(0) + '%' : 'N/A'"></p>
+            </div>
+
+            <!-- Acoustic Bias -->
+            <div class="glass p-6 rounded-2xl glass-hover transition-all">
+                <div class="w-12 h-12 bg-rose-500/20 rounded-lg mb-4 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Acoustic</h4>
+                <div class="mb-2">
+                    <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-rose-500 to-cyan-500 rounded-full"
+                             :style="`width: ${tasteProfile?.global_taste?.acoustic_bias ? ((tasteProfile.global_taste.acoustic_bias + 1) * 50) : 50}%`"></div>
+                    </div>
+                </div>
+                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.acoustic_bias ? (tasteProfile.global_taste.acoustic_bias > 0 ? 'Acoustic' : 'Electronic') : 'N/A'"></p>
+            </div>
+
+            <!-- Familiarity -->
+            <div class="glass p-6 rounded-2xl glass-hover transition-all">
+                <div class="w-12 h-12 bg-cyan-500/20 rounded-lg mb-4 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Familiarity</h4>
+                <div class="mb-2">
+                    <div class="h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full"
+                             :style="`width: ${tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference * 100) : 0}%`"></div>
+                    </div>
+                </div>
+                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference > 0.5 ? 'Familiar' : 'Novel') : 'N/A'"></p>
+            </div>
+
+            <!-- Songs Analyzed -->
+            <div class="glass p-6 rounded-2xl glass-hover transition-all">
+                <div class="w-12 h-12 bg-yellow-500/20 rounded-lg mb-4 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    </svg>
+                </div>
+                <h4 class="font-bold text-lg mb-1">Songs</h4>
+                <p class="text-3xl font-bold mb-1" x-text="tasteProfile?.global_taste?.song_count || 0"></p>
+                <p class="text-gray-500 text-sm">Analyzed</p>
+            </div>
+        </div>
+
+        <!-- Mood Profiles -->
+        <div class="mt-8" x-show="tasteProfile?.mood_profiles && Object.keys(tasteProfile.mood_profiles || {}).length > 0">
+            <h3 class="text-2xl font-bold mb-6">Mood Profiles</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <template x-for="(profile, mood) in (tasteProfile?.mood_profiles || {})" :key="mood">
+                    <div class="glass p-4 rounded-xl glass-hover transition-all">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-bold capitalize" x-text="mood"></h4>
+                            <span class="text-xs text-gray-500" x-text="(profile.confidence * 100).toFixed(0) + '%'"></span>
+                        </div>
+                        <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                            <div class="h-full bg-indigo-500 rounded-full"
+                                 :style="`width: ${profile.confidence * 100}%`"></div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!tasteProfile" class="text-center py-20 glass rounded-2xl">
+            <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-gray-500 mb-2 text-lg">No taste profile yet</p>
+            <p class="text-sm text-gray-600 mb-6">Analyze your seed songs to create your taste profile</p>
+            <button @click="showSection('seed')" class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
+                Analyze Taste
+            </button>
+        </div>
+    </section>
+
+    <script>
+        // Auto-detect API URL based on environment
+        const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8000/api/v1'
+            : window.location.origin + '/api/v1';
+        
+        function auraApp() {
+            return {
+                currentSection: 'seed',
+                seedSongs: [],
+                searchQuery: '',
+                searchResults: [],
+                searching: false,
+                playSearchQuery: '',
+                playSearchResults: [],
+                playSearching: false,
+                playSearchTimeout: null,
+                recommendations: [],
+                tasteProfile: null,
+                
+                // Initialize tasteProfile with default structure to prevent null errors
+                init() {
+                    // Ensure tasteProfile has default structure
+                    if (!this.tasteProfile) {
+                        this.tasteProfile = {
+                            mood_profiles: {},
+                            global_taste: {}
+                        };
+                    }
+                },
+                analyzing: false,
+                loadingRecommendations: false,
+                userId: localStorage.getItem('aura_user_id') || 'user_' + Math.random().toString(36).substr(2, 9),
+                userEmail: localStorage.getItem('aura_user_email') || null,
+                userName: localStorage.getItem('aura_user_name') || null,
+                toast: { show: false, message: '', type: 'info' },
+                searchTimeout: null,
+
+                async init() {
+                    // Initialize tasteProfile with default structure to prevent null errors
+                    if (!this.tasteProfile) {
+                        this.tasteProfile = {
+                            mood_profiles: {},
+                            global_taste: {}
+                        };
+                    }
+                    
+                    // Check authentication
+                    const token = localStorage.getItem('aura_user_token');
+                    if (!token) {
+                        // Redirect to landing page if not authenticated
+                        window.location.href = '/';
+                        return;
+                    }
+                    
+                    if (token) {
+                        // Verify token is still valid
+                        try {
+                            const response = await fetch(`${API_BASE}/auth/verify`, {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                this.userId = data.user.user_id;
+                                this.userEmail = data.user.email;
+                                this.userName = data.user.name || null;
+                                localStorage.setItem('aura_user_id', this.userId);
+                                localStorage.setItem('aura_user_email', this.userEmail);
+                                if (this.userName) {
+                                    localStorage.setItem('aura_user_name', this.userName);
+                                }
+                            } else {
+                                // Token invalid, redirect to login
+                                this.handleLogout();
+                                return;
+                            }
+                        } catch (error) {
+                            console.error('Auth verification error:', error);
+                            // If verification fails, redirect to landing
+                            localStorage.removeItem('aura_user_token');
+                            localStorage.removeItem('aura_user_id');
+                            localStorage.removeItem('aura_user_email');
+                            localStorage.removeItem('aura_user_name');
+                            window.location.href = '/';
+                            return;
+                        }
+                    }
+                    
+                    // Save user ID for persistence
+                    localStorage.setItem('aura_user_id', this.userId);
+                    
+                    // Load seed songs from storage
+                    await this.loadSeedSongs();
+                    
+                    // Check for hash in URL (e.g., #recommendations)
+                    const hash = window.location.hash.substring(1);
+                    if (hash && ['recommendations', 'taste', 'seed'].includes(hash)) {
+                        this.showSection(hash);
+                    } else {
+                        // Load recommendations and taste profile on initial load
+                        this.loadRecommendations();
+                        this.loadTasteProfile();
+                    }
+                    
+                    // Listen for hash changes (when navigating from analyze page)
+                    window.addEventListener('hashchange', () => {
+                        const newHash = window.location.hash.substring(1);
+                        if (newHash && ['recommendations', 'taste', 'seed'].includes(newHash)) {
+                            this.showSection(newHash);
+                        }
+                    });
+                },
+
+                async handleLogout() {
+                    try {
+                        const token = localStorage.getItem('aura_user_token');
+                        if (token) {
+                            // Call logout API
+                            await fetch(`${API_BASE}/auth/logout`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                    } finally {
+                        // Clear all user data
+                        localStorage.removeItem('aura_user_id');
+                        localStorage.removeItem('aura_user_email');
+                        localStorage.removeItem('aura_user_token');
+                        localStorage.removeItem('aura_user_name');
+                        localStorage.removeItem('aura_remember');
+                        
+                        // Redirect to landing page
+                        window.location.href = '/';
+                    }
+                },
+
+                showToast(message, type = 'info', duration = 3000) {
+                    this.toast = { show: true, message, type };
+                    setTimeout(() => this.closeToast(), duration);
+                },
+
+                closeToast() {
+                    this.toast.show = false;
+                },
+
+                showSection(section) {
+                    this.currentSection = section;
+                    // Smooth scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    // If switching to recommendations section, refresh recommendations
+                    if (section === 'recommendations') {
+                        this.loadRecommendations();
+                    }
+                },
+
+                handleSearchInput() {
+                    // Clear previous timeout
+                    if (this.searchTimeout) {
+                        clearTimeout(this.searchTimeout);
+                    }
+                    
+                    // If query is too short, clear results
+                    if (!this.searchQuery || this.searchQuery.length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+                    
+                    // Debounce search - wait 500ms after user stops typing
+                    this.searchTimeout = setTimeout(() => {
+                        this.searchSongs();
+                    }, 500);
+                },
+
+                async searchSongs() {
+                    if (!this.searchQuery || this.searchQuery.length < 2) {
+                        this.searchResults = [];
+                        return;
+                    }
+
+                    this.searching = true;
+                    try {
+                        const url = `${API_BASE}/songs/search?q=${encodeURIComponent(this.searchQuery)}&limit=20`;
+                        console.log('Searching:', url); // Debug log
+                        
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        console.log('Search response:', data); // Debug log
+                        
+                        if (response.ok) {
+                            if (data.results && Array.isArray(data.results)) {
+                                this.searchResults = data.results;
+                                if (data.results.length === 0) {
+                                    this.showToast('No songs found. Try a different search term.', 'info', 2000);
+                                }
+                            } else {
+                                this.searchResults = [];
+                                this.showToast('Unexpected response format.', 'error');
+                            }
+                        } else {
+                            this.searchResults = [];
+                            const errorMsg = data.error || 'Search failed. Please try again.';
+                            this.showToast(errorMsg, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        this.searchResults = [];
+                        this.showToast('Error searching songs. Make sure the server is running.', 'error');
+                    } finally {
+                        this.searching = false;
+                    }
+                },
+
+                handlePlaySearchInput() {
+                    // Clear previous timeout
+                    if (this.playSearchTimeout) {
+                        clearTimeout(this.playSearchTimeout);
+                    }
+                    
+                    // If query is too short, clear results
+                    if (!this.playSearchQuery || this.playSearchQuery.length < 2) {
+                        this.playSearchResults = [];
+                        return;
+                    }
+                    
+                    // Debounce search - wait 500ms after user stops typing
+                    this.playSearchTimeout = setTimeout(() => {
+                        this.searchPlaySongs();
+                    }, 500);
+                },
+
+                async searchPlaySongs() {
+                    if (!this.playSearchQuery || this.playSearchQuery.length < 2) {
+                        this.playSearchResults = [];
+                        return;
+                    }
+
+                    this.playSearching = true;
+                    try {
+                        const url = `${API_BASE}/songs/search?q=${encodeURIComponent(this.playSearchQuery)}&limit=30`;
+                        const response = await fetch(url);
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            if (data.results && Array.isArray(data.results)) {
+                                this.playSearchResults = data.results;
+                                if (data.results.length === 0) {
+                                    this.showToast('No songs found. Try a different search term.', 'info', 2000);
+                                }
+                            } else {
+                                this.playSearchResults = [];
+                                this.showToast('Unexpected response format.', 'error');
+                            }
+                        } else {
+                            this.playSearchResults = [];
+                            const errorMsg = data.error || 'Search failed. Please try again.';
+                            this.showToast(errorMsg, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        this.playSearchResults = [];
+                        this.showToast('Error searching songs. Make sure the server is running.', 'error');
+                    } finally {
+                        this.playSearching = false;
+                    }
+                },
+
+                playSongFromSearch(song) {
+                    // Track listening
+                    this.trackListening(
+                        song.title,
+                        song.artists || [],
+                        'youtube'
+                    );
+                    
+                    // Navigate to play page with song data
+                    const songData = {
+                        title: song.title,
+                        artists: song.artists || [],
+                        image: song.image || '',
+                        album: song.album || '',
+                        genre: song.genre || []
+                    };
+                    
+                    window.location.href = `/play?song=${encodeURIComponent(JSON.stringify(songData))}`;
+                },
+
+                async selectSong(song) {
+                    if (this.isSongSelected(song)) {
+                        this.removeSong(song);
+                    } else {
+                        if (this.seedSongs.length >= 15) {
+                            this.showToast('Maximum 15 songs allowed', 'error');
+                            return;
+                        }
+
+                        const songData = {
+                            title: song.title,
+                            artists: song.artists || [song.artists?.[0] || 'Unknown Artist'],
+                            genre: song.genre || [],
+                            image: song.image || '',
+                            platform_id: song.platform_id || '',
+                            album: song.album || ''
+                        };
+
+                        // Save to JSON storage
+                        try {
+                            await fetch(`${API_BASE}/songs/store?user_id=${this.userId}`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(songData)
+                            });
+                        } catch (error) {
+                            console.error('Error saving song to storage:', error);
+                        }
+
+                        this.seedSongs.push(songData);
+                        this.showToast('Song added!', 'success', 1500);
+                    }
+                },
+
+                isSongSelected(song) {
+                    return this.seedSongs.some(s => 
+                        s.title.toLowerCase() === song.title.toLowerCase() &&
+                        (s.artists?.[0]?.toLowerCase() === song.artists?.[0]?.toLowerCase() || 
+                         s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
+                    );
+                },
+
+                removeSong(song) {
+                    const index = this.seedSongs.findIndex(s => 
+                        s.title.toLowerCase() === song.title.toLowerCase() &&
+                        (s.artists?.[0]?.toLowerCase() === song.artists?.[0]?.toLowerCase() ||
+                         s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
+                    );
+                    if (index > -1) {
+                        this.seedSongs.splice(index, 1);
+                        this.showToast('Song removed', 'info', 1500);
+                    }
+                },
+
+                removeSeedSong(index) {
+                    this.seedSongs.splice(index, 1);
+                    this.showToast('Song removed', 'info', 2000);
+                },
+
+                async analyzeTaste() {
+                    if (this.seedSongs.length < 5) {
+                        this.showToast('Please add at least 5 songs', 'error');
+                        return;
+                    }
+
+                    // Save seed songs to localStorage for analysis page
+                    localStorage.setItem('pending_seed_songs', JSON.stringify(this.seedSongs));
+                    
+                    // Navigate to analysis page
+                    window.location.href = '/analyze';
+                },
+
+                async loadRecommendations() {
+                    this.loadingRecommendations = true;
+                    try {
+                        const response = await fetch(`${API_BASE}/recommendations?user_id=${this.userId}&limit=12`);
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            if (data.recommendations && data.recommendations.length > 0) {
+                            this.recommendations = data.recommendations;
+                                this.showToast(`Loaded ${data.recommendations.length} recommendations`, 'success', 2000);
+                            } else {
+                                // Check analysis status if no recommendations
+                                const statusResponse = await fetch(`${API_BASE}/taste/analyze/status?user_id=${this.userId}`);
+                                const statusData = await statusResponse.json();
+                                
+                                if (statusData.status === 'complete' && statusData.result?.recommendations) {
+                                    // Use recommendations from analysis result
+                                    this.recommendations = statusData.result.recommendations;
+                                    if (this.recommendations.length > 0) {
+                                        this.showToast(`Loaded ${this.recommendations.length} recommendations`, 'success', 2000);
+                                    } else {
+                                        this.recommendations = [];
+                                        if (data.message) {
+                                            this.showToast(data.message, 'info', 3000);
+                                        }
+                                    }
+                                } else if (statusData.status === 'processing') {
+                                    // Analysis in progress
+                                    this.recommendations = [];
+                                    this.showToast('Analysis in progress. Recommendations will appear soon...', 'info', 3000);
+                        } else {
+                                    // No analysis started
+                            this.recommendations = [];
+                                    if (data.message) {
+                                        this.showToast(data.message, 'info', 3000);
+                                    } else {
+                                        this.showToast('No recommendations yet. Analyze your taste first.', 'info', 3000);
+                                    }
+                                }
+                            }
+                        } else {
+                            this.recommendations = [];
+                            const errorMsg = data.error || data.message || 'Error loading recommendations';
+                            console.error('Recommendations error:', errorMsg);
+                            this.showToast(errorMsg, 'error', 3000);
+                        }
+                    } catch (error) {
+                        this.recommendations = [];
+                        console.error('Error loading recommendations:', error);
+                        this.showToast('Error loading recommendations. Please try again.', 'error', 3000);
+                    } finally {
+                        this.loadingRecommendations = false;
+                    }
+                },
+
+                async loadTasteProfile() {
+                    try {
+                        const response = await fetch(`${API_BASE}/taste/profile?user_id=${this.userId}`);
+                        const data = await response.json();
+                        if (response.ok && data.profile) {
+                            // Ensure mood_profiles exists, default to empty object if not present
+                            this.tasteProfile = {
+                                ...data.profile,
+                                mood_profiles: data.profile.mood_profiles || {},
+                                global_taste: data.profile.global_taste || {}
+                            };
+                        } else {
+                            // Initialize with empty structure if no profile exists
+                            this.tasteProfile = {
+                                mood_profiles: {},
+                                global_taste: {}
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Error loading profile:', error);
+                        // Initialize with empty structure on error
+                        this.tasteProfile = {
+                            mood_profiles: {},
+                            global_taste: {}
+                        };
+                    }
+                },
+
+                async loadSeedSongs() {
+                    try {
+                        const response = await fetch(`${API_BASE}/songs/user/${this.userId}`);
+                        const data = await response.json();
+                        if (response.ok && data.songs && data.songs.seed_songs) {
+                            // Load seed songs from storage
+                            this.seedSongs = data.songs.seed_songs.map(song => ({
+                                title: song.title,
+                                artists: song.artists || [],
+                                genre: song.genre || [],
+                                image: song.image || '',
+                                album: song.album || '',
+                                platform_id: song.platform_id || ''
+                            }));
+                            
+                            if (this.seedSongs.length > 0) {
+                                console.log(`Loaded ${this.seedSongs.length} seed songs from storage`);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error loading seed songs:', error);
+                        // Don't show error toast - this is a background operation
+                    }
+                },
+
+                async submitFeedback(recId, feedbackType) {
+                    try {
+                        const response = await fetch(`${API_BASE}/feedback`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: this.userId,
+                                recommendation_id: recId,
+                                song_id: recId,
+                                feedback_type: feedbackType,
+                                context: { time_of_day: this.getTimeOfDay() }
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            this.showToast(feedbackType === 'like' ? 'Thanks for the feedback!' : 'Feedback recorded', 'success', 2000);
+                        }
+                    } catch (error) {
+                        this.showToast('Error submitting feedback', 'error');
+                        console.error('Error submitting feedback:', error);
+                    }
+                },
+
+                playSong(rec) {
+                    // Navigate to play page with song ID
+                    window.location.href = `/play?song=${rec.recommendation_id}`;
+                },
+
+                async trackListening(songTitle, artists, platform) {
+                    try {
+                        const response = await fetch(`${API_BASE}/listening/track`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: this.userId,
+                                song_title: songTitle,
+                                artists: artists || [],
+                                source: 'recommendation',
+                                platform: platform,
+                                metadata: {}
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            // Silently track - no toast to avoid spam
+                            console.log('Listening tracked:', songTitle);
+                        }
+                    } catch (error) {
+                        console.error('Error tracking listening:', error);
+                    }
+                },
+
+                getTimeOfDay() {
+                    const hour = new Date().getHours();
+                    if (hour < 12) return 'morning';
+                    if (hour < 17) return 'afternoon';
+                    if (hour < 21) return 'evening';
+                    return 'night';
+                },
+
+                // Chat Widget Functions
+                chatOpen: false,
+                chatMessages: [],
+                chatInputMessage: '',
+                chatTyping: false,
+                chatSending: false,
+                chatCurrentMood: null,
+                quickMoods: ['happy', 'sad', 'calm', 'energetic', 'tired', 'anxious', 'romantic', 'focused'],
+
+                toggleChat() {
+                    this.chatOpen = !this.chatOpen;
+                    if (this.chatOpen) {
+                        this.$nextTick(() => {
+                            this.scrollChatToBottom();
+                        });
+                    }
+                },
+
+                async sendChatMessage() {
+                    if (!this.chatInputMessage.trim() || this.chatSending) return;
+                    
+                    const userMessage = this.chatInputMessage.trim();
+                    this.chatInputMessage = '';
+                    
+                    // Add user message
+                    this.chatMessages.push({
+                        type: 'user',
+                        text: userMessage,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    this.scrollChatToBottom();
+                    this.chatTyping = true;
+                    this.chatSending = true;
+                    
+                    try {
+                        // Send to chatbot API
+                        const response = await fetch(`${API_BASE}/chat/message`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                user_id: this.userId,
+                                message: userMessage
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok) {
+                            // Update current mood
+                            this.chatCurrentMood = data.detected_mood;
+                            
+                            // Add bot response
+                            this.chatMessages.push({
+                                type: 'bot',
+                                text: data.response,
+                                mood: data.detected_mood,
+                                confidence: data.confidence,
+                                songs: data.recommended_songs || []
+                            });
+                        } else {
+                            this.chatMessages.push({
+                                type: 'bot',
+                                text: "Sorry, I'm having trouble right now. Please try again!",
+                                mood: null
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Chat error:', error);
+                        this.chatMessages.push({
+                            type: 'bot',
+                            text: "Sorry, I'm having trouble right now. Please try again!",
+                            mood: null
+                        });
+                    } finally {
+                        this.chatTyping = false;
+                        this.chatSending = false;
+                        this.scrollChatToBottom();
+                    }
+                },
+
+                sendQuickChatMessage(mood) {
+                    const messages = {
+                        'happy': "I'm feeling great today!",
+                        'sad': "I'm feeling a bit down.",
+                        'calm': "I'm feeling peaceful and relaxed.",
+                        'energetic': "I'm full of energy!",
+                        'tired': "I'm feeling tired and drained.",
+                        'anxious': "I'm feeling anxious and stressed.",
+                        'romantic': "I'm in a romantic mood.",
+                        'focused': "I need to focus and concentrate."
+                    };
+                    
+                    this.chatInputMessage = messages[mood] || `I'm feeling ${mood}.`;
+                    this.sendChatMessage();
+                },
+
+                playChatSong(song) {
+                    // Track listening
+                    fetch(`${API_BASE}/listening/track`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: this.userId,
+                            song_title: song.title || song.song?.title,
+                            artists: song.artists || song.song?.artists || [],
+                            source: 'chatbot',
+                            platform: 'youtube',
+                            metadata: { mood: this.chatCurrentMood }
+                        })
+                    }).catch(err => console.error('Error tracking:', err));
+                    
+                    // Navigate to play page
+                    const songData = {
+                        title: song.title || song.song?.title,
+                        artists: song.artists || song.song?.artists || [],
+                        image: song.image || song.song?.image,
+                        youtube_video_id: song.youtube_video_id || song.song?.youtube_video_id
+                    };
+                    
+                    window.location.href = `/play?song=${encodeURIComponent(JSON.stringify(songData))}`;
+                },
+
+                scrollChatToBottom() {
+                    this.$nextTick(() => {
+                        const container = this.$refs.chatContainer;
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
+                },
+
+                getChatMoodColor(mood) {
+                    const colors = {
+                        'happy': 'bg-yellow-500/20 text-yellow-400',
+                        'sad': 'bg-blue-500/20 text-blue-400',
+                        'calm': 'bg-green-500/20 text-green-400',
+                        'energetic': 'bg-red-500/20 text-red-400',
+                        'tired': 'bg-gray-500/20 text-gray-400',
+                        'anxious': 'bg-orange-500/20 text-orange-400',
+                        'romantic': 'bg-pink-500/20 text-pink-400',
+                        'focused': 'bg-purple-500/20 text-purple-400'
+                    };
+                    return colors[mood] || 'bg-indigo-500/20 text-indigo-400';
+                }
+            }
+        }
+    </script>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget">
+        <!-- Chat Window -->
+        <div x-show="chatOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+             class="chat-window glass mb-4">
+            
+            <!-- Chat Header -->
+            <div class="glass border-b border-white/10 p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center">
+                        <span class="text-lg">🤖</span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm">AURA Assistant</h3>
+                        <p class="text-xs text-gray-400" x-text="chatCurrentMood ? `Mood: ${chatCurrentMood}` : 'Online'"></p>
+                    </div>
+                </div>
+                <button @click="toggleChat()" class="glass p-2 rounded-lg hover:bg-white/10 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" 
+                 x-ref="chatContainer"
+                 style="scroll-behavior: smooth;">
+                
+                <!-- Welcome Message -->
+                <div class="flex items-start space-x-3 fade-in" x-show="chatMessages.length === 0">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-sm">🤖</span>
+                    </div>
+                    <div class="glass rounded-2xl rounded-tl-sm p-3 max-w-[80%]">
+                        <p class="text-xs leading-relaxed">
+                            Hi! I'm AURA, your music companion. Tell me about your day, how you're feeling, or what you're up to, and I'll find the perfect music for your mood! 🎵
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <template x-for="(msg, index) in chatMessages" :key="index">
+                    <div class="flex items-start space-x-2 fade-in" 
+                         :class="msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''">
+                        
+                        <!-- Avatar -->
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                             :class="msg.type === 'user' ? 'bg-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-rose-500'">
+                            <span class="text-xs" x-text="msg.type === 'user' ? '👤' : '🤖'"></span>
+                        </div>
+                        
+                        <!-- Message Bubble -->
+                        <div class="glass rounded-2xl p-3 max-w-[80%]"
+                             :class="msg.type === 'user' ? 'rounded-tr-sm bg-indigo-500/10' : 'rounded-tl-sm'">
+                            <p class="text-xs leading-relaxed" x-text="msg.text"></p>
+                            
+                            <!-- Mood Badge -->
+                            <div class="mt-2 flex items-center space-x-2" x-show="msg.mood">
+                                <span class="text-[10px] text-gray-400">Mood:</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full glass capitalize" 
+                                      :class="getChatMoodColor(msg.mood)"
+                                      x-text="msg.mood"></span>
+                            </div>
+                            
+                            <!-- Song Recommendations -->
+                            <div class="mt-2 space-y-1.5" x-show="msg.songs && msg.songs.length > 0">
+                                <p class="text-[10px] text-gray-400 mb-1">Suggested songs:</p>
+                                <template x-for="(song, idx) in msg.songs" :key="idx">
+                                    <button @click="playChatSong(song)"
+                                            class="w-full glass rounded-lg p-2 text-left hover:bg-white/5 transition-all flex items-center space-x-2 group">
+                                        <img :src="(song.image || song.song?.image) || ''" 
+                                             :alt="song.title || song.song?.title"
+                                             class="w-8 h-8 rounded object-cover">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-medium truncate" x-text="song.title || song.song?.title"></p>
+                                            <p class="text-[10px] text-gray-400 truncate" x-text="(song.artists || song.song?.artists || []).join(', ') || 'Unknown'"></p>
+                                        </div>
+                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-400 transition-colors flex-shrink-0" 
+                                             fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Typing Indicator -->
+                <div class="flex items-start space-x-2 fade-in" x-show="chatTyping">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
+                        <span class="text-sm">🤖</span>
+                    </div>
+                    <div class="glass rounded-2xl rounded-tl-sm p-3">
+                        <div class="typing-indicator text-gray-400">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-4 border-t border-white/10">
+                <form @submit.prevent="sendChatMessage()" class="flex items-end space-x-2 mb-2">
+                    <div class="flex-1 glass rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500/50 transition-all">
+                        <textarea x-model="chatInputMessage"
+                                  @keydown.enter.exact.prevent="sendChatMessage()"
+                                  @keydown.enter.shift.exact="chatInputMessage += '\n'"
+                                  placeholder="Tell me how you're feeling..."
+                                  rows="1"
+                                  class="w-full bg-transparent border-none outline-none resize-none text-xs"
+                                  style="min-height: 1.5rem; max-height: 4rem;"></textarea>
+                    </div>
+                    <button type="submit"
+                            :disabled="!chatInputMessage.trim() || chatSending"
+                            class="glass p-2 rounded-xl hover:bg-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+                
+                <!-- Quick Mood Buttons -->
+                <div class="flex flex-wrap gap-1.5">
+                    <template x-for="mood in quickMoods" :key="mood">
+                        <button @click="sendQuickChatMessage(mood)"
+                                class="glass px-2 py-1 rounded-full text-[10px] hover:bg-white/10 transition-all active:scale-95"
+                                :class="chatCurrentMood === mood ? 'ring-2 ring-indigo-500' : ''">
+                            <span x-text="mood"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Toggle Button -->
+        <button @click="toggleChat()" 
+                class="chat-toggle-btn glass bg-gradient-to-br from-indigo-500 to-rose-500">
+            <svg x-show="!chatOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <svg x-show="chatOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+</body>
+</html>

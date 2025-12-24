@@ -1,0 +1,28 @@
+# Core
+fastapi==0.110.0
+uvicorn==0.24.0
+pydantic==2.7.4
+python-dotenv==1.0.0
+
+# Local embeddings
+sentence-transformers==3.4.1
+torch==2.1.2
+numpy==1.26.4
+
+# Hugging Face API
+huggingface_hub==0.23.4
+requests==2.31.0
+
+# Database
+sqlalchemy==2.0.29
+psycopg2-binary==2.9.9
+
+# Utils
+typing-extensions==4.8.0
+python-json-logger==2.0.7
+
+# Google Gemini AI
+google-generativeai==0.3.2
+
+# YouTube Data API
+google-api-python-client==2.108.0
