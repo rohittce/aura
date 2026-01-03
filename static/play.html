@@ -665,6 +665,70 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Mobile 2D Avatar Fallback */
+        .mobile-cat-avatar {
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle at 30% 30%, #4b5563, #1f2937);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+            display: none;
+            /* Hidden by default */
+        }
+
+        .mobile-cat-avatar.visible {
+            display: block;
+        }
+
+        .mobile-cat-ears {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .mobile-cat-ear {
+            width: 40px;
+            height: 50px;
+            background: #1f2937;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        .mobile-cat-eyes {
+            position: absolute;
+            top: 40%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .mobile-cat-eye {
+            width: 20px;
+            height: 25px;
+            background: #fbbf24;
+            border-radius: 50%;
+            animation: blink 3s infinite;
+        }
+
+        /* Mobile Beat Reaction */
+        .mobile-cat-avatar.beating {
+            animation: mobileBeat 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes mobileBeat {
+            from {
+                transform: scale(1);
+            }
+
+            to {
+                transform: scale(1.05);
+            }
+        }
     </style>
 </head>
 
@@ -693,8 +757,21 @@
         :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @dblclick="rollCat()"
         @mouseenter="showSpeech('Meow! 🐱')" @mouseleave="hideSpeech()" @mousemove="handleMouseMove($event)"
         @mousedown="startDrag($event)" @mouseup="stopDrag()" draggable="false" id="cat-3d-container">
+
         <div class="cat-speech" :class="{ 'show': speechVisible }" x-text="speechText"></div>
-        <!-- 2D Cat SVG will be rendered here -->
+
+        <!-- 2D Cat SVG Fallback (Mobile Only) -->
+        <div class="mobile-cat-avatar"
+            :class="{ 'visible': window.playAppInstance?.mobileMode, 'beating': window.playAppInstance?.playing }">
+            <div class="mobile-cat-ears">
+                <div class="mobile-cat-ear"></div>
+                <div class="mobile-cat-ear"></div>
+            </div>
+            <div class="mobile-cat-eyes">
+                <div class="mobile-cat-eye"></div>
+                <div class="mobile-cat-eye"></div>
+            </div>
+        </div>
     </div>
 
     <div class="relative z-10 h-screen flex flex-col">
@@ -900,7 +977,13 @@
                 prefetchCache: {},  // videoId cache: { 'title|artist': videoId }
                 prefetchQueue: [],  // Songs being pre-fetched
                 retryCount: {},     // Track retries per song
+                // Pre-fetching cache for flawless playback
+                prefetchCache: {},  // videoId cache: { 'title|artist': videoId }
+                prefetchQueue: [],  // Songs being pre-fetched
+                retryCount: {},     // Track retries per song
                 maxRetries: 3,      // Max retries before skip
+                mobileMode: false,  // Mobile optimization flag
+                keepAliveInterval: null, // Heartbeat interval
 
                 // Toast notification helper
                 showToast(type, title, message, duration = 4000) {
@@ -947,6 +1030,13 @@
                 },
 
                 async init() {
+                    // 0. Detect Mobile Mode (Optimization)
+                    this.mobileMode = window.innerWidth < 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+                    if (this.mobileMode) {
+                        console.log('📱 Mobile mode detected: Disabling 3D Cat & optimizing visualizer');
+                        document.body.classList.add('mobile-mode');
+                    }
+
                     // 1. Auth Check - Persist Identity
                     if (this.authToken) {
                         // Use existing token
@@ -964,17 +1054,26 @@
                     window.addEventListener('resize', () => this.resizeVisualizer());
                     window.playAppInstance = this;
 
-                    // 4. Initialize YouTube API
-                    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
-                        const tag = document.createElement('script');
-                        tag.src = "https://www.youtube.com/iframe_api";
-                        const firstScriptTag = document.getElementsByTagName('script')[0];
-                        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-                    } else {
-                        this.initPlayer();
-                    }
+                    // 5. Start Keep-Alive System
+                    this.startKeepAlive();
+                },
 
-                    setInterval(() => this.updateProgress(), 1000);
+                // Keep-Alive System (Client-side)
+                startKeepAlive() {
+                    // Ping server every 4.5 minutes (270s) to keep Render instance awake
+                    // Render sleeps after 15 mins of inactivity.
+                    console.log('💓 efficient-keep-alive: Started (4.5m interval)');
+
+                    this.keepAliveInterval = setInterval(async () => {
+                        try {
+                            const response = await fetch(`${API_BASE}/health`);
+                            if (response.ok) {
+                                console.debug('💓 keep-alive: ping success');
+                            }
+                        } catch (e) {
+                            console.debug('⚠ keep-alive: ping failed', e);
+                        }
+                    }, 270000); // 4.5 minutes
                 },
 
                 initPlayer() {
@@ -1410,6 +1509,7 @@
                     this.currentSong = song;
                     this.loadSong(song);
                     this.syncCatState();
+                    this.vibrate(10); // Haptic feedback
                 },
 
                 togglePlay() {
@@ -1420,6 +1520,7 @@
                     } else {
                         ytPlayer.playVideo();
                     }
+                    this.vibrate(10); // Haptic feedback
                 },
 
                 nextSong() {
@@ -1433,6 +1534,7 @@
                     );
                     const nextIndex = (currentIndex + 1) % this.recommendations.length;
                     this.playSong(this.recommendations[nextIndex]);
+                    this.vibrate(15); // Haptic feedback
                 },
 
                 previousSong() {
@@ -1443,6 +1545,7 @@
                     );
                     const prevIndex = currentIndex <= 0 ? this.recommendations.length - 1 : currentIndex - 1;
                     this.playSong(this.recommendations[prevIndex]);
+                    this.vibrate(15); // Haptic feedback
                 },
 
                 detectAndSkipAds() {
@@ -1623,7 +1726,30 @@
                         }
                     }
                 }
+            },
+
+                // Mobile Haptics
+                vibrate(ms) {
+                if (this.mobileMode && navigator.vibrate) {
+                    navigator.vibrate(ms);
+                }
+            },
+
+            // Visualizer Initialization & Tuning
+            resizeVisualizer() {
+                const canvas = document.querySelector('canvas'); // Or wherever visualizer is
+                // Note: We don't have a canvas visualizer in this HTML, it uses div bars.
+                // If we did, we would do:
+                /*
+                if (this.mobileMode) {
+                     analyser.fftSize = 128; // Low quality for mobile
+                } else {
+                     analyser.fftSize = 2048; // High quality
+                }
+                */
+                // For CSS bars, we just adjust logic if needed, but current CSS bars are lightweight.
             }
+        }
         }
 
         // Cat Emotion System
@@ -1977,6 +2103,12 @@
 
         // Initialize 3D Cat with Three.js
         function init3DCat() {
+            // OPTIMIZATION: Skip 3D initialization on mobile
+            if (window.playAppInstance && window.playAppInstance.mobileMode) {
+                console.log('Skipping 3D Cat initialization (Mobile Mode)');
+                return;
+            }
+
             const container = document.getElementById('cat-3d-container');
             if (!container) return;
 

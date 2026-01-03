@@ -14,6 +14,7 @@ import uvicorn
 import os
 import asyncio
 import threading
+import httpx
 from pathlib import Path
 
 # Load environment variables from .env file
@@ -96,6 +97,30 @@ async def startup_event():
                 print("   No API keys found in environment. Check your .env file.")
     except Exception as e:
         print(f"⚠ YouTube service initialization warning: {e}")
+
+    # Start Keep-Alive Loop (Render Support)
+    asyncio.create_task(start_keep_alive_loop())
+
+async def start_keep_alive_loop():
+    """Background task to ping the server every 5 minutes to prevent idle sleep"""
+    app_url = os.getenv("APP_URL", "http://localhost:8000")
+    print(f"🔄 Starting Keep-Alive Loop for {app_url}...")
+    
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                # Sleep for 5 minutes (300 seconds) - Render sleeps after 15 mins
+                await asyncio.sleep(300) 
+                response = await client.get(f"{app_url}/health")
+                if response.status_code == 200:
+                    print(f"♥ Keep-Alive Ping Successful: {response.status_code}")
+                else:
+                    print(f"⚠ Keep-Alive Ping Failed: {response.status_code}")
+            except Exception as e:
+                # Log but continue (don't crash the loop)
+                print(f"⚠ Keep-Alive Ping Error: {str(e)}")
+                # Shorter sleep on error to retry sooner
+                await asyncio.sleep(60)
 
 # CORS middleware for frontend integration
 # Get allowed origins from environment or use defaults
@@ -272,6 +297,11 @@ class JoinRoomRequest(BaseModel):
     room_id: str
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for keep-alive pings"""
+    return {"status": "healthy", "service": "aura-music-api"}
+
 @app.get("/")
 async def root():
     """Serve landing page"""
@@ -411,18 +441,15 @@ async def login(request: LoginRequest, background_tasks: BackgroundTasks):
         return {
             "status": "success",
             "message": "Login successful",
-            user_info = auth_service.get_user(result["user_id"])
-            return {
-                "status": "success",
-                "message": "Login successful",
-                "user": {
-                    "user_id": result["user_id"],
-                    "email": result["email"],
-                    "username": user_info.get("username") if user_info else None,
-                    "name": result["name"]
-                },
-                "token": result["token"]
-            }
+            "user": {
+                "user_id": result["user_id"],
+                "email": result["email"],
+                "name": result.get("name"),
+                "username": result.get("username")
+            },
+            "token": result["token"]
+        }
+
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
