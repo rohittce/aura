@@ -85,6 +85,15 @@ async def startup_event():
         print(f"⚠ Database initialization warning: {e}")
         # Don't fail startup if database already exists
     
+    # Run database migrations (auto-add missing columns like username)
+    try:
+        from src.database.migrate import migrate as run_migration
+        print("🔄 Running database migrations...")
+        run_migration()
+        print("✓ Database migrations completed")
+    except Exception as e:
+        print(f"⚠ Database migration warning: {e}")
+    
     # Initialize YouTube service to verify API keys are loaded
     try:
         from src.services.youtube_service import get_youtube_service
