@@ -43,7 +43,8 @@ class AuthService:
         self,
         email: str,
         password: str,
-        name: Optional[str] = None
+        name: Optional[str] = None,
+        username: Optional[str] = None
     ) -> Dict:
         """
         Register a new user.
@@ -52,6 +53,7 @@ class AuthService:
             email: User email
             password: User password
             name: User's full name
+            username: User's unique username (optional)
             
         Returns:
             Dictionary with user_id and token
@@ -67,6 +69,22 @@ class AuthService:
             if existing_user:
                 raise ValueError("Email already registered")
             
+            # Check username uniqueness if provided
+            if username:
+                username_lower = username.lower().strip()
+                existing_username = db.query(User).filter(
+                    User.username.ilike(username_lower)
+                ).first()
+                if existing_username:
+                    raise ValueError("Username already taken")
+            else:
+                # Generate default username from email
+                base_username = email.split('@')[0]
+                username = base_username
+                # Simple check to avoid collision on default
+                if db.query(User).filter(User.username == username).first():
+                    username = f"{base_username}_{secrets.token_hex(4)}"
+
             # Create new user
             user_id = f"user_{secrets.token_hex(16)}"
             hashed_password = self._hash_password(password)
@@ -74,6 +92,7 @@ class AuthService:
             user = User(
                 user_id=user_id,
                 email=email,
+                username=username,
                 name=name or email.split('@')[0],
                 password_hash=hashed_password,
                 created_at=datetime.utcnow(),
@@ -92,6 +111,7 @@ class AuthService:
             return {
                 "user_id": user_id,
                 "email": user.email,
+                "username": user.username,
                 "name": user.name,
                 "token": token
             }

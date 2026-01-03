@@ -396,7 +396,8 @@ async def register(request: RegisterRequest):
         result = auth_service.register_user(
             email=request.email,
             password=request.password,
-            name=request.name
+            name=request.name,
+            username=request.username
         )
         return {
             "status": "success",
