@@ -1,6 +1,7 @@
 """
-RJ (Radio Jockey) Service
-Uses LLM to talk to users as an RJ and suggest songs based on conversation
+RJ (Radio Jockey) Service - Enhanced Version
+Uses Llama model via Groq/HuggingFace to talk to users as an RJ, analyze mood,
+and recommend songs based on conversation with rate limiting.
 """
 
 import os
@@ -8,336 +9,583 @@ import logging
 import requests
 import json
 import re
+import time
+import hashlib
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
-from src.services.llm_sentiment_service import get_llm_sentiment_service
-from src.services.recommendation_service import get_recommendation_service
-from src.services.song_search_service import get_song_search_service
+from functools import wraps
+from collections import defaultdict
+from threading import Lock
 
 logger = logging.getLogger(__name__)
 
 
+class RateLimiter:
+    """Token bucket rate limiter for API calls"""
+    
+    def __init__(self, calls_per_minute: int = 30, calls_per_hour: int = 500):
+        self.calls_per_minute = calls_per_minute
+        self.calls_per_hour = calls_per_hour
+        self.minute_calls = defaultdict(list)  # user_id -> [timestamps]
+        self.hour_calls = defaultdict(list)
+        self.lock = Lock()
+    
+    def _clean_old_calls(self, calls: list, window_seconds: int) -> list:
+        """Remove calls older than the window"""
+        now = time.time()
+        return [t for t in calls if now - t < window_seconds]
+    
+    def is_allowed(self, user_id: str) -> Tuple[bool, str]:
+        """Check if a request is allowed for this user"""
+        with self.lock:
+            now = time.time()
+            
+            # Clean and check minute limit
+            self.minute_calls[user_id] = self._clean_old_calls(
+                self.minute_calls[user_id], 60
+            )
+            if len(self.minute_calls[user_id]) >= self.calls_per_minute:
+                wait_time = 60 - (now - self.minute_calls[user_id][0])
+                return False, f"Rate limit exceeded. Please wait {int(wait_time)} seconds."
+            
+            # Clean and check hour limit
+            self.hour_calls[user_id] = self._clean_old_calls(
+                self.hour_calls[user_id], 3600
+            )
+            if len(self.hour_calls[user_id]) >= self.calls_per_hour:
+                wait_time = 3600 - (now - self.hour_calls[user_id][0])
+                return False, f"Hourly limit exceeded. Please wait {int(wait_time // 60)} minutes."
+            
+            return True, ""
+    
+    def record_call(self, user_id: str):
+        """Record a successful API call"""
+        with self.lock:
+            now = time.time()
+            self.minute_calls[user_id].append(now)
+            self.hour_calls[user_id].append(now)
+
+
+class ConversationManager:
+    """Manages conversation history and context for RJ interactions"""
+    
+    def __init__(self, max_history: int = 20, max_users: int = 1000):
+        self.conversations = {}  # user_id -> list of messages
+        self.max_history = max_history
+        self.max_users = max_users
+        self.user_moods = {}  # user_id -> list of detected moods
+        self.lock = Lock()
+    
+    def add_message(self, user_id: str, role: str, content: str, mood: str = None):
+        """Add a message to conversation history"""
+        with self.lock:
+            if user_id not in self.conversations:
+                # Evict oldest user if at capacity
+                if len(self.conversations) >= self.max_users:
+                    oldest = min(self.conversations.keys(), 
+                               key=lambda k: self.conversations[k][-1]['timestamp'] if self.conversations[k] else 0)
+                    del self.conversations[oldest]
+                    if oldest in self.user_moods:
+                        del self.user_moods[oldest]
+                
+                self.conversations[user_id] = []
+                self.user_moods[user_id] = []
+            
+            self.conversations[user_id].append({
+                'role': role,
+                'content': content,
+                'mood': mood,
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            if mood:
+                self.user_moods[user_id].append(mood)
+                # Keep only last 10 moods
+                self.user_moods[user_id] = self.user_moods[user_id][-10:]
+            
+            # Trim history if too long
+            if len(self.conversations[user_id]) > self.max_history:
+                self.conversations[user_id] = self.conversations[user_id][-self.max_history:]
+    
+    def get_context(self, user_id: str, last_n: int = 5) -> List[Dict]:
+        """Get recent conversation context"""
+        with self.lock:
+            if user_id not in self.conversations:
+                return []
+            return self.conversations[user_id][-last_n:]
+    
+    def get_dominant_mood(self, user_id: str) -> str:
+        """Get the most common mood for a user"""
+        with self.lock:
+            if user_id not in self.user_moods or not self.user_moods[user_id]:
+                return "calm"
+            
+            from collections import Counter
+            mood_counts = Counter(self.user_moods[user_id])
+            return mood_counts.most_common(1)[0][0]
+    
+    def should_recommend_songs(self, user_id: str) -> bool:
+        """Determine if we have enough conversation to recommend songs"""
+        with self.lock:
+            if user_id not in self.conversations:
+                return False
+            
+            # Recommend after 2+ exchanges OR if user explicitly asks
+            user_messages = [m for m in self.conversations[user_id] if m['role'] == 'user']
+            return len(user_messages) >= 2
+
+
 class RJService:
-    """Service for RJ (Radio Jockey) interactions using LLM"""
+    """Enhanced RJ (Radio Jockey) Service with Llama integration and rate limiting"""
     
     def __init__(self):
-        self.llm_sentiment = get_llm_sentiment_service()
-        self.recommendation_service = get_recommendation_service()
-        self.song_search_service = get_song_search_service()
-        self.conversations = {}  # Store conversation history
+        # Initialize managers
+        self.rate_limiter = RateLimiter(
+            calls_per_minute=int(os.getenv("RJ_RATE_LIMIT_MINUTE", "20")),
+            calls_per_hour=int(os.getenv("RJ_RATE_LIMIT_HOUR", "200"))
+        )
+        self.conversation_manager = ConversationManager()
         
-        # LLM Configuration
-        self.api_provider = os.getenv("LLM_API_PROVIDER", "huggingface").lower()
+        # LLM Configuration - prioritize Groq for Llama
+        self.api_provider = os.getenv("LLM_API_PROVIDER", "groq").lower()
+        self.groq_api_key = os.getenv("GROQ_API_KEY", "")
         self.hf_api_key = os.getenv("HUGGINGFACE_API_KEY", "")
-        self.hf_model = os.getenv("HF_MODEL", "TinyLlama/TinyLlama-1.1B-Chat-v1.0")
-        self.use_online_api = os.getenv("USE_ONLINE_LLM", "true").lower() == "true"
+        
+        # Model selection
+        self.llama_model = os.getenv("LLAMA_MODEL", "llama-3.1-8b-instant")  # Groq model
+        self.hf_model = os.getenv("HF_MODEL", "meta-llama/Llama-2-7b-chat-hf")
+        
+        # Response cache
+        self.response_cache = {}
+        self.cache_max_size = 500
+        
+        # Import services lazily to avoid circular imports
+        self._recommendation_service = None
+        self._song_search_service = None
+        
+        logger.info(f"RJ Service initialized with provider: {self.api_provider}")
     
-    def generate_rj_response(
-        self, 
-        user_message: str, 
-        user_id: str,
-        conversation_context: Optional[List[Dict]] = None
-    ) -> Dict:
+    @property
+    def recommendation_service(self):
+        if self._recommendation_service is None:
+            from src.services.recommendation_service import get_recommendation_service
+            self._recommendation_service = get_recommendation_service()
+        return self._recommendation_service
+    
+    @property
+    def song_search_service(self):
+        if self._song_search_service is None:
+            from src.services.song_search_service import get_song_search_service
+            self._song_search_service = get_song_search_service()
+        return self._song_search_service
+    
+    def chat(self, user_message: str, user_id: str) -> Dict:
         """
-        Generate RJ-style response using LLM and suggest songs.
+        Main RJ chat interface. Handles conversation, mood analysis, and song recommendations.
         
         Args:
             user_message: User's message
             user_id: User identifier
-            conversation_context: Previous conversation messages
             
         Returns:
-            Dictionary with RJ response, mood, and song recommendations
+            Dictionary with RJ response, mood, and optional song recommendations
         """
+        # Rate limiting check
+        allowed, error_msg = self.rate_limiter.is_allowed(user_id)
+        if not allowed:
+            return {
+                "response": f"Whoa there, listener! You're messaging faster than a drum solo! 🥁 {error_msg}",
+                "mood": None,
+                "songs": [],
+                "rate_limited": True
+            }
+        
         try:
-            # Analyze sentiment first
-            mood, confidence, explanation = self.llm_sentiment.analyze_sentiment(user_message)
+            # Record the API call
+            self.rate_limiter.record_call(user_id)
             
-            # Store conversation
-            if user_id not in self.conversations:
-                self.conversations[user_id] = []
+            # Get conversation context
+            context = self.conversation_manager.get_context(user_id, last_n=5)
             
-            self.conversations[user_id].append({
-                "user_message": user_message,
-                "mood": mood,
-                "timestamp": datetime.now().isoformat()
-            })
+            # Analyze mood using Llama
+            mood, confidence = self._analyze_mood_with_llama(user_message, context)
             
-            # Get conversation history for context
-            recent_conversations = self.conversations[user_id][-5:] if len(self.conversations[user_id]) > 5 else self.conversations[user_id]
+            # Store user message
+            self.conversation_manager.add_message(user_id, 'user', user_message, mood)
             
-            # Generate RJ response using LLM
-            rj_response = self._generate_rj_response_with_llm(
-                user_message, 
-                mood, 
-                recent_conversations,
-                user_id
-            )
+            # Generate RJ response
+            rj_response = self._generate_rj_response(user_message, mood, context, user_id)
             
-            # Extract song suggestions from conversation context
-            suggested_songs = self._suggest_songs_from_conversation(
-                user_message, 
-                mood, 
-                user_id,
-                recent_conversations
-            )
+            # Store RJ response
+            self.conversation_manager.add_message(user_id, 'rj', rj_response)
+            
+            # Determine if we should recommend songs
+            songs = []
+            if self._should_recommend_now(user_message, user_id):
+                songs = self._get_song_recommendations(user_id, mood, user_message)
+                if songs:
+                    rj_response += self._format_song_intro(mood)
             
             return {
                 "response": rj_response,
-                "detected_mood": mood,
-                "confidence": confidence,
-                "explanation": explanation,
-                "recommended_songs": suggested_songs,
-                "personalized": len(suggested_songs) > 0
+                "mood": mood,
+                "mood_confidence": confidence,
+                "songs": songs,
+                "conversation_turn": len(self.conversation_manager.get_context(user_id, 100)),
+                "rate_limited": False
             }
             
         except Exception as e:
-            logger.error(f"Error generating RJ response: {e}")
-            # Fallback response
+            logger.error(f"RJ chat error: {e}")
             return {
-                "response": "Hey there! Thanks for tuning in! Let me find some great music for you! 🎵",
-                "detected_mood": "happy",
-                "confidence": 0.5,
-                "explanation": "Default response",
-                "recommended_songs": [],
-                "personalized": False
+                "response": "Hey there! 🎵 I'm having a little technical hiccup, but the music never stops! Tell me what kind of vibe you're feeling today?",
+                "mood": "calm",
+                "songs": [],
+                "error": str(e),
+                "rate_limited": False
             }
     
-    def _generate_rj_response_with_llm(
-        self, 
-        user_message: str, 
-        mood: str,
-        conversation_history: List[Dict],
-        user_id: str
-    ) -> str:
-        """Generate RJ-style response using LLM"""
+    def _analyze_mood_with_llama(self, message: str, context: List[Dict]) -> Tuple[str, float]:
+        """Use Llama to analyze mood from message and context"""
         
-        # Build conversation context
+        # Build context string
         context_str = ""
-        if conversation_history:
+        if context:
+            recent = context[-3:]
             context_str = "\n".join([
-                f"User: {conv.get('user_message', '')}"
-                for conv in conversation_history[-3:]  # Last 3 messages
+                f"{'User' if m['role'] == 'user' else 'RJ'}: {m['content']}"
+                for m in recent
             ])
         
-        # Build prompt for RJ
-        prompt = f"""You are a friendly, energetic Radio Jockey (RJ) hosting a live music show. You talk to listeners, understand their mood, and suggest songs.
+        prompt = f"""You are analyzing the emotional state of a user chatting with a radio DJ.
 
-Current conversation context:
+Previous conversation:
 {context_str}
 
-User just said: "{user_message}"
-Detected mood: {mood}
+Current user message: "{message}"
 
-Respond as an RJ would:
-1. Be warm, friendly, and engaging
-2. Acknowledge what the user said
-3. Show understanding of their mood
-4. Naturally transition to suggesting music
-5. Keep it conversational and radio-like (1-2 sentences, max 80 words)
-6. Use phrases like "That's great!", "I hear you", "Let me play something for you", etc.
+Based on the message and context, identify the user's current mood.
+Respond with ONLY ONE of these moods: happy, sad, angry, calm, energetic, tired, anxious, romantic, nostalgic, focused, excited, melancholic
 
-RJ Response:"""
-
-        if self.use_online_api and self.api_provider == "huggingface" and self.hf_api_key:
-            try:
-                response = self._call_hf_api(prompt)
-                if response:
-                    return response
-            except Exception as e:
-                logger.error(f"HF API error: {e}")
+Mood:"""
         
-        # Fallback to rule-based RJ responses
-        return self._generate_rj_response_fallback(user_message, mood)
-    
-    def _call_hf_api(self, prompt: str) -> Optional[str]:
-        """Call Hugging Face API for LLM response"""
         try:
-            url = f"https://api-inference.huggingface.co/models/{self.hf_model}"
-            headers = {
-                "Authorization": f"Bearer {self.hf_api_key}",
-                "Content-Type": "application/json"
-            }
+            if self.api_provider == "groq" and self.groq_api_key:
+                mood = self._call_groq_api(prompt, max_tokens=10)
+            elif self.api_provider == "huggingface" and self.hf_api_key:
+                mood = self._call_hf_api(prompt, max_tokens=10)
+            else:
+                mood = self._fallback_mood_analysis(message)
             
-            payload = {
-                "inputs": prompt,
-                "parameters": {
-                    "max_new_tokens": 100,
-                    "temperature": 0.8,
-                    "return_full_text": False
-                }
-            }
+            # Clean and validate mood
+            mood = mood.strip().lower().split()[0] if mood else "calm"
+            valid_moods = ["happy", "sad", "angry", "calm", "energetic", "tired", 
+                          "anxious", "romantic", "nostalgic", "focused", "excited", "melancholic"]
             
-            response = requests.post(url, headers=headers, json=payload, timeout=10)
+            if mood not in valid_moods:
+                mood = self._fallback_mood_analysis(message)
+            
+            return mood, 0.8
+            
+        except Exception as e:
+            logger.error(f"Mood analysis error: {e}")
+            return self._fallback_mood_analysis(message), 0.5
+    
+    def _generate_rj_response(self, user_message: str, mood: str, 
+                              context: List[Dict], user_id: str) -> str:
+        """Generate an RJ-style conversational response using Llama"""
+        
+        # Build conversation history
+        conv_history = ""
+        if context:
+            conv_history = "\n".join([
+                f"{'Listener' if m['role'] == 'user' else 'RJ'}: {m['content']}"
+                for m in context[-4:]
+            ])
+        
+        # Get dominant mood trend
+        dominant_mood = self.conversation_manager.get_dominant_mood(user_id)
+        
+        prompt = f"""You are a warm, friendly Radio Jockey (RJ) named Aura hosting a late-night music show. You chat with listeners about their feelings, life, and music preferences before suggesting songs.
+
+Your personality:
+- Warm, empathetic, and genuinely interested in listeners
+- Use casual language with occasional radio phrases like "Coming in hot!", "That's what I'm talking about!"
+- Reference music and artists naturally in conversation
+- Ask follow-up questions to understand the listener better
+- Keep responses concise (2-3 sentences max)
+- Use 1-2 emojis sparingly
+
+Conversation so far:
+{conv_history}
+
+Listener's current mood: {mood}
+Listener's overall mood trend: {dominant_mood}
+
+Listener just said: "{user_message}"
+
+Respond as Aura the RJ. Be conversational - don't recommend songs yet unless they explicitly ask. Focus on connecting with the listener first:"""
+
+        try:
+            if self.api_provider == "groq" and self.groq_api_key:
+                response = self._call_groq_api(prompt, max_tokens=150)
+            elif self.api_provider == "huggingface" and self.hf_api_key:
+                response = self._call_hf_api(prompt, max_tokens=150)
+            else:
+                response = self._get_fallback_response(mood)
+            
+            # Clean up response
+            if response:
+                response = response.strip()
+                # Remove any "RJ:" or "Aura:" prefixes
+                response = re.sub(r'^(RJ|Aura|Radio Jockey)[:\s]+', '', response, flags=re.IGNORECASE)
+                response = response.split('\n')[0]  # Take first paragraph only
+                
+                if len(response) > 10:
+                    return response[:500]  # Limit length
+            
+            return self._get_fallback_response(mood)
+            
+        except Exception as e:
+            logger.error(f"Response generation error: {e}")
+            return self._get_fallback_response(mood)
+    
+    def _call_groq_api(self, prompt: str, max_tokens: int = 100) -> Optional[str]:
+        """Call Groq API for Llama inference"""
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.groq_api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": self.llama_model,
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": max_tokens,
+                    "temperature": 0.7
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                return result["choices"][0]["message"]["content"]
+            elif response.status_code == 429:
+                logger.warning("Groq rate limit hit")
+                return None
+            else:
+                logger.warning(f"Groq API error: {response.status_code}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Groq API error: {e}")
+            return None
+    
+    def _call_hf_api(self, prompt: str, max_tokens: int = 100) -> Optional[str]:
+        """Call Hugging Face API for Llama inference"""
+        try:
+            response = requests.post(
+                f"https://api-inference.huggingface.co/models/{self.hf_model}",
+                headers={"Authorization": f"Bearer {self.hf_api_key}"},
+                json={
+                    "inputs": prompt,
+                    "parameters": {
+                        "max_new_tokens": max_tokens,
+                        "temperature": 0.7,
+                        "return_full_text": False
+                    }
+                },
+                timeout=15
+            )
             
             if response.status_code == 200:
                 result = response.json()
                 if isinstance(result, list) and len(result) > 0:
-                    generated_text = result[0].get("generated_text", "").strip()
-                    # Clean up the response
-                    generated_text = re.sub(r'^RJ Response:\s*', '', generated_text, flags=re.IGNORECASE)
-                    generated_text = generated_text.split('\n')[0].strip()  # Take first line
-                    if generated_text and len(generated_text) > 10:
-                        return generated_text[:200]  # Limit length
+                    return result[0].get("generated_text", "")
             
             return None
             
         except Exception as e:
-            logger.error(f"HF API call error: {e}")
+            logger.error(f"HF API error: {e}")
             return None
     
-    def _generate_rj_response_fallback(self, user_message: str, mood: str) -> str:
-        """Fallback rule-based RJ responses"""
-        mood_responses = {
+    def _should_recommend_now(self, message: str, user_id: str) -> bool:
+        """Determine if we should recommend songs now"""
+        message_lower = message.lower()
+        
+        # Explicit song request triggers
+        song_triggers = [
+            "play", "song", "music", "recommend", "suggest", "listen",
+            "what should i", "any song", "play something", "put on",
+            "need music", "want music", "give me", "play me"
+        ]
+        
+        if any(trigger in message_lower for trigger in song_triggers):
+            return True
+        
+        # Also recommend after enough conversation
+        return self.conversation_manager.should_recommend_songs(user_id)
+    
+    def _get_song_recommendations(self, user_id: str, mood: str, 
+                                   message: str) -> List[Dict]:
+        """Get personalized song recommendations"""
+        try:
+            recommendations = []
+            
+            # Extract any genre hints from message
+            genre_hints = self._extract_genre_hints(message)
+            
+            # Try recommendation service first
+            try:
+                recs = self.recommendation_service.get_recommendations(
+                    user_id=user_id,
+                    limit=5,
+                    mood=mood,
+                    genre=genre_hints if genre_hints else None
+                )
+                recommendations.extend(recs)
+            except Exception as e:
+                logger.debug(f"Recommendation service error: {e}")
+            
+            # Also try mood-based search
+            if len(recommendations) < 3:
+                mood_query = self._get_mood_search_query(mood)
+                try:
+                    songs = self.song_search_service.search_songs(mood_query, limit=3)
+                    recommendations.extend(songs)
+                except Exception as e:
+                    logger.debug(f"Song search error: {e}")
+            
+            # Deduplicate
+            seen = set()
+            unique = []
+            for song in recommendations:
+                title = song.get("title", "") or song.get("song", {}).get("title", "")
+                if title.lower() not in seen:
+                    seen.add(title.lower())
+                    unique.append(song)
+            
+            return unique[:5]
+            
+        except Exception as e:
+            logger.error(f"Song recommendation error: {e}")
+            return []
+    
+    def _extract_genre_hints(self, message: str) -> List[str]:
+        """Extract genre hints from user message"""
+        message_lower = message.lower()
+        
+        genre_keywords = {
+            "rock": ["rock", "guitar", "metal", "punk"],
+            "pop": ["pop", "catchy", "mainstream", "top 40"],
+            "hip hop": ["hip hop", "rap", "hiphop", "beats"],
+            "electronic": ["electronic", "edm", "techno", "house", "trance"],
+            "r&b": ["r&b", "rnb", "soul", "neo-soul"],
+            "jazz": ["jazz", "smooth", "saxophone"],
+            "classical": ["classical", "orchestra", "symphony", "piano"],
+            "country": ["country", "folk", "acoustic"],
+            "indie": ["indie", "alternative", "underground"],
+            "bollywood": ["bollywood", "hindi", "indian"]
+        }
+        
+        detected = []
+        for genre, keywords in genre_keywords.items():
+            if any(kw in message_lower for kw in keywords):
+                detected.append(genre)
+        
+        return detected
+    
+    def _get_mood_search_query(self, mood: str) -> str:
+        """Convert mood to a search query"""
+        mood_queries = {
+            "happy": "upbeat happy feel good",
+            "sad": "emotional sad melancholic",
+            "angry": "intense aggressive rock",
+            "calm": "calm peaceful ambient",
+            "energetic": "energetic workout pump",
+            "tired": "soothing gentle sleep",
+            "anxious": "calming meditation peaceful",
+            "romantic": "romantic love ballad",
+            "nostalgic": "classic throwback oldies",
+            "focused": "lo-fi study instrumental",
+            "excited": "party dance energetic",
+            "melancholic": "sad emotional piano"
+        }
+        return mood_queries.get(mood, mood)
+    
+    def _format_song_intro(self, mood: str) -> str:
+        """Add a song introduction to the response"""
+        intros = {
+            "happy": " I've got some feel-good tracks that'll keep that smile going! 🎵",
+            "sad": " Let me play something that understands exactly how you're feeling... 💙",
+            "energetic": " Time to turn it UP! Here's some high-energy tracks for you! 🔥",
+            "calm": " I've got some peaceful vibes coming your way... 🌙",
+            "romantic": " Aww, here's some songs to match that loving feeling! 💕",
+            "nostalgic": " Let's take a trip down memory lane with these classics! ✨",
+            "focused": " Here's some instrumental tracks to help you stay in the zone! 🎧"
+        }
+        return intros.get(mood, " Here's what I've got for you! 🎶")
+    
+    def _fallback_mood_analysis(self, message: str) -> str:
+        """Rule-based fallback for mood analysis"""
+        message_lower = message.lower()
+        
+        mood_keywords = {
+            "happy": ["happy", "great", "awesome", "excited", "amazing", "good", "love"],
+            "sad": ["sad", "depressed", "down", "upset", "lonely", "hurt"],
+            "angry": ["angry", "mad", "furious", "annoyed", "frustrated"],
+            "calm": ["calm", "peaceful", "relaxed", "chill"],
+            "energetic": ["pumped", "workout", "gym", "running", "energy"],
+            "tired": ["tired", "exhausted", "sleepy", "drained"],
+            "anxious": ["anxious", "worried", "stressed", "nervous"],
+            "romantic": ["romantic", "love", "dating", "crush"],
+            "nostalgic": ["remember", "memories", "past", "childhood"]
+        }
+        
+        for mood, keywords in mood_keywords.items():
+            if any(kw in message_lower for kw in keywords):
+                return mood
+        
+        return "calm"
+    
+    def _get_fallback_response(self, mood: str) -> str:
+        """Get a fallback response when API fails"""
+        import random
+        
+        responses = {
             "happy": [
-                "That's fantastic! I love that positive energy! Let me play something upbeat that'll keep that smile on your face! 🎵",
-                "Awesome! You're in such a great mood! I've got the perfect track to match that energy!",
-                "Love it! That happiness is contagious! Let me spin something that'll make you want to dance!"
+                "That's amazing! I love that energy! 🌟 What's got you feeling so good today?",
+                "YES! That positive vibe is contagious! Tell me more!"
             ],
             "sad": [
-                "I hear you, and I'm here for you. Music can be such a comfort. Let me play something that might help you feel better.",
-                "I understand. Sometimes we need music that understands us. Let me find something that speaks to what you're feeling.",
-                "It's okay to feel this way. Let me play something gentle and comforting for you."
+                "I hear you, and I'm here for you. 💙 Music can really help at times like these...",
+                "It's okay to feel this way. Sometimes the best songs come from these moments."
             ],
             "calm": [
-                "That peaceful vibe is beautiful! Let me play something serene that'll keep you in that zen state!",
-                "Perfect! That calm energy is so precious. I've got some relaxing tracks that'll enhance that tranquility!",
-                "I love that peaceful feeling! Let me spin something gentle and soothing for you!"
+                "That's a nice peaceful energy you've got going. What's on your mind?",
+                "I'm vibing with that chill mood! 🌙 Perfect for some smooth tunes."
             ],
             "energetic": [
-                "YES! That energy is amazing! Let me play something that'll match that fire and keep you pumped! 🔥",
-                "I can feel that energy through the radio! Let me drop something high-energy that'll keep you moving!",
-                "That's the spirit! I've got the perfect energetic track to fuel that motivation!"
-            ],
-            "tired": [
-                "I get it, you've had a long day. Let me play something gentle and soothing to help you unwind.",
-                "Take it easy! Let me find some peaceful music to help you relax and recharge.",
-                "You deserve some rest. Let me play something calming to help you unwind."
-            ],
-            "anxious": [
-                "I understand that feeling. Music can really help. Let me play something calming and grounding for you.",
-                "It's okay, take a deep breath. Let me find some peaceful music that'll help you feel more centered.",
-                "I'm here with you. Let me play something soothing that might help ease that anxiety."
-            ],
-            "romantic": [
-                "Aww, that's so sweet! Let me play something romantic that'll make your heart flutter! 💕",
-                "Love is in the air! I've got the perfect romantic track for you!",
-                "How beautiful! Let me spin something that captures that loving feeling!"
-            ],
-            "nostalgic": [
-                "Those memories are precious! Let me play something that might bring back those beautiful moments.",
-                "I love that nostalgic feeling! Let me find a track that captures that essence.",
-                "Those memories are special. Let me play something that resonates with that sentiment."
+                "I can feel that energy through the airwaves! 🔥 Ready to turn it up?",
+                "That's what I'm talking about! Let's match that fire!"
             ]
         }
         
-        import random
-        responses = mood_responses.get(mood, [
-            "Thanks for sharing! Let me play something great for you! 🎵",
-            "I hear you! Let me find the perfect track!",
-            "Got it! Let me spin something that'll hit just right!"
-        ])
-        
-        return random.choice(responses)
-    
-    def _suggest_songs_from_conversation(
-        self,
-        user_message: str,
-        mood: str,
-        user_id: str,
-        conversation_history: List[Dict]
-    ) -> List[Dict]:
-        """Suggest songs based on conversation context using LLM and recommendation service"""
-        try:
-            # Try to extract song preferences, genres, or artists from conversation
-            all_text = user_message.lower()
-            if conversation_history:
-                all_text += " " + " ".join([conv.get("user_message", "").lower() for conv in conversation_history])
-            
-            # Extract keywords that might indicate music preferences
-            genre_keywords = {
-                "rock": ["rock", "guitar", "band"],
-                "pop": ["pop", "catchy", "mainstream"],
-                "jazz": ["jazz", "smooth", "sophisticated"],
-                "classical": ["classical", "orchestra", "symphony"],
-                "electronic": ["electronic", "edm", "dance", "techno"],
-                "hip hop": ["hip hop", "rap", "hiphop"],
-                "country": ["country", "folk"],
-                "r&b": ["r&b", "soul", "rnb"],
-                "devotional": ["devotional", "spiritual", "bhajan", "prayer"],
-                "indie": ["indie", "alternative"]
-            }
-            
-            detected_genres = []
-            for genre, keywords in genre_keywords.items():
-                if any(kw in all_text for kw in keywords):
-                    detected_genres.append(genre)
-            
-            # Get recommendations based on mood and detected genres
-            recommendations = []
-            
-            # Try mood-based recommendations first
-            try:
-                if detected_genres:
-                    # Search by genre
-                    for genre in detected_genres[:2]:  # Limit to 2 genres
-                        songs = self.song_search_service.search_songs(genre, limit=3)
-                        recommendations.extend(songs)
-                
-                # Also try mood-based search
-                mood_queries = {
-                    "happy": "upbeat happy energetic",
-                    "sad": "sad emotional melancholic",
-                    "angry": "intense powerful rock",
-                    "calm": "calm peaceful relaxing",
-                    "energetic": "energetic workout pump",
-                    "tired": "gentle soothing lullaby",
-                    "anxious": "calming peaceful meditation",
-                    "romantic": "romantic love ballad",
-                    "nostalgic": "nostalgic classic old",
-                    "focused": "instrumental ambient background"
-                }
-                
-                mood_query = mood_queries.get(mood, mood)
-                mood_songs = self.song_search_service.search_songs(mood_query, limit=3)
-                recommendations.extend(mood_songs)
-                
-                # Also get personalized recommendations if user has taste profile
-                try:
-                    recs = self.recommendation_service.get_recommendations(
-                        user_id=user_id,
-                        limit=5,
-                        mood=mood,
-                        genre=detected_genres if detected_genres else None
-                    )
-                    recommendations.extend(recs)
-                except Exception as e:
-                    logger.debug(f"Could not get personalized recommendations: {e}")
-                    
-            except Exception as e:
-                logger.error(f"Error getting recommendations: {e}")
-            
-            # Remove duplicates
-            seen = set()
-            unique_recommendations = []
-            for song in recommendations:
-                title_key = (song.get("title", "").lower(), 
-                           (song.get("artists", []) or song.get("song", {}).get("artists", []))[0].lower() if (song.get("artists") or song.get("song", {}).get("artists")) else "")
-                if title_key not in seen:
-                    seen.add(title_key)
-                    unique_recommendations.append(song)
-            
-            return unique_recommendations[:5]  # Return top 5
-            
-        except Exception as e:
-            logger.error(f"Error suggesting songs: {e}")
-            return []
+        mood_responses = responses.get(mood, responses["calm"])
+        return random.choice(mood_responses)
     
     def get_conversation_history(self, user_id: str, limit: int = 10) -> List[Dict]:
         """Get conversation history for a user"""
-        if user_id not in self.conversations:
-            return []
-        return self.conversations[user_id][-limit:]
+        return self.conversation_manager.get_context(user_id, limit)
+    
+    def clear_conversation(self, user_id: str):
+        """Clear conversation history for a user"""
+        with self.conversation_manager.lock:
+            if user_id in self.conversation_manager.conversations:
+                del self.conversation_manager.conversations[user_id]
+            if user_id in self.conversation_manager.user_moods:
+                del self.conversation_manager.user_moods[user_id]
 
 
 # Singleton instance
@@ -349,4 +597,3 @@ def get_rj_service() -> RJService:
     if _rj_service is None:
         _rj_service = RJService()
     return _rj_service
-

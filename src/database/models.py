@@ -18,6 +18,7 @@ class User(Base):
     
     user_id = Column(String(255), primary_key=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
+    username = Column(String(50), unique=True, nullable=True, index=True)  # Unique username for friend search
     name = Column(String(255), nullable=True)
     password_hash = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -28,6 +29,11 @@ class User(Base):
     sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
     listening_history = relationship("ListeningHistory", back_populates="user", cascade="all, delete-orphan")
     user_songs = relationship("UserSong", back_populates="user", cascade="all, delete-orphan")
+    sent_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.sender_id", back_populates="sender", cascade="all, delete-orphan")
+    received_friend_requests = relationship("FriendRequest", foreign_keys="FriendRequest.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
+    friendships_as_user1 = relationship("Friendship", foreign_keys="Friendship.user1_id", back_populates="user1", cascade="all, delete-orphan")
+    friendships_as_user2 = relationship("Friendship", foreign_keys="Friendship.user2_id", back_populates="user2", cascade="all, delete-orphan")
+    room_participants = relationship("RoomParticipant", back_populates="user", cascade="all, delete-orphan")
 
 
 class Session(Base):
@@ -114,6 +120,84 @@ class TasteProfile(Base):
     song_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class FriendRequest(Base):
+    """Friend request model"""
+    __tablename__ = "friend_requests"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    sender_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    receiver_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String(20), default="pending")  # pending, accepted, rejected
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    responded_at = Column(DateTime, nullable=True)
+    
+    # Relationships
+    sender = relationship("User", foreign_keys=[sender_id], back_populates="sent_friend_requests")
+    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_friend_requests")
+    
+    # Unique constraint: one pending request per pair
+    __table_args__ = (
+        {"sqlite_autoincrement": True},
+    )
+
+
+class Friendship(Base):
+    """Friendship model - bidirectional relationship"""
+    __tablename__ = "friendships"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user1_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    user2_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    user1 = relationship("User", foreign_keys=[user1_id], back_populates="friendships_as_user1")
+    user2 = relationship("User", foreign_keys=[user2_id], back_populates="friendships_as_user2")
+    
+    # Unique constraint: ensure no duplicate friendships
+    __table_args__ = (
+        {"sqlite_autoincrement": True},
+    )
+
+
+class MusicRoom(Base):
+    """Music room model - for synced listening sessions"""
+    __tablename__ = "music_rooms"
+    
+    room_id = Column(String(255), primary_key=True)
+    host_id = Column(String(255), ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True, index=True)
+    name = Column(String(255), nullable=True)  # Optional room name
+    is_friends_only = Column(Boolean, default=False)  # Only friends can join
+    current_song = Column(JSON, nullable=True)  # Current song metadata
+    playback_state = Column(JSON, default=dict)  # {playing: bool, position: float, timestamp: datetime}
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_activity = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    participants = relationship("RoomParticipant", back_populates="room", cascade="all, delete-orphan")
+
+
+class RoomParticipant(Base):
+    """Room participant model"""
+    __tablename__ = "room_participants"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    room_id = Column(String(255), ForeignKey("music_rooms.room_id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(255), ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False, index=True)
+    joined_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    last_seen = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_active = Column(Boolean, default=True)  # Track if user is currently connected
+    
+    # Relationships
+    room = relationship("MusicRoom", back_populates="participants")
+    user = relationship("User", back_populates="room_participants")
+    
+    # Unique constraint: one entry per user per room
+    __table_args__ = (
+        {"sqlite_autoincrement": True},
+    )
 
 
 # Database setup

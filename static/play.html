@@ -1,25 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA // Music Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
+    <!-- Three.js for 3D Cat -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <style>
         @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2vw, -5vh) rotate(2deg); }
-            66% { transform: translate(-1vw, 3vh) rotate(-1deg); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(2vw, -5vh) rotate(2deg);
+            }
+
+            66% {
+                transform: translate(-1vw, 3vh) rotate(-1deg);
+            }
         }
-        
+
         .animate-aura {
             animation: float 18s infinite ease-in-out;
         }
 
         @keyframes pulse-bar {
-            0%, 100% { height: 20%; opacity: 0.5; }
-            50% { height: 80%; opacity: 1; }
+
+            0%,
+            100% {
+                height: 20%;
+                opacity: 0.5;
+            }
+
+            50% {
+                height: 80%;
+                opacity: 1;
+            }
         }
 
         .playing .bar-anim {
@@ -45,8 +69,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Hide YouTube iframe but keep it functional */
@@ -88,7 +119,7 @@
             width: 100% !important;
             height: 100% !important;
         }
-        
+
         .cat-svg {
             overflow: visible;
         }
@@ -99,15 +130,41 @@
         }
 
         @keyframes catRollAround {
-            0% { transform: rotate(0deg) translateX(0) translateY(0) scale(1); }
-            12.5% { transform: rotate(45deg) translateX(20px) translateY(-15px) scale(0.98); }
-            25% { transform: rotate(90deg) translateX(35px) translateY(-30px) scale(0.96); }
-            37.5% { transform: rotate(135deg) translateX(20px) translateY(-40px) scale(0.94); }
-            50% { transform: rotate(180deg) translateX(0) translateY(-45px) scale(0.92); }
-            62.5% { transform: rotate(225deg) translateX(-20px) translateY(-40px) scale(0.94); }
-            75% { transform: rotate(270deg) translateX(-35px) translateY(-30px) scale(0.96); }
-            87.5% { transform: rotate(315deg) translateX(-20px) translateY(-15px) scale(0.98); }
-            100% { transform: rotate(360deg) translateX(0) translateY(0) scale(1); }
+            0% {
+                transform: rotate(0deg) translateX(0) translateY(0) scale(1);
+            }
+
+            12.5% {
+                transform: rotate(45deg) translateX(20px) translateY(-15px) scale(0.98);
+            }
+
+            25% {
+                transform: rotate(90deg) translateX(35px) translateY(-30px) scale(0.96);
+            }
+
+            37.5% {
+                transform: rotate(135deg) translateX(20px) translateY(-40px) scale(0.94);
+            }
+
+            50% {
+                transform: rotate(180deg) translateX(0) translateY(-45px) scale(0.92);
+            }
+
+            62.5% {
+                transform: rotate(225deg) translateX(-20px) translateY(-40px) scale(0.94);
+            }
+
+            75% {
+                transform: rotate(270deg) translateX(-35px) translateY(-30px) scale(0.96);
+            }
+
+            87.5% {
+                transform: rotate(315deg) translateX(-20px) translateY(-15px) scale(0.98);
+            }
+
+            100% {
+                transform: rotate(360deg) translateX(0) translateY(0) scale(1);
+            }
         }
 
         .cat-svg {
@@ -118,8 +175,15 @@
 
         /* Cat Idle Animation */
         @keyframes catIdle {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-5px) rotate(2deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(2deg);
+            }
         }
 
         .cat-idle {
@@ -128,10 +192,23 @@
 
         /* Cat Dancing Animation */
         @keyframes catDance {
-            0%, 100% { transform: translateY(0) rotate(-5deg) scale(1); }
-            25% { transform: translateY(-10px) rotate(5deg) scale(1.05); }
-            50% { transform: translateY(-5px) rotate(-5deg) scale(1); }
-            75% { transform: translateY(-10px) rotate(5deg) scale(1.05); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(-5deg) scale(1);
+            }
+
+            25% {
+                transform: translateY(-10px) rotate(5deg) scale(1.05);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(-5deg) scale(1);
+            }
+
+            75% {
+                transform: translateY(-10px) rotate(5deg) scale(1.05);
+            }
         }
 
         .cat-dancing {
@@ -140,10 +217,23 @@
 
         /* Cat Happy Animation */
         @keyframes catHappy {
-            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-            25% { transform: translateY(-8px) rotate(-3deg) scale(1.1); }
-            50% { transform: translateY(-12px) rotate(3deg) scale(1.15); }
-            75% { transform: translateY(-8px) rotate(-3deg) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+
+            25% {
+                transform: translateY(-8px) rotate(-3deg) scale(1.1);
+            }
+
+            50% {
+                transform: translateY(-12px) rotate(3deg) scale(1.15);
+            }
+
+            75% {
+                transform: translateY(-8px) rotate(-3deg) scale(1.1);
+            }
         }
 
         .cat-happy {
@@ -152,8 +242,15 @@
 
         /* Cat Sad Animation */
         @keyframes catSad {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(3px) rotate(-2deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(3px) rotate(-2deg);
+            }
         }
 
         .cat-sad {
@@ -163,8 +260,15 @@
 
         /* Cat Depressed Animation */
         @keyframes catDepressed {
-            0%, 100% { transform: translateY(5px) rotate(-1deg); }
-            50% { transform: translateY(8px) rotate(1deg); }
+
+            0%,
+            100% {
+                transform: translateY(5px) rotate(-1deg);
+            }
+
+            50% {
+                transform: translateY(8px) rotate(1deg);
+            }
         }
 
         .cat-depressed {
@@ -175,9 +279,19 @@
 
         /* Cat Excited Animation */
         @keyframes catExcited {
-            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
-            33% { transform: translateY(-15px) rotate(-10deg) scale(1.2); }
-            66% { transform: translateY(-15px) rotate(10deg) scale(1.2); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg) scale(1);
+            }
+
+            33% {
+                transform: translateY(-15px) rotate(-10deg) scale(1.2);
+            }
+
+            66% {
+                transform: translateY(-15px) rotate(10deg) scale(1.2);
+            }
         }
 
         .cat-excited {
@@ -186,8 +300,15 @@
 
         /* Cat Sleeping Animation */
         @keyframes catSleep {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(2px) rotate(1deg); }
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(2px) rotate(1deg);
+            }
         }
 
         .cat-sleeping {
@@ -197,8 +318,15 @@
 
         /* Cat Tail Animation */
         @keyframes tailWag {
-            0%, 100% { transform: rotate(-10deg); }
-            50% { transform: rotate(10deg); }
+
+            0%,
+            100% {
+                transform: rotate(-10deg);
+            }
+
+            50% {
+                transform: rotate(10deg);
+            }
         }
 
         .cat-playing .cat-tail {
@@ -208,8 +336,15 @@
 
         /* Cat Ears Animation */
         @keyframes earTwitch {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(-5deg); }
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-5deg);
+            }
         }
 
         .cat-listening .cat-ear {
@@ -223,8 +358,16 @@
 
         /* Cat Eyes Blink */
         @keyframes blink {
-            0%, 90%, 100% { transform: scaleY(1); }
-            95% { transform: scaleY(0.1); }
+
+            0%,
+            90%,
+            100% {
+                transform: scaleY(1);
+            }
+
+            95% {
+                transform: scaleY(0.1);
+            }
         }
 
         .cat-eye {
@@ -277,8 +420,15 @@
 
         /* Cat Heart Particles */
         @keyframes heartFloat {
-            0% { transform: translateY(0) scale(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.5) rotate(360deg); opacity: 0; }
+            0% {
+                transform: translateY(0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px) scale(1.5) rotate(360deg);
+                opacity: 0;
+            }
         }
 
         .cat-heart {
@@ -291,8 +441,15 @@
 
         /* Cat Star Particles */
         @keyframes starFloat {
-            0% { transform: translateY(0) scale(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(-60px) scale(1.2) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(0) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-60px) scale(1.2) rotate(720deg);
+                opacity: 0;
+            }
         }
 
         .cat-star {
@@ -305,8 +462,17 @@
 
         /* Cat Sparkle Effect */
         @keyframes sparkle {
-            0%, 100% { opacity: 0; transform: scale(0); }
-            50% { opacity: 1; transform: scale(1); }
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: scale(0);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .cat-sparkle {
@@ -326,8 +492,15 @@
 
         /* Cat Bounce Effect */
         @keyframes catBounce {
-            0%, 100% { transform: translateY(0) scale(1); }
-            50% { transform: translateY(-30px) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-30px) scale(1.1);
+            }
         }
 
         .cat-container.bouncing {
@@ -336,76 +509,221 @@
 
         /* Cat Spin Effect */
         @keyframes catSpin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .cat-container.spinning {
             animation: catSpin 0.8s ease-in-out;
         }
+
+        /* Toast Notification System */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+
+        .toast {
+            background: rgba(20, 20, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: toastSlideIn 0.3s ease-out;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .toast.toast-exit {
+            animation: toastSlideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastSlideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .toast-close:hover {
+            color: white;
+        }
+
+        .toast.toast-info {
+            border-left: 3px solid #6366f1;
+        }
+
+        .toast.toast-success {
+            border-left: 3px solid #22c55e;
+        }
+
+        .toast.toast-warning {
+            border-left: 3px solid #f59e0b;
+        }
+
+        .toast.toast-error {
+            border-left: 3px solid #ef4444;
+        }
+
+        /* Song Queue Status Indicators */
+        .song-ready {
+            position: relative;
+        }
+
+        .song-ready::after {
+            content: '✓';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 16px;
+            height: 16px;
+            background: #22c55e;
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .song-loading::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
-<body class="bg-[#020202] text-white overflow-hidden" 
-      x-data="playApp()" 
-      x-init="init()">
+
+<body class="bg-[#020202] text-white overflow-hidden" x-data="playApp()" x-init="init()">
 
     <!-- YouTube IFrame API -->
     <div id="youtube-player"></div>
     <!-- Client-side Ad Blocker -->
     <script src="/static/ad-blocker.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    
+
     <!-- GSAP for 2D Cat Animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
     <div class="fixed inset-0 z-0">
-        <div class="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-600/20 rounded-full blur-[120px] animate-aura"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-600/15 rounded-full blur-[120px] animate-aura" style="animation-delay: -9s;"></div>
+        <div
+            class="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-purple-600/20 rounded-full blur-[120px] animate-aura">
+        </div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-blue-600/15 rounded-full blur-[120px] animate-aura"
+            style="animation-delay: -9s;"></div>
     </div>
 
     <!-- Interactive 2D Cat -->
-    <div class="cat-container" 
-         x-data="catEmotion()"
-         :class="[following ? 'following' : '', isRolling ? 'rolling-around' : '', isGlowing ? 'glow' : '', isBouncing ? 'bouncing' : '', isSpinning ? 'spinning' : '']"
-         :style="`bottom: ${catY}px; right: ${catX}px;`"
-         @click="interactWithCat()"
-         @dblclick="rollCat()"
-         @mouseenter="showSpeech('Meow! 🐱')"
-         @mouseleave="hideSpeech()"
-         @mousemove="handleMouseMove($event)"
-         @mousedown="startDrag($event)"
-         @mouseup="stopDrag()"
-         draggable="false"
-         id="cat-3d-container">
+    <div class="cat-container" x-data="catEmotion()"
+        :class="[following ? 'following' : '', isRolling ? 'rolling-around' : '', isGlowing ? 'glow' : '', isBouncing ? 'bouncing' : '', isSpinning ? 'spinning' : '']"
+        :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @dblclick="rollCat()"
+        @mouseenter="showSpeech('Meow! 🐱')" @mouseleave="hideSpeech()" @mousemove="handleMouseMove($event)"
+        @mousedown="startDrag($event)" @mouseup="stopDrag()" draggable="false" id="cat-3d-container">
         <div class="cat-speech" :class="{ 'show': speechVisible }" x-text="speechText"></div>
         <!-- 2D Cat SVG will be rendered here -->
     </div>
 
     <div class="relative z-10 h-screen flex flex-col">
-        
+
         <nav class="flex justify-between items-center p-6 md:p-8">
-            <a href="/" class="text-2xl font-black tracking-tighter italic hover:opacity-80 transition-opacity">AURA.</a>
+            <a href="/"
+                class="text-2xl font-black tracking-tighter italic hover:opacity-80 transition-opacity">AURA.</a>
             <div class="glass px-4 py-2 rounded-full text-xs font-mono tracking-widest uppercase opacity-70">
                 <span x-text="playing ? '▶ Playing' : '⏸ Paused'"></span>
             </div>
         </nav>
 
         <main class="flex-1 flex flex-col items-center justify-center px-6 text-center overflow-y-auto pb-32">
-            
+
             <!-- Album Art -->
             <div class="mb-8 fade-in" x-show="currentSong">
                 <div class="w-64 h-64 md:w-80 md:h-80 rounded-2xl overflow-hidden shadow-2xl glass border-2 border-white/10"
-                     :class="playing ? 'animate-pulse' : ''">
+                    :class="playing ? 'animate-pulse' : ''">
                     <img :src="currentSong?.song?.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
-                         :alt="currentSong?.song?.title"
-                         class="w-full h-full object-cover">
+                        :alt="currentSong?.song?.title" class="w-full h-full object-cover">
                 </div>
             </div>
 
             <!-- Song Info -->
             <div class="mb-8 fade-in" x-show="currentSong">
-                <h2 class="text-3xl md:text-4xl font-bold mb-2" x-text="currentSong?.song?.title || 'No song selected'"></h2>
-                <p class="text-lg text-gray-400 mb-1" x-text="currentSong?.song?.artists?.join(', ') || 'Unknown Artist'"></p>
+                <h2 class="text-3xl md:text-4xl font-bold mb-2" x-text="currentSong?.song?.title || 'No song selected'">
+                </h2>
+                <p class="text-lg text-gray-400 mb-1"
+                    x-text="currentSong?.song?.artists?.join(', ') || 'Unknown Artist'"></p>
                 <p class="text-sm text-gray-500" x-text="currentSong?.song?.album || ''"></p>
             </div>
 
@@ -413,8 +731,8 @@
             <div class="mb-8">
                 <div class="flex items-end justify-center space-x-1 h-16 md:h-20" :class="{ 'playing': playing }">
                     <template x-for="i in 20">
-                        <div class="w-1 md:w-1.5 bg-gradient-to-t from-indigo-500 to-rose-500 rounded-full bar-anim" 
-                             :style="`animation-delay: ${i * 0.05}s; height: ${playing ? '100%' : '20%'}`"></div>
+                        <div class="w-1 md:w-1.5 bg-gradient-to-t from-indigo-500 to-rose-500 rounded-full bar-anim"
+                            :style="`animation-delay: ${i * 0.05}s; height: ${playing ? '100%' : '20%'}`"></div>
                     </template>
                 </div>
             </div>
@@ -426,41 +744,45 @@
                     <span x-text="formatTime(duration)"></span>
                 </div>
                 <div class="h-1 bg-white/10 rounded-full overflow-hidden cursor-pointer" @click="seekTo($event)">
-                    <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 progress-bar" 
-                         :style="`width: ${progressPercent}%`"></div>
+                    <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 progress-bar"
+                        :style="`width: ${progressPercent}%`"></div>
                 </div>
             </div>
 
             <!-- Controls -->
             <div class="flex items-center justify-center space-x-4 mb-8">
-                <button @click="previousSong()" 
-                        class="glass p-3 rounded-full hover:bg-white/10 transition-all active:scale-95"
-                        :disabled="recommendations.length === 0">
+                <button @click="previousSong()"
+                    class="glass p-3 rounded-full hover:bg-white/10 transition-all active:scale-95"
+                    :disabled="recommendations.length === 0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
                     </svg>
                 </button>
-                
-                <button @click="togglePlay()" 
-                        class="glass p-6 rounded-full hover:bg-white/10 transition-all active:scale-95 relative group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity"></div>
+
+                <button @click="togglePlay()"
+                    class="glass p-6 rounded-full hover:bg-white/10 transition-all active:scale-95 relative group">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 rounded-full opacity-0 group-hover:opacity-20 transition-opacity">
+                    </div>
                     <template x-if="!playing">
                         <svg class="w-8 h-8 fill-white relative z-10" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
+                            <path d="M8 5v14l11-7z" />
                         </svg>
                     </template>
                     <template x-if="playing">
                         <svg class="w-8 h-8 fill-white relative z-10" viewBox="0 0 24 24">
-                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                         </svg>
                     </template>
                 </button>
-                
-                <button @click="nextSong()" 
-                        class="glass p-3 rounded-full hover:bg-white/10 transition-all active:scale-95"
-                        :disabled="recommendations.length === 0">
+
+                <button @click="nextSong()"
+                    class="glass p-3 rounded-full hover:bg-white/10 transition-all active:scale-95"
+                    :disabled="recommendations.length === 0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11.933 12.8a1 1 0 000-1.6L6.6 7.2A1 1 0 005 8v8a1 1 0 001.6.8l5.333-4zM19.933 12.8a1 1 0 000-1.6l-5.333-4A1 1 0 0013 8v8a1 1 0 001.6.8l5.333-4z" />
                     </svg>
                 </button>
             </div>
@@ -473,30 +795,32 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap items-center justify-center gap-3">
-                <button @click="submitFeedback('like')" 
-                        class="glass px-6 py-3 rounded-full text-sm hover:bg-rose-500/20 transition-all active:scale-95 flex items-center space-x-2"
-                        :disabled="!currentSong">
+                <button @click="submitFeedback('like')"
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-rose-500/20 transition-all active:scale-95 flex items-center space-x-2"
+                    :disabled="!currentSong">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                     <span>Like</span>
                 </button>
-                
-                <button @click="submitFeedback('skip')" 
-                        class="glass px-6 py-3 rounded-full text-sm hover:bg-gray-600/20 transition-all active:scale-95 flex items-center space-x-2"
-                        :disabled="!currentSong">
+
+                <button @click="submitFeedback('skip')"
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-gray-600/20 transition-all active:scale-95 flex items-center space-x-2"
+                    :disabled="!currentSong">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     <span>Skip</span>
                 </button>
 
-                <a :href="currentSong?.platform_links?.spotify" 
-                   target="_blank"
-                   class="glass px-6 py-3 rounded-full text-sm hover:bg-green-500/20 transition-all active:scale-95 flex items-center space-x-2"
-                   x-show="currentSong">
+                <a :href="currentSong?.platform_links?.spotify" target="_blank"
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-green-500/20 transition-all active:scale-95 flex items-center space-x-2"
+                    x-show="currentSong">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                        <path
+                            d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z" />
                     </svg>
                     <span>Open in Spotify</span>
                 </a>
@@ -508,11 +832,10 @@
                 <div class="space-y-2 max-h-48 overflow-y-auto">
                     <template x-for="(rec, index) in recommendations.slice(1, 6)" :key="index">
                         <div @click="playSong(rec)"
-                             class="glass p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-all flex items-center space-x-3"
-                             :class="currentSong?.recommendation_id === rec.recommendation_id ? 'ring-2 ring-indigo-500' : ''">
-                            <img :src="rec.song?.image || ''" 
-                                 :alt="rec.song?.title"
-                                 class="w-12 h-12 rounded object-cover">
+                            class="glass p-3 rounded-lg cursor-pointer hover:bg-white/5 transition-all flex items-center space-x-3"
+                            :class="currentSong?.recommendation_id === rec.recommendation_id ? 'ring-2 ring-indigo-500' : ''">
+                            <img :src="rec.song?.image || ''" :alt="rec.song?.title"
+                                class="w-12 h-12 rounded object-cover">
                             <div class="flex-1 min-w-0 text-left">
                                 <p class="font-medium truncate" x-text="rec.song?.title"></p>
                                 <p class="text-xs text-gray-400 truncate" x-text="rec.song?.artists?.join(', ')"></p>
@@ -525,11 +848,13 @@
             <!-- Empty State -->
             <div x-show="!currentSong && !loading" class="text-center py-20">
                 <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                 </svg>
                 <p class="text-gray-500 mb-2 text-lg">No song selected</p>
                 <p class="text-sm text-gray-600 mb-6">Get recommendations to start playing</p>
-                <a href="/" class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95 inline-block">
+                <a href="/"
+                    class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95 inline-block">
                     Get Recommendations
                 </a>
             </div>
@@ -541,7 +866,7 @@
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:8000/api/v1'
             : window.location.origin + '/api/v1';
-        
+
         let ytPlayer = null;
         let ytApiReady = false;
 
@@ -562,35 +887,99 @@
                 duration: 0,
                 progressPercent: 0,
                 loading: true,
-                userId: localStorage.getItem('aura_user_id') || 'user_' + Math.random().toString(36).substr(2, 9),
+                loading: true,
+                userId: localStorage.getItem('aura_user_id') || 'guest_' + Math.random().toString(36).substr(2, 9),
+                username: localStorage.getItem('aura_username') || 'Guest',
+                authToken: localStorage.getItem('aura_token'),
+                socket: null,
+                room: null,
+                isHost: false,
                 adMonitoringInterval: null,
 
-                init() {
-                    localStorage.setItem('aura_user_id', this.userId);
-                    window.playAppInstance = this;
-                    
-                    // Check if song ID is in URL
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const songId = urlParams.get('song');
-                    
-                    if (songId) {
-                        this.loadSongFromId(songId);
-                    } else {
-                        this.loadRecommendations();
+                // Pre-fetching cache for flawless playback
+                prefetchCache: {},  // videoId cache: { 'title|artist': videoId }
+                prefetchQueue: [],  // Songs being pre-fetched
+                retryCount: {},     // Track retries per song
+                maxRetries: 3,      // Max retries before skip
+
+                // Toast notification helper
+                showToast(type, title, message, duration = 4000) {
+                    let container = document.getElementById('toast-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.id = 'toast-container';
+                        container.className = 'toast-container';
+                        document.body.appendChild(container);
                     }
-                    
-                    // Initialize YouTube player when API is ready
-                    if (ytApiReady) {
+
+                    const icons = {
+                        info: 'ℹ️',
+                        success: '✅',
+                        warning: '⚠️',
+                        error: '❌'
+                    };
+
+                    const toast = document.createElement('div');
+                    toast.className = `toast toast-${type}`;
+                    toast.innerHTML = `
+                        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+                        <div class="toast-content">
+                            <div class="toast-title">${title}</div>
+                            <div class="toast-message">${message}</div>
+                        </div>
+                        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                    `;
+
+                    container.appendChild(toast);
+
+                    // Auto-remove after duration
+                    setTimeout(() => {
+                        toast.classList.add('toast-exit');
+                        setTimeout(() => toast.remove(), 300);
+                    }, duration);
+                },
+
+                // Get cache key for a song
+                getCacheKey(song) {
+                    const title = (song?.song?.title || song?.title || '').toLowerCase().trim();
+                    const artist = (song?.song?.artists?.[0] || song?.artists?.[0] || '').toLowerCase().trim();
+                    return `${title}|${artist}`;
+                },
+
+                async init() {
+                    // 1. Auth Check - Persist Identity
+                    if (this.authToken) {
+                        // Use existing token
+                        console.log('Using persisted auth:', this.username);
+                    } else {
+                        // Save guest ID
+                        localStorage.setItem('aura_user_id', this.userId);
+                    }
+
+                    // 2. Initialize Socket.IO
+                    this.initSocket();
+
+                    // 3. Initialize Visualizer
+                    this.resizeVisualizer();
+                    window.addEventListener('resize', () => this.resizeVisualizer());
+                    window.playAppInstance = this;
+
+                    // 4. Initialize YouTube API
+                    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+                        const tag = document.createElement('script');
+                        tag.src = "https://www.youtube.com/iframe_api";
+                        const firstScriptTag = document.getElementsByTagName('script')[0];
+                        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                    } else {
                         this.initPlayer();
                     }
-                    
-                    // Update progress every second
+
                     setInterval(() => this.updateProgress(), 1000);
                 },
 
                 initPlayer() {
                     if (ytPlayer) return;
-                    
+
                     // Create player with nocookie domain (fewer ads)
                     // We'll override the embed URL to use nocookie domain
                     ytPlayer = new YT.Player('youtube-player', {
@@ -622,10 +1011,10 @@
                                 if (event.data === YT.PlayerState.PLAYING) {
                                     this.playing = true;
                                     this.syncCatState();
-                                    
+
                                     // Start aggressive ad monitoring
                                     this.startAdMonitoring();
-                                    
+
                                     // Immediate ad detection
                                     setTimeout(() => this.detectAndSkipAds(), 500);
                                     setTimeout(() => this.detectAndSkipAds(), 1500);
@@ -648,7 +1037,7 @@
                                     // Try to skip to next song if current one fails
                                     if (this.currentSong) {
                                         alert(`Unable to play "${this.currentSong.song?.title || 'this song'}". Skipping to next song.`);
-                                    this.nextSong();
+                                        this.nextSong();
                                     }
                                 }
                             },
@@ -664,7 +1053,7 @@
                                 };
                                 const errorMsg = errorMessages[event.data] || 'Unknown error';
                                 console.error('YouTube error:', errorMsg);
-                                
+
                                 // For invalid video parameter (error 2), try to refetch video ID
                                 if (event.data === 2 && this.currentSong && !this.currentSong._retryAttempted) {
                                     console.log('Invalid video ID detected, attempting to refetch...');
@@ -673,7 +1062,7 @@
                                     if (this.currentSong.song) {
                                         this.currentSong.song.youtube_video_id = null;
                                     }
-                                    
+
                                     // Refetch video ID with a slight delay
                                     setTimeout(async () => {
                                         await this.fetchYouTubeVideoId(this.currentSong);
@@ -683,14 +1072,14 @@
                                             this.loadSong(this.currentSong);
                                         } else {
                                             // If still no valid video ID, skip to next
-                                            alert(`Unable to find a valid YouTube video for "${this.currentSong.song?.title || 'this song'}". Skipping to next song.`);
+                                            this.showToast('warning', 'Video Not Found', `Skipping "${this.currentSong.song?.title || 'this song'}"`, 3000);
                                             this.nextSong();
                                         }
                                     }, 1000);
                                 } else {
                                     // For other errors or if retry already attempted, skip to next song
                                     if (this.currentSong) {
-                                        alert(`Unable to play "${this.currentSong.song?.title || 'this song'}": ${errorMsg}. Skipping to next song.`);
+                                        this.showToast('warning', 'Playback Error', `Skipping "${this.currentSong.song?.title || 'this song'}": ${errorMsg}`, 3000);
                                         this.nextSong();
                                     }
                                 }
@@ -707,15 +1096,15 @@
                         if (genre) {
                             url += `&genre=${encodeURIComponent(genre)}`;
                         }
-                        
+
                         const response = await fetch(url);
                         const data = await response.json();
                         if (data.recommendations && data.recommendations.length > 0) {
                             this.recommendations = data.recommendations;
                             // Only set currentSong if we're not preserving it (i.e., when loading initial recommendations)
                             if (!preserveCurrentSong) {
-                            this.currentSong = this.recommendations[0];
-                            this.loadSong(this.currentSong);
+                                this.currentSong = this.recommendations[0];
+                                this.loadSong(this.currentSong);
                                 this.syncCatState();
                             }
                         }
@@ -748,23 +1137,23 @@
                                     },
                                     youtube_video_id: songData.youtube_video_id || null
                                 };
-                                
+
                                 // Fetch YouTube video ID if not present
                                 if (!songObj.youtube_video_id && !songObj.song.youtube_video_id) {
                                     await this.fetchYouTubeVideoId(songObj);
                                 }
-                                
+
                                 this.currentSong = songObj;
                                 this.loadSong(songObj);
                                 this.syncCatState();
-                                
+
                                 // Extract genre from the searched song
                                 const songGenres = songObj.song?.genre || songData.genre || [];
                                 const genreParam = songGenres.length > 0 ? songGenres.join(',') : null;
-                                
+
                                 // Load recommendations for queue (preserve current song) with genre filter
                                 await this.loadRecommendations(true, genreParam);
-                                
+
                                 // Insert the searched song at the beginning of recommendations queue
                                 if (this.recommendations.length > 0) {
                                     this.recommendations.unshift(songObj);
@@ -776,7 +1165,7 @@
                         } catch (e) {
                             // Not a JSON string, treat as recommendation_id
                         }
-                        
+
                         // Try to find in recommendations
                         const response = await fetch(`${API_BASE}/recommendations?user_id=${this.userId}&limit=50`);
                         const data = await response.json();
@@ -804,34 +1193,34 @@
                         this.loading = false;
                     }
                 },
-                
+
                 async fetchYouTubeVideoId(song, retryCount = 0) {
                     try {
                         const title = song.song?.title || song.title;
                         const artists = song.song?.artists || song.artists || [];
                         const artistsStr = Array.isArray(artists) ? artists.join(',') : artists;
-                        
+
                         if (!title) return;
-                        
+
                         const response = await fetch(
                             `${API_BASE}/songs/youtube-video-id?title=${encodeURIComponent(title)}&artists=${encodeURIComponent(artistsStr)}`
                         );
                         const data = await response.json();
-                        
+
                         if (data.youtube_video_id) {
                             // Validate video ID format
                             const videoId = data.youtube_video_id.trim();
                             if (videoId.length === 11 && /^[a-zA-Z0-9_-]+$/.test(videoId)) {
-                            // Update song object with video ID
-                            if (song.song) {
+                                // Update song object with video ID
+                                if (song.song) {
                                     song.song.youtube_video_id = videoId;
-                            }
+                                }
                                 song.youtube_video_id = videoId;
-                            
-                            // If this is the current song and player is ready, load it
-                            if (this.currentSong === song && ytPlayer) {
-                                this.loadSong(song);
-                            }
+
+                                // If this is the current song and player is ready, load it
+                                if (this.currentSong === song && ytPlayer) {
+                                    this.loadSong(song);
+                                }
                             } else {
                                 console.error('Invalid video ID format:', videoId);
                                 // Retry if we haven't retried too many times
@@ -854,40 +1243,90 @@
 
                 async loadSong(song) {
                     if (!song) return;
-                    
-                    // Ensure we have a video ID
-                    let videoId = song.youtube_video_id || song.song?.youtube_video_id;
-                    
+
+                    const cacheKey = this.getCacheKey(song);
+
+                    // Check prefetch cache first
+                    let videoId = this.prefetchCache[cacheKey] || song.youtube_video_id || song.song?.youtube_video_id;
+
                     if (!videoId) {
+                        // Show loading toast
+                        this.showToast('info', 'Loading', `Finding "${song.song?.title || song.title}"...`, 2000);
+
                         // Try to fetch it
                         await this.fetchYouTubeVideoId(song);
                         videoId = song.youtube_video_id || song.song?.youtube_video_id;
                     }
-                    
+
                     if (!videoId) {
-                        console.error('No video ID found for song:', song.song?.title || song.title);
-                        alert(`Could not find YouTube video for "${song.song?.title || song.title}". Please try another song.`);
-                        return;
+                        // Track retry count
+                        const retryKey = cacheKey;
+                        this.retryCount[retryKey] = (this.retryCount[retryKey] || 0) + 1;
+
+                        if (this.retryCount[retryKey] < this.maxRetries) {
+                            // Try alternative query
+                            this.showToast('info', 'Retrying', `Searching for "${song.song?.title || song.title}" (attempt ${this.retryCount[retryKey] + 1})...`, 2000);
+
+                            // Modify search to try alternative patterns
+                            const title = song.song?.title || song.title;
+                            const artists = song.song?.artists || song.artists || [];
+                            const altQueries = [
+                                `${title} ${artists[0] || ''} lyrics`,
+                                `${title} ${artists[0] || ''} audio`,
+                                `${title} official`
+                            ];
+
+                            for (const query of altQueries) {
+                                try {
+                                    const response = await fetch(
+                                        `${API_BASE}/songs/youtube-video-id?title=${encodeURIComponent(query)}&artists=`
+                                    );
+                                    const data = await response.json();
+                                    if (data.youtube_video_id && /^[a-zA-Z0-9_-]{11}$/.test(data.youtube_video_id)) {
+                                        videoId = data.youtube_video_id;
+                                        // Cache it
+                                        this.prefetchCache[cacheKey] = videoId;
+                                        if (song.song) song.song.youtube_video_id = videoId;
+                                        song.youtube_video_id = videoId;
+                                        break;
+                                    }
+                                } catch (e) {
+                                    console.debug('Alt query failed:', query);
+                                }
+                            }
+                        }
+
+                        if (!videoId) {
+                            console.error('No video ID found for song:', song.song?.title || song.title);
+                            this.showToast('error', 'Song Unavailable', `Skipping "${song.song?.title || song.title}"`, 3000);
+                            // Auto-skip to next song
+                            setTimeout(() => this.nextSong(), 500);
+                            return;
+                        }
                     }
-                    
+
+                    // Cache the videoId
+                    this.prefetchCache[cacheKey] = videoId;
+
                     if (!ytPlayer) {
                         console.error('YouTube player not ready');
                         // Wait a bit and try again
                         setTimeout(() => this.loadSong(song), 500);
                         return;
                     }
-                    
+
                     // Validate video ID before loading
                     if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
                         console.error('Invalid video ID format:', videoId);
-                        alert(`Invalid video ID for "${song.song?.title || song.title}". Please try another song.`);
+                        this.showToast('error', 'Invalid Video', `Skipping "${song.song?.title || song.title}"`, 3000);
+                        setTimeout(() => this.nextSong(), 500);
                         return;
                     }
-                    
+
                     try {
                         // Stop any existing ad monitoring
                         this.stopAdMonitoring();
-                        
+
                         // Force use of nocookie domain for fewer ads
                         const playerElement = document.getElementById('youtube-player');
                         if (playerElement) {
@@ -897,18 +1336,22 @@
                                 iframe.src = iframe.src.replace('youtube.com', 'youtube-nocookie.com');
                             }
                         }
-                        
+
                         ytPlayer.loadVideoById(videoId);
                         this.playing = false;
                         this.currentTime = 0;
                         this.duration = 0;
-                        
+
                         // Start monitoring for ads after video loads
                         setTimeout(() => {
                             if (ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                                 this.startAdMonitoring();
                             }
                         }, 1000);
+
+                        // PRE-FETCH next 2 songs for seamless playback
+                        this.prefetchNextSongs();
+
                     } catch (error) {
                         console.error('Error loading video:', error);
                         // Try to refetch video ID if loading fails
@@ -924,10 +1367,46 @@
                     }
                 },
 
+                // Pre-fetch video IDs for upcoming songs
+                async prefetchNextSongs() {
+                    if (this.recommendations.length <= 1) return;
+
+                    const currentIndex = this.recommendations.findIndex(r =>
+                        r.recommendation_id === this.currentSong?.recommendation_id
+                    );
+
+                    // Pre-fetch next 2 songs
+                    for (let i = 1; i <= 2; i++) {
+                        const nextIndex = (currentIndex + i) % this.recommendations.length;
+                        const nextSong = this.recommendations[nextIndex];
+
+                        if (!nextSong) continue;
+
+                        const cacheKey = this.getCacheKey(nextSong);
+
+                        // Skip if already cached
+                        if (this.prefetchCache[cacheKey]) continue;
+
+                        // Skip if already has video ID
+                        if (nextSong.youtube_video_id || nextSong.song?.youtube_video_id) {
+                            this.prefetchCache[cacheKey] = nextSong.youtube_video_id || nextSong.song?.youtube_video_id;
+                            continue;
+                        }
+
+                        // Fetch in background (don't await)
+                        this.fetchYouTubeVideoId(nextSong).then(() => {
+                            if (nextSong.youtube_video_id || nextSong.song?.youtube_video_id) {
+                                this.prefetchCache[cacheKey] = nextSong.youtube_video_id || nextSong.song?.youtube_video_id;
+                                console.log(`Pre-fetched: ${nextSong.song?.title || nextSong.title}`);
+                            }
+                        }).catch(e => console.debug('Prefetch failed:', e));
+                    }
+                },
+
                 playSong(song) {
                     // Stop any existing ad monitoring
                     this.stopAdMonitoring();
-                    
+
                     this.currentSong = song;
                     this.loadSong(song);
                     this.syncCatState();
@@ -935,7 +1414,7 @@
 
                 togglePlay() {
                     if (!ytPlayer || !this.currentSong) return;
-                    
+
                     if (this.playing) {
                         ytPlayer.pauseVideo();
                     } else {
@@ -946,10 +1425,10 @@
                 nextSong() {
                     // Stop ad monitoring when skipping
                     this.stopAdMonitoring();
-                    
+
                     if (this.recommendations.length === 0) return;
-                    
-                    const currentIndex = this.recommendations.findIndex(r => 
+
+                    const currentIndex = this.recommendations.findIndex(r =>
                         r.recommendation_id === this.currentSong?.recommendation_id
                     );
                     const nextIndex = (currentIndex + 1) % this.recommendations.length;
@@ -958,8 +1437,8 @@
 
                 previousSong() {
                     if (this.recommendations.length === 0) return;
-                    
-                    const currentIndex = this.recommendations.findIndex(r => 
+
+                    const currentIndex = this.recommendations.findIndex(r =>
                         r.recommendation_id === this.currentSong?.recommendation_id
                     );
                     const prevIndex = currentIndex <= 0 ? this.recommendations.length - 1 : currentIndex - 1;
@@ -969,21 +1448,21 @@
                 detectAndSkipAds() {
                     // Enhanced ad detection and skipping
                     if (!ytPlayer) return;
-                    
+
                     try {
                         const duration = ytPlayer.getDuration();
                         const currentTime = ytPlayer.getCurrentTime();
                         const videoData = ytPlayer.getVideoData ? ytPlayer.getVideoData() : null;
-                        
+
                         // Method 1: Detect ads by duration (ads are typically 5-30 seconds)
                         // But be careful - some songs are short too
                         if (duration > 0 && duration <= 35 && currentTime < 10) {
                             // Check if this is likely an ad (very short, just started)
                             const isLikelyAd = duration <= 35 && currentTime < 5;
-                            
+
                             if (isLikelyAd) {
                                 console.log(`Detected potential ad (${duration}s), attempting to skip...`);
-                                
+
                                 // Try to seek to end of ad
                                 try {
                                     ytPlayer.seekTo(duration - 0.5, true);
@@ -991,13 +1470,13 @@
                                 } catch (e) {
                                     console.debug('Could not seek:', e);
                                 }
-                                
+
                                 // If still playing after 2 seconds, skip to next song
                                 setTimeout(() => {
                                     if (ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
                                         const newTime = ytPlayer.getCurrentTime();
                                         const newDuration = ytPlayer.getDuration();
-                                        
+
                                         // If still a short video, it's likely an ad
                                         if (newDuration <= 35 && newTime < newDuration - 1) {
                                             console.log('Ad detected, skipping to next song');
@@ -1007,38 +1486,38 @@
                                 }, 2000);
                             }
                         }
-                        
+
                         // Method 2: Detect ads by checking if video title/author suggests it's an ad
                         if (videoData) {
                             const title = (videoData.title || '').toLowerCase();
                             const author = (videoData.author || '').toLowerCase();
-                            
+
                             // Common ad indicators
                             const adKeywords = ['advertisement', 'ad', 'sponsored', 'promo', 'commercial'];
                             const isAdByTitle = adKeywords.some(keyword => title.includes(keyword));
-                            
+
                             if (isAdByTitle && duration <= 60) {
                                 console.log('Ad detected by title, skipping...');
                                 this.nextSong();
                                 return;
                             }
                         }
-                        
+
                         // Method 3: Monitor for sudden state changes that might indicate ads
                         // This will be handled by the onStateChange handler
-                        
+
                     } catch (e) {
                         console.debug('Ad detection error:', e);
                     }
                 },
-                
+
                 // Enhanced ad monitoring with interval
                 startAdMonitoring() {
                     // Clear any existing interval
                     if (this.adMonitoringInterval) {
                         clearInterval(this.adMonitoringInterval);
                     }
-                    
+
                     // Monitor for ads every 500ms when playing
                     this.adMonitoringInterval = setInterval(() => {
                         if (this.playing && ytPlayer) {
@@ -1046,7 +1525,7 @@
                         }
                     }, 500);
                 },
-                
+
                 stopAdMonitoring() {
                     if (this.adMonitoringInterval) {
                         clearInterval(this.adMonitoringInterval);
@@ -1056,7 +1535,7 @@
 
                 updateProgress() {
                     if (!ytPlayer || !this.currentSong) return;
-                    
+
                     try {
                         this.currentTime = ytPlayer.getCurrentTime() || 0;
                         this.duration = ytPlayer.getDuration() || 0;
@@ -1068,7 +1547,7 @@
 
                 seekTo(event) {
                     if (!ytPlayer || !this.currentSong) return;
-                    
+
                     const rect = event.currentTarget.getBoundingClientRect();
                     const x = event.clientX - rect.left;
                     const percent = x / rect.width;
@@ -1085,7 +1564,7 @@
 
                 async submitFeedback(type) {
                     if (!this.currentSong) return;
-                    
+
                     try {
                         await fetch(`${API_BASE}/feedback`, {
                             method: 'POST',
@@ -1098,7 +1577,7 @@
                                 context: { time_of_day: this.getTimeOfDay() }
                             })
                         });
-                        
+
                         // Track listening if liked
                         if (type === 'like' && this.currentSong.song) {
                             await fetch(`${API_BASE}/listening/track`, {
@@ -1114,7 +1593,7 @@
                                 })
                             });
                         }
-                        
+
                         if (type === 'skip') {
                             this.nextSong();
                         }
@@ -1171,32 +1650,32 @@
                 dragStartY: 0,
                 lastClickTime: 0,
                 autoRollInterval: null,
-                
+
                 init() {
                     // Ensure emotion is always defined to prevent Alpine.js errors
                     if (!this.emotion || this.emotion === undefined) {
                         this.emotion = 'idle';
                     }
-                    
+
                     // Update emotion periodically and watch for changes
                     const updateInterval = setInterval(() => {
                         this.updateEmotion();
                         this.checkForNewSong();
                         this.updatePosition();
                     }, 100);
-                    
+
                     // Track mouse position globally
                     document.addEventListener('mousemove', (e) => {
                         this.mouseX = e.clientX;
                         this.mouseY = e.clientY;
                     });
-                    
+
                     // Cleanup on component destroy
                     this.$el.addEventListener('alpine:destroyed', () => {
                         clearInterval(updateInterval);
                     });
                 },
-                
+
                 handleMouseMove(event) {
                     // Handle dragging - no boundaries
                     if (this.isDragging) {
@@ -1206,33 +1685,33 @@
                         this.catY = newY;
                         return;
                     }
-                    
+
                     // Slight follow effect when mouse is near
                     const rect = this.$el.getBoundingClientRect();
                     const catCenterX = rect.left + rect.width / 2;
                     const catCenterY = rect.top + rect.height / 2;
                     const distance = Math.sqrt(
-                        Math.pow(event.clientX - catCenterX, 2) + 
+                        Math.pow(event.clientX - catCenterX, 2) +
                         Math.pow(event.clientY - catCenterY, 2)
                     );
-                    
+
                     if (distance < 200) {
                         this.following = true;
                         const followStrength = 0.12;
                         const deltaX = (event.clientX - catCenterX) * followStrength;
                         const deltaY = (event.clientY - catCenterY) * followStrength;
-                        
+
                         // Calculate new position from right and bottom - no boundaries
                         const newRight = window.innerWidth - (rect.right - deltaX);
                         const newBottom = window.innerHeight - (rect.bottom - deltaY);
-                        
+
                         this.catX = newRight;
                         this.catY = newBottom;
                     } else {
                         this.following = false;
                     }
                 },
-                
+
                 updatePosition() {
                     // Autonomous wandering when not following and not dragging
                     if (!this.following && !this.isDragging) {
@@ -1240,30 +1719,30 @@
                         const time = Date.now() / 2000; // Slower movement
                         const wanderX = 20 + Math.sin(time * 0.3) * 40;
                         const wanderY = 20 + Math.cos(time * 0.4) * 35;
-                        
+
                         this.catX += (wanderX - this.catX) * 0.02;
                         this.catY += (wanderY - this.catY) * 0.02;
                     }
                 },
-                
+
                 async checkForNewSong() {
                     const playApp = window.playAppInstance;
                     if (playApp && playApp.currentSong) {
                         const currentTitle = playApp.currentSong.song?.title || playApp.currentSong.title;
                         if (currentTitle && currentTitle !== this.lastSongTitle) {
                             this.lastSongTitle = currentTitle;
-                            
+
                             // Simple reaction to new song
                             this.setEmotion('excited', 2000);
                             this.showSpeech('New song! 🎵', 2000);
                         }
                     }
                 },
-                
+
                 updateEmotion() {
                     const playApp = window.playAppInstance;
                     if (!playApp) return;
-                    
+
                     if (playApp.playing) {
                         // Dancing when music is playing
                         this.setEmotion('dancing');
@@ -1283,10 +1762,10 @@
                         this.setEmotion('sleeping');
                     }
                 },
-                
+
                 setEmotion(newEmotion, duration = null) {
                     this.emotion = newEmotion || 'idle';
-                    
+
                     // Remove all emotion classes
                     const classes = ['cat-idle', 'cat-dancing', 'cat-happy', 'cat-sad', 'cat-excited', 'cat-sleeping', 'cat-depressed', 'cat-playing', 'cat-listening'];
                     classes.forEach(cls => {
@@ -1294,15 +1773,15 @@
                             this.catState = this.catState.replace(cls, '').trim();
                         }
                     });
-                    
+
                     // Add new emotion class
                     this.catState = `cat-${newEmotion}`;
-                    
+
                     // Add playing class if music is playing
                     if (window.playAppInstance?.playing) {
                         this.catState += ' cat-playing cat-listening';
                     }
-                    
+
                     // Reset after duration if specified
                     if (duration) {
                         setTimeout(() => {
@@ -1310,11 +1789,11 @@
                         }, duration);
                     }
                 },
-                
+
                 interactWithCat() {
                     this.interactionCount++;
                     const playApp = window.playAppInstance;
-                    
+
                     // Check for double click
                     const now = Date.now();
                     if (now - this.lastClickTime < 300) {
@@ -1324,7 +1803,7 @@
                         return;
                     }
                     this.lastClickTime = now;
-                    
+
                     const messages = [
                         'Purr purr! 🐾',
                         'Meow! Play me some music! 🎵',
@@ -1338,80 +1817,80 @@
                         'I\'m having so much fun! 🎉',
                         'Wheee! This is awesome! 🌟'
                     ];
-                    
+
                     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                     this.showSpeech(randomMessage, 2000);
-                    
+
                     // Set excited emotion briefly
                     this.setEmotion('excited', 1500);
-                    
+
                     // Add glow effect
                     this.addGlow();
-                    
+
                     // Create heart and star particles
                     this.createHearts();
                     this.createStars();
                     this.createSparkles();
                 },
-                
+
                 rollCat() {
                     if (this.isRolling) return;
-                    
+
                     this.isRolling = true;
                     this.showSpeech('Wheee! Rolling! 🎲', 2000);
                     this.createStars();
-                    
+
                     // Trigger 3D roll animation
                     if (window.doCatRoll) {
                         window.doCatRoll(1);
                     }
-                    
+
                     // Smooth transition
                     this.$el.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
-                    
+
                     setTimeout(() => {
                         this.isRolling = false;
                         this.$el.style.transition = '';
                     }, 1500);
                 },
-                
+
                 rollAround() {
                     if (this.isRollingAround) return;
-                    
+
                     this.isRollingAround = true;
                     this.showSpeech('Rolling around! 🎪', 3000);
                     this.createSparkles();
-                    
+
                     // Smooth transition
                     this.$el.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                    
+
                     setTimeout(() => {
                         this.isRollingAround = false;
                         this.$el.style.transition = '';
                     }, 3000);
                 },
-                
+
                 addGlow() {
                     this.isGlowing = true;
                     setTimeout(() => {
                         this.isGlowing = false;
                     }, 2000);
                 },
-                
+
                 bounce() {
                     this.isBouncing = true;
                     setTimeout(() => {
                         this.isBouncing = false;
                     }, 600);
                 },
-                
+
                 spin() {
                     this.isSpinning = true;
                     setTimeout(() => {
                         this.isSpinning = false;
                     }, 800);
                 },
-                
+
                 startDrag(event) {
                     if (event.button !== 0) return; // Only left mouse button
                     this.isDragging = true;
@@ -1420,7 +1899,7 @@
                     this.dragStartY = event.clientY - rect.top;
                     this.$el.style.cursor = 'grabbing';
                 },
-                
+
                 stopDrag() {
                     if (this.isDragging) {
                         this.isDragging = false;
@@ -1428,7 +1907,7 @@
                         this.bounce();
                     }
                 },
-                
+
                 createHearts() {
                     const catContainer = this.$el;
                     const heartEmojis = ['💜', '❤️', '💕', '💖', '💗'];
@@ -1440,12 +1919,12 @@
                             heart.style.left = `${50 + (Math.random() - 0.5) * 60}%`;
                             heart.style.top = `${50 + (Math.random() - 0.5) * 60}%`;
                             catContainer.appendChild(heart);
-                            
+
                             setTimeout(() => heart.remove(), 1500);
                         }, i * 150);
                     }
                 },
-                
+
                 createStars() {
                     const catContainer = this.$el;
                     const starEmojis = ['⭐', '✨', '🌟', '💫'];
@@ -1457,12 +1936,12 @@
                             star.style.left = `${50 + (Math.random() - 0.5) * 80}%`;
                             star.style.top = `${50 + (Math.random() - 0.5) * 80}%`;
                             catContainer.appendChild(star);
-                            
+
                             setTimeout(() => star.remove(), 2000);
                         }, i * 100);
                     }
                 },
-                
+
                 createSparkles() {
                     const catContainer = this.$el;
                     for (let i = 0; i < 12; i++) {
@@ -1473,558 +1952,419 @@
                             sparkle.style.top = `${Math.random() * 100}%`;
                             sparkle.style.animationDelay = `${Math.random() * 0.6}s`;
                             catContainer.appendChild(sparkle);
-                            
+
                             setTimeout(() => sparkle.remove(), 1000);
                         }, i * 50);
                     }
                 },
-                
+
                 showSpeech(text, duration = 3000) {
                     this.speechText = text;
                     this.speechVisible = true;
-                    
+
                     if (duration) {
                         setTimeout(() => {
                             this.hideSpeech();
                         }, duration);
                     }
                 },
-                
+
                 hideSpeech() {
                     this.speechVisible = false;
                 }
             }
         }
 
-        // Initialize 2D Cat SVG
-        function init2DCat() {
-            const catContainer = document.getElementById('cat-3d-container');
-            if (!catContainer) {
-                setTimeout(init2DCat, 200);
-                return;
-            }
+        // Initialize 3D Cat with Three.js
+        function init3DCat() {
+            const container = document.getElementById('cat-3d-container');
+            if (!container) return;
 
-            // Check if already initialized
-            if (catContainer.querySelector('svg')) {
-                return;
-            }
+            // Clear previous content
+            container.innerHTML = '<div class="cat-speech" :class="{ \'show\': speechVisible }" x-text="speechText"></div>';
 
-            // Create SVG cat with improved design
-            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('viewBox', '0 0 200 200');
-            svg.setAttribute('width', '100%');
-            svg.setAttribute('height', '100%');
-            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            svg.classList.add('cat-svg');
+            // Scene setup
+            const scene = new THREE.Scene();
 
-            // Define gradients
-            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-            
-            // Gradient from indigo to rose (matching button style)
-            const bodyGradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
-            bodyGradient.setAttribute('id', 'bodyGradient');
-            bodyGradient.setAttribute('x1', '0%');
-            bodyGradient.setAttribute('y1', '0%');
-            bodyGradient.setAttribute('x2', '100%');
-            bodyGradient.setAttribute('y2', '100%');
-            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop1.setAttribute('offset', '0%');
-            stop1.setAttribute('stop-color', '#6366f1'); // indigo-500
-            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop2.setAttribute('offset', '100%');
-            stop2.setAttribute('stop-color', '#f43f5e'); // rose-500
-            bodyGradient.appendChild(stop1);
-            bodyGradient.appendChild(stop2);
-            defs.appendChild(bodyGradient);
+            // Camera setup
+            const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000); // Square aspect ratio
+            camera.position.z = 5;
+            camera.position.y = 0.5;
 
-            svg.appendChild(defs);
+            // Renderer setup
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(200, 200);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
 
-            // Body (more cat-like proportions - wider body)
-            const body = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            body.setAttribute('cx', '100');
-            body.setAttribute('cy', '130');
-            body.setAttribute('rx', '50');
-            body.setAttribute('ry', '45');
-            body.setAttribute('fill', 'url(#bodyGradient)');
-            body.setAttribute('class', 'cat-body');
-            svg.appendChild(body);
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
 
-            // Head (smaller, more proportional to body - cat-like)
-            const head = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            head.setAttribute('cx', '100');
-            head.setAttribute('cy', '80');
-            head.setAttribute('rx', '40');
-            head.setAttribute('ry', '35');
-            head.setAttribute('fill', 'url(#bodyGradient)');
-            svg.appendChild(head);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(2, 5, 5);
+            scene.add(directionalLight);
 
-            // Left ear (more cat-like - wider base, proper positioning)
-            const earL = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            earL.setAttribute('points', '68,55 75,35 82,55');
-            earL.setAttribute('fill', 'url(#bodyGradient)');
-            earL.setAttribute('class', 'cat-ear cat-ear-left');
-            svg.appendChild(earL);
+            const spotLight = new THREE.SpotLight(0x6366f1, 1);
+            spotLight.position.set(-2, 3, 2);
+            scene.add(spotLight);
 
-            // Right ear (more cat-like - wider base, proper positioning)
-            const earR = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            earR.setAttribute('points', '118,35 125,55 132,55');
-            earR.setAttribute('fill', 'url(#bodyGradient)');
-            earR.setAttribute('class', 'cat-ear cat-ear-right');
-            svg.appendChild(earR);
+            // Group to hold the entire cat
+            const catGroup = new THREE.Group();
+            scene.add(catGroup);
 
-            // Left eye (smaller, more cat-like - almond shape)
-            const eyeL = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            eyeL.setAttribute('cx', '88');
-            eyeL.setAttribute('cy', '90');
-            eyeL.setAttribute('rx', '7');
-            eyeL.setAttribute('ry', '9');
-            eyeL.setAttribute('fill', '#000000');
-            eyeL.setAttribute('class', 'cat-eye cat-eye-left');
-            svg.appendChild(eyeL);
-
-            // Left eye pupil (yellow/orange oval - smaller, more cat-like)
-            const pupilL = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            pupilL.setAttribute('cx', '88');
-            pupilL.setAttribute('cy', '90');
-            pupilL.setAttribute('rx', '3');
-            pupilL.setAttribute('ry', '4');
-            pupilL.setAttribute('fill', '#ffa500'); // Bright orange/yellow
-            svg.appendChild(pupilL);
-
-            // Right eye (smaller, more cat-like - almond shape)
-            const eyeR = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            eyeR.setAttribute('cx', '112');
-            eyeR.setAttribute('cy', '90');
-            eyeR.setAttribute('rx', '7');
-            eyeR.setAttribute('ry', '9');
-            eyeR.setAttribute('fill', '#000000');
-            eyeR.setAttribute('class', 'cat-eye cat-eye-right');
-            svg.appendChild(eyeR);
-
-            // Right eye pupil (yellow/orange oval - smaller, more cat-like)
-            const pupilR = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            pupilR.setAttribute('cx', '112');
-            pupilR.setAttribute('cy', '90');
-            pupilR.setAttribute('rx', '3');
-            pupilR.setAttribute('ry', '4');
-            pupilR.setAttribute('fill', '#ffa500'); // Bright orange/yellow
-            svg.appendChild(pupilR);
-
-            // Nose (pink inverted triangle - cat-like)
-            const nose = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            nose.setAttribute('points', '100,105 96,110 104,110');
-            nose.setAttribute('fill', '#ff69b4'); // Pink
-            svg.appendChild(nose);
-
-            // Mouth (simple downward curved line - neutral/slightly sad)
-            const mouth = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            mouth.setAttribute('d', 'M 100 110 Q 95 115 90 113');
-            mouth.setAttribute('stroke', '#ff69b4'); // Pink
-            mouth.setAttribute('stroke-width', '2');
-            mouth.setAttribute('fill', 'none');
-            mouth.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(mouth);
-
-            // Right side of mouth
-            const mouthR = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            mouthR.setAttribute('d', 'M 100 110 Q 105 115 110 113');
-            mouthR.setAttribute('stroke', '#ff69b4'); // Pink
-            mouthR.setAttribute('stroke-width', '2');
-            mouthR.setAttribute('fill', 'none');
-            mouthR.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(mouthR);
-
-            // Whiskers (add back for more cat-like appearance)
-            const whiskerL1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerL1.setAttribute('x1', '60');
-            whiskerL1.setAttribute('y1', '100');
-            whiskerL1.setAttribute('x2', '85');
-            whiskerL1.setAttribute('y2', '102');
-            whiskerL1.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerL1.setAttribute('stroke-width', '2');
-            whiskerL1.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerL1);
-
-            const whiskerL2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerL2.setAttribute('x1', '60');
-            whiskerL2.setAttribute('y1', '105');
-            whiskerL2.setAttribute('x2', '85');
-            whiskerL2.setAttribute('y2', '105');
-            whiskerL2.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerL2.setAttribute('stroke-width', '2');
-            whiskerL2.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerL2);
-
-            const whiskerL3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerL3.setAttribute('x1', '60');
-            whiskerL3.setAttribute('y1', '110');
-            whiskerL3.setAttribute('x2', '85');
-            whiskerL3.setAttribute('y2', '108');
-            whiskerL3.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerL3.setAttribute('stroke-width', '2');
-            whiskerL3.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerL3);
-
-            const whiskerR1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerR1.setAttribute('x1', '140');
-            whiskerR1.setAttribute('y1', '102');
-            whiskerR1.setAttribute('x2', '115');
-            whiskerR1.setAttribute('y2', '100');
-            whiskerR1.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerR1.setAttribute('stroke-width', '2');
-            whiskerR1.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerR1);
-
-            const whiskerR2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerR2.setAttribute('x1', '140');
-            whiskerR2.setAttribute('y1', '105');
-            whiskerR2.setAttribute('x2', '115');
-            whiskerR2.setAttribute('y2', '105');
-            whiskerR2.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerR2.setAttribute('stroke-width', '2');
-            whiskerR2.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerR2);
-
-            const whiskerR3 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            whiskerR3.setAttribute('x1', '140');
-            whiskerR3.setAttribute('y1', '108');
-            whiskerR3.setAttribute('x2', '115');
-            whiskerR3.setAttribute('y2', '110');
-            whiskerR3.setAttribute('stroke', 'rgba(255,255,255,0.6)');
-            whiskerR3.setAttribute('stroke-width', '2');
-            whiskerR3.setAttribute('stroke-linecap', 'round');
-            svg.appendChild(whiskerR3);
-
-            // Front left paw (small rounded shape at bottom - gradient)
-            const pawFL = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            pawFL.setAttribute('cx', '75');
-            pawFL.setAttribute('cy', '170');
-            pawFL.setAttribute('rx', '10');
-            pawFL.setAttribute('ry', '8');
-            pawFL.setAttribute('fill', 'url(#bodyGradient)');
-            svg.appendChild(pawFL);
-
-            // Front right paw (small rounded shape at bottom - gradient)
-            const pawFR = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-            pawFR.setAttribute('cx', '125');
-            pawFR.setAttribute('cy', '170');
-            pawFR.setAttribute('rx', '10');
-            pawFR.setAttribute('ry', '8');
-            pawFR.setAttribute('fill', 'url(#bodyGradient)');
-            svg.appendChild(pawFR);
-
-            // Tail (long thin C-shaped, gradient)
-            const tail = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            tail.setAttribute('d', 'M 50 130 Q 30 100 20 70 Q 15 50 25 45');
-            tail.setAttribute('stroke', 'url(#bodyGradient)');
-            tail.setAttribute('stroke-width', '8');
-            tail.setAttribute('fill', 'none');
-            tail.setAttribute('stroke-linecap', 'round');
-            tail.setAttribute('class', 'cat-tail');
-            svg.appendChild(tail);
-
-            catContainer.appendChild(svg);
-
-            // Store references for animations
-            window.cat2D = {
-                body,
-                head,
-                eyeL,
-                eyeR,
-                pupilL,
-                pupilR,
-                earL,
-                earR,
-                tail,
-                pawFL,
-                pawFR,
-                svg,
-                catContainer
-            };
-
-            // Mouse interaction state
-            let mouseX = 100; // Center of cat (viewBox coordinates)
-            let mouseY = 100;
-            let lastMouseMove = Date.now();
-            let autonomousMode = true;
-            let lookAtTarget = { x: 100, y: 100 };
-            let currentEyeOffset = { x: 0, y: 0 };
-
-            // Initialize animations
-            if (typeof gsap !== 'undefined') {
-                // Idle breathing animation (affects body and head)
-                gsap.to(body, {
-                    attr: { ry: 52 },
-                    duration: 1.5,
-                    repeat: -1,
-                    yoyo: true,
-                    ease: "sine.inOut"
-                });
-                gsap.to(head, {
-                    attr: { ry: 42 },
-                    duration: 1.5,
-                    repeat: -1,
-                    yoyo: true,
-                    ease: "sine.inOut"
-                });
-
-                // Tail sway
-                gsap.to(tail, {
-                    rotation: 15,
-                    transformOrigin: "55 120",
-                    duration: 2,
-                    repeat: -1,
-                    yoyo: true,
-                    ease: "sine.inOut"
-                });
-
-                // Blink animation (oval eyes close vertically)
-                function blink() {
-                    gsap.to([eyeL, eyeR], {
-                        attr: { ry: 1 },
-                        duration: 0.15,
-                        yoyo: true,
-                        repeat: 1,
-                        onComplete: () => {
-                            setTimeout(blink, Math.random() * 3000 + 2000);
-                        }
-                    });
-                }
-                blink();
-            }
-
-            // Roll animation function
-            window.doCatRoll = function(direction = 1) {
-                if (typeof gsap === 'undefined') return;
-                const rollSequence = gsap.timeline();
-                
-                rollSequence.to(svg, {
-                    rotation: direction * 360,
-                    transformOrigin: "50% 50%",
-                    duration: 0.6,
-                    ease: "power2.inOut"
-                });
-                rollSequence.to(body, {
-                    attr: { cy: 140 },
-                    duration: 0.15,
-                    yoyo: true,
-                    repeat: 1,
-                    ease: "power2.out"
-                }, 0);
-            };
-
-            // Dance animation
-            window.catDance = function() {
-                if (typeof gsap === 'undefined') return;
-                gsap.to(svg, {
-                    rotation: 10,
-                    transformOrigin: "50% 50%",
-                    duration: 0.3,
-                    repeat: 1,
-                    yoyo: true,
-                    ease: "sine.inOut"
-                });
-                gsap.to(body, {
-                    attr: { cy: 115 },
-                    duration: 0.3,
-                    repeat: 1,
-                    yoyo: true,
-                    ease: "sine.inOut"
-                });
-            };
-
-            // Eye following mouse function
-            function updateEyeLook() {
-                if (!eyeL || !eyeR || !pupilL || !pupilR) return;
-
-                const catRect = catContainer.getBoundingClientRect();
-                const catCenterX = catRect.left + catRect.width / 2;
-                const catCenterY = catRect.top + catRect.height / 2;
-                
-                // Convert mouse position to SVG coordinates
-                const svgMouseX = ((mouseX - catCenterX) / catRect.width) * 200;
-                const svgMouseY = ((mouseY - catCenterY) / catRect.height) * 200;
-                
-                // Calculate eye offset (limit to eye radius)
-                const maxOffset = 2.5;
-                const eyeLX = 88; // Left eye center X
-                const eyeLY = 90; // Left eye center Y
-                const eyeRX = 112; // Right eye center X
-                const eyeRY = 90; // Right eye center Y
-                
-                const distL = Math.sqrt(Math.pow(svgMouseX - eyeLX, 2) + Math.pow(svgMouseY - eyeLY, 2));
-                const distR = Math.sqrt(Math.pow(svgMouseX - eyeRX, 2) + Math.pow(svgMouseY - eyeRY, 2));
-                
-                const offsetL = Math.min(distL / 20, 1) * maxOffset;
-                const offsetR = Math.min(distR / 20, 1) * maxOffset;
-                
-                const angleL = Math.atan2(svgMouseY - eyeLY, svgMouseX - eyeLX);
-                const angleR = Math.atan2(svgMouseY - eyeRY, svgMouseX - eyeRX);
-                
-                const offsetXL = Math.cos(angleL) * offsetL;
-                const offsetYL = Math.sin(angleL) * offsetL;
-                const offsetXR = Math.cos(angleR) * offsetR;
-                const offsetYR = Math.sin(angleR) * offsetR;
-                
-                // Smooth eye and pupil movement
-                if (typeof gsap !== 'undefined') {
-                    gsap.to(eyeL, {
-                        attr: { cx: eyeLX + offsetXL, cy: eyeLY + offsetYL },
-                        duration: 0.3,
-                        ease: "power2.out"
-                    });
-                    gsap.to(eyeR, {
-                        attr: { cx: eyeRX + offsetXR, cy: eyeRY + offsetYR },
-                        duration: 0.3,
-                        ease: "power2.out"
-                    });
-                    gsap.to(pupilL, {
-                        attr: { cx: eyeLX + offsetXL, cy: eyeLY + offsetYL },
-                        duration: 0.3,
-                        ease: "power2.out"
-                    });
-                    gsap.to(pupilR, {
-                        attr: { cx: eyeRX + offsetXR, cy: eyeRY + offsetYR },
-                        duration: 0.3,
-                        ease: "power2.out"
-                    });
-                }
-            }
-
-            // Autonomous eye movement when mouse is idle
-            function autonomousEyeMovement() {
-                if (Date.now() - lastMouseMove > 3000) {
-                    // Mouse hasn't moved in 3 seconds - look around autonomously
-                    const catRect = catContainer.getBoundingClientRect();
-                    const randomX = catRect.left + catRect.width / 2 + (Math.random() - 0.5) * 100;
-                    const randomY = catRect.top + catRect.height / 2 + (Math.random() - 0.5) * 100;
-                    
-                    if (typeof gsap !== 'undefined') {
-                        gsap.to({}, {
-                            duration: 1,
-                            onUpdate: function() {
-                                const t = this.progress();
-                                mouseX = catRect.left + catRect.width / 2 + (randomX - catRect.left - catRect.width / 2) * t;
-                                mouseY = catRect.top + catRect.height / 2 + (randomY - catRect.top - catRect.height / 2) * t;
-                                updateEyeLook();
-                            }
-                        });
-                    }
-                }
-            }
-
-            // Cat reacts to mouse proximity
-            function reactToMouse() {
-                const catRect = catContainer.getBoundingClientRect();
-                const catCenterX = catRect.left + catRect.width / 2;
-                const catCenterY = catRect.top + catRect.height / 2;
-                
-                const distance = Math.sqrt(
-                    Math.pow(mouseX - catCenterX, 2) + 
-                    Math.pow(mouseY - catCenterY, 2)
-                );
-                
-                // Always update eye look when mouse moves
-                updateEyeLook();
-                
-                // If mouse is close (within 150px), cat reacts
-                if (distance < 150 && distance > 50) {
-                    // Cat is interested - ear twitch occasionally
-                    if (typeof gsap !== 'undefined' && Math.random() < 0.05) {
-                        gsap.to([earL, earR], {
-                            rotation: 5,
-                            transformOrigin: "50% 100%",
-                            duration: 0.2,
-                            yoyo: true,
-                            repeat: 1,
-                            ease: "sine.inOut"
-                        });
-                    }
-                } else if (distance < 50) {
-                    // Mouse very close - cat gets excited
-                    if (typeof gsap !== 'undefined' && Math.random() < 0.1) {
-                        gsap.to(body, {
-                            attr: { r: 52 },
-                            duration: 0.2,
-                            yoyo: true,
-                            repeat: 1,
-                            ease: "power2.out"
-                        });
-                    }
-                }
-            }
-
-            // Global mouse tracking - cat always watches the mouse
-            document.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                lastMouseMove = Date.now();
-                reactToMouse();
+            // Materials
+            const bodyMat = new THREE.MeshPhongMaterial({
+                color: 0x1f2937, // Dark Gray
+                specular: 0x6366f1, // Indigo highlight
+                shininess: 30,
+                emissive: 0x000000
             });
 
-            // Update eye look periodically
-            setInterval(() => {
-                if (Date.now() - lastMouseMove < 3000) {
-                    updateEyeLook();
-                } else {
-                    autonomousEyeMovement();
-                }
-            }, 100);
+            const accentMat = new THREE.MeshPhongMaterial({
+                color: 0xf43f5e, // Rose
+                shininess: 50
+            });
 
-            // Autonomous wandering when mouse is idle
-            let wanderTarget = { x: 100, y: 100 };
-            setInterval(() => {
-                if (Date.now() - lastMouseMove > 5000) {
-                    // Mouse idle for 5+ seconds - cat wanders
-                    const catRect = catContainer.getBoundingClientRect();
-                    const maxWander = 30;
-                    wanderTarget.x = 100 + (Math.random() - 0.5) * maxWander;
-                    wanderTarget.y = 100 + (Math.random() - 0.5) * maxWander;
-                    
-                    if (typeof gsap !== 'undefined') {
-                        gsap.to({}, {
-                            duration: 2,
-                            onUpdate: function() {
-                                const t = this.progress();
-                                const currentX = 100 + (wanderTarget.x - 100) * t;
-                                const currentY = 100 + (wanderTarget.y - 100) * t;
-                                
-                                // Convert to screen coordinates for eye tracking
-                                const catRect = catContainer.getBoundingClientRect();
-                                mouseX = catRect.left + (currentX / 200) * catRect.width;
-                                mouseY = catRect.top + (currentY / 200) * catRect.height;
-                                updateEyeLook();
-                            }
-                        });
+            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffa500 }); // Orange eyes
+            const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+            // --- Constructing the Cat (Procedural Low-Poly Style) ---
+
+            // Body (Capsule-like)
+            const bodyGeom = new THREE.SphereGeometry(1, 32, 32);
+            bodyGeom.scale(0.9, 1.1, 0.8);
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.position.y = 0;
+            catGroup.add(body);
+
+            // Head Group (for independent rotation)
+            const headGroup = new THREE.Group();
+            headGroup.position.set(0, 0.8, 0.3);
+            catGroup.add(headGroup);
+
+            // Head Mesh
+            const headGeom = new THREE.SphereGeometry(0.75, 32, 32);
+            headGeom.scale(1, 0.85, 0.85);
+            const head = new THREE.Mesh(headGeom, bodyMat);
+            headGroup.add(head);
+
+            // Ears
+            const earGeom = new THREE.ConeGeometry(0.25, 0.5, 4);
+            const earL = new THREE.Mesh(earGeom, bodyMat);
+            earL.position.set(-0.45, 0.6, 0);
+            earL.rotation.z = 0.5;
+            earL.rotation.y = -0.2;
+            headGroup.add(earL);
+
+            const earR = new THREE.Mesh(earGeom, bodyMat);
+            earR.position.set(0.45, 0.6, 0);
+            earR.rotation.z = -0.5;
+            earR.rotation.y = 0.2;
+            headGroup.add(earR);
+
+            // Ear Inners (Holo-glow)
+            const earInnerGeom = new THREE.ConeGeometry(0.15, 0.3, 4);
+            const earInnerL = new THREE.Mesh(earInnerGeom, accentMat);
+            earInnerL.position.set(-0.45, 0.6, 0.05);
+            earInnerL.rotation.z = 0.5;
+            earInnerL.rotation.y = -0.2;
+            headGroup.add(earInnerL);
+
+            const earInnerR = new THREE.Mesh(earInnerGeom, accentMat);
+            earInnerR.position.set(0.45, 0.6, 0.05);
+            earInnerR.rotation.z = -0.5;
+            earInnerR.rotation.y = 0.2;
+            headGroup.add(earInnerR);
+
+            // Eyes
+            const eyeGeom = new THREE.CapsuleGeometry(0.12, 0.15, 4, 8);
+            eyeGeom.rotateZ(Math.PI / 2);
+
+            const eyeL = new THREE.Mesh(eyeGeom, eyeMat);
+            eyeL.position.set(-0.25, 0.1, 0.65);
+            headGroup.add(eyeL);
+
+            const eyeR = new THREE.Mesh(eyeGeom, eyeMat);
+            eyeR.position.set(0.25, 0.1, 0.65);
+            headGroup.add(eyeR);
+
+            // Pupils (Black)
+            const pupilGeom = new THREE.SphereGeometry(0.06, 8, 8);
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+            const pupilL = new THREE.Mesh(pupilGeom, pupilMat);
+            pupilL.position.set(0, 0, 0.12);
+            eyeL.add(pupilL);
+
+            const pupilR = new THREE.Mesh(pupilGeom, pupilMat);
+            pupilR.position.set(0, 0, 0.12);
+            eyeR.add(pupilR);
+
+            const blinkMeshL = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), bodyMat);
+            blinkMeshL.scale.y = 0;
+            blinkMeshL.position.set(-0.25, 0.1, 0.64);
+            headGroup.add(blinkMeshL);
+
+            const blinkMeshR = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), bodyMat);
+            blinkMeshR.scale.y = 0;
+            blinkMeshR.position.set(0.25, 0.1, 0.64);
+            headGroup.add(blinkMeshR);
+
+            // Visor / Glasses (Cyberpunk feel)
+            // const visorGeom = new THREE.BoxGeometry(0.8, 0.25, 0.1);
+            // const visorMat = new THREE.MeshPhongMaterial({ 
+            //    color: 0x00ffff, 
+            //    transparent: true, 
+            //    opacity: 0.4,
+            //    shininess: 100
+            // });
+            // const visor = new THREE.Mesh(visorGeom, visorMat);
+            // visor.position.set(0, 0.1, 0.75);
+            // headGroup.add(visor);
+
+            // Nose
+            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.05, 4), accentMat);
+            nose.rotation.x = Math.PI / 2;
+            nose.position.set(0, -0.05, 0.75);
+            headGroup.add(nose);
+
+            // Whiskers (Lines)
+            const whiskerGroup = new THREE.Group();
+            headGroup.add(whiskerGroup);
+
+            function createWhisker(x, y, z, rotZ) {
+                const geometry = new THREE.BoxGeometry(0.3, 0.01, 0.01);
+                const material = new THREE.MeshBasicMaterial({ color: 0x9ca3af });
+                const whisker = new THREE.Mesh(geometry, material);
+                whisker.position.set(x, y, z);
+                whisker.rotation.z = rotZ;
+                whiskerGroup.add(whisker);
+                return whisker;
+            }
+
+            createWhisker(-0.4, -0.1, 0.65, 0.2);
+            createWhisker(-0.4, -0.18, 0.63, 0);
+            createWhisker(0.4, -0.1, 0.65, -0.2);
+            createWhisker(0.4, -0.18, 0.63, 0);
+
+            // Paws
+            const pawGeom = new THREE.SphereGeometry(0.25, 16, 16);
+            pawGeom.scale(1, 0.8, 1.2);
+
+            const pawFL = new THREE.Mesh(pawGeom, whiteMat);
+            pawFL.position.set(-0.3, -0.8, 0.6);
+            catGroup.add(pawFL);
+
+            const pawFR = new THREE.Mesh(pawGeom, whiteMat);
+            pawFR.position.set(0.3, -0.8, 0.6);
+            catGroup.add(pawFR);
+
+            // Tail
+            const tailCurve = new THREE.CatmullRomCurve3([
+                new THREE.Vector3(0, -0.5, -0.8),
+                new THREE.Vector3(0, 0.2, -1.2),
+                new THREE.Vector3(0, 0.6, -1.0)
+            ]);
+            const tailGeom = new THREE.TubeGeometry(tailCurve, 20, 0.08, 8, false);
+            const tail = new THREE.Mesh(tailGeom, bodyMat);
+            catGroup.add(tail);
+
+            // --- Animation State ---
+            let time = 0;
+            let targetLookX = 0;
+            let targetLookY = 0;
+            let currentLookX = 0;
+            let currentLookY = 0;
+            let isHovered = false;
+            let jumpForce = 0;
+
+            // Globals exposure for interaction
+            window.cat3D = {
+                renderer,
+                scene,
+                camera,
+                catGroup
+            };
+
+            // Mapping mouse to 3D interaction
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            container.addEventListener('mousemove', (event) => {
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                // Update Look Target (Screen relative)
+                // We want the cat to look at the global mouse position, but we only have local canvas data here easily.
+                // Actually, let's use the global window mouse tracked by Alpine if possible, 
+                // OR just use the local offset for "fine" looking.
+
+                // Global mouse tracking from Alpine store
+                // const globalX = (event.clientX / window.innerWidth) * 2 - 1;
+                // const globalY = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                // targetLookX = globalX * 0.5;
+                // targetLookY = globalY * 0.5;
+
+                // Raycast for hover effect
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(catGroup.children, true);
+                isHovered = intersects.length > 0;
+
+                if (isHovered) {
+                    document.body.style.cursor = 'pointer';
+                } else {
+                    document.body.style.cursor = 'default';
+                }
+            });
+
+            // Click interaction (Jump)
+            container.addEventListener('click', () => {
+                window.catJumpForce = 0.3; // Jump!
+
+                // Trigger emotion in Alpine if available
+                const alp = document.querySelector('[x-data="catEmotion()"]');
+                if (alp && alp.__x) {
+                    alp.__x.$data.setEmotion('excited', 1000);
+                    alp.__x.$data.showSpeech('Meow!', 1000);
+                }
+            });
+
+            // Global mouse tracking for head turning
+            document.addEventListener('mousemove', (e) => {
+                const x = (e.clientX / window.innerWidth) * 2 - 1;
+                const y = -(e.clientY / window.innerHeight) * 2 + 1;
+                // Limit neck rotation
+                targetLookX = Math.max(-0.6, Math.min(0.6, x));
+                targetLookY = Math.max(-0.4, Math.min(0.4, y));
+            });
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                time += 0.05;
+
+                // Alpine State Integration
+                const appState = window.playAppInstance;
+                const playing = appState ? appState.playing : false;
+
+                // 1. Idle Breathing
+                const breath = Math.sin(time) * 0.02;
+                body.scale.set(0.9 + breath, 1.1 - breath, 0.8 + breath);
+
+                // 2. Head Look - Smooth Lerp
+                currentLookX += (targetLookX - currentLookX) * 0.1;
+                currentLookY += (targetLookY - currentLookY) * 0.1;
+                headGroup.rotation.y = -currentLookX;
+                headGroup.rotation.x = currentLookY * 0.5;
+
+                // 3. Tail Wag
+                const tailSpeed = playing ? 0.2 : 0.05;
+                const tailAmp = playing ? 0.3 : 0.1;
+                tail.rotation.z = Math.sin(time * tailSpeed * 5) * tailAmp;
+                tail.rotation.y = Math.cos(time * tailSpeed * 3) * (tailAmp * 0.5);
+
+                // 4. Music Reacting (Dancing)
+                if (playing) {
+                    // Bobbing head
+                    const bob = Math.abs(Math.sin(time * 2)) * 0.1;
+                    headGroup.position.y = 0.8 - bob;
+
+                    // Body groove
+                    catGroup.rotation.z = Math.sin(time) * 0.05;
+                    catGroup.position.y = Math.abs(Math.sin(time * 4)) * 0.1;
+
+                    // Ear twitch
+                    if (Math.random() < 0.02) {
+                        earL.rotation.x = Math.random() * 0.2;
+                    } else {
+                        earL.rotation.x = 0;
+                    }
+                } else {
+                    // Reset positions
+                    headGroup.position.y = 0.8;
+                    catGroup.rotation.z = 0;
+                    catGroup.position.y = 0;
+                }
+
+                // 5. Blinking
+                if (Math.random() < 0.005) {
+                    blinkMeshL.scale.y = 1;
+                    blinkMeshR.scale.y = 1;
+                    setTimeout(() => {
+                        blinkMeshL.scale.y = 0;
+                        blinkMeshR.scale.y = 0;
+                    }, 150);
+                }
+
+                // 6. Interaction Animation (Jump/Meow)
+                // If clicked, we apply a force manually via interactWithCat below
+                if (window.catJumpForce > 0) {
+                    catGroup.position.y += window.catJumpForce;
+                    window.catJumpForce -= 0.02;
+                    if (catGroup.position.y < 0) {
+                        catGroup.position.y = 0;
+                        window.catJumpForce = 0;
                     }
                 }
-            }, 3000);
+
+                // Render
+                renderer.render(scene, camera);
+            }
+
+            animate();
         }
-        
-        // Start initialization - wait for Alpine.js and libraries
+
+        // Hook into existing Alpine.js store and events
+        window.doCatRoll = function () {
+            // Spin the group
+            const cat3D = window.cat3D;
+            if (cat3D) {
+                // Simple GSAP-like spin if we had it, but manual for now
+                let spin = 0;
+                const spinInterval = setInterval(() => {
+                    spin += 0.2;
+                    cat3D.catGroup.rotation.y = spin;
+                    if (spin > Math.PI * 2) {
+                        cat3D.catGroup.rotation.y = 0;
+                        clearInterval(spinInterval);
+                    }
+                }, 16);
+            }
+        };
+
+        // Initialize on load
         function startCatInit() {
-            // Wait for Alpine.js to be ready
+            if (typeof THREE === 'undefined') {
+                setTimeout(startCatInit, 100);
+                return;
+            }
             if (typeof Alpine === 'undefined') {
                 setTimeout(startCatInit, 100);
                 return;
             }
 
-            // Wait for Alpine to initialize the component
             Alpine.nextTick(() => {
-                // Give it a bit more time for the element to be created
-                setTimeout(() => {
-                    init2DCat();
-                }, 300);
+                setTimeout(init3DCat, 300);
             });
         }
 
-        // Start when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', startCatInit);
         } else {
             startCatInit();
         }
 
+        // Hijack the interact function to add 3D specific logic
+        window.catJumpForce = 0;
+        const originalInteract = window.playAppInstance ? window.playAppInstance.interactWithCat : null; // This might be hard to access inside closure
+        // We rely on the DOM event handler in HTML calling the Alpine method
+
+
     </script>
 </body>
+
 </html>

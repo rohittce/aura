@@ -19,6 +19,9 @@ from sqlalchemy import func, or_, and_
 
 from src.database.models import Song, SessionLocal
 
+# For fuzzy string matching
+import difflib
+
 logger = logging.getLogger(__name__)
 
 # Try to import Google API client
@@ -352,15 +355,16 @@ class YouTubeService:
         
         queries = []
         if normalized_title and artist_str:
-            # Primary queries - prefer official audio
-            queries.append(f"{normalized_title} {artist_str} official audio")
-            queries.append(f"{normalized_title} {artist_str} official")
             queries.append(f"{normalized_title} {artist_str}")
         elif normalized_title:
             # Fallback if no artist
             queries.append(f"{normalized_title} official audio")
             queries.append(f"{normalized_title} official")
             queries.append(normalized_title)
+            
+        # Add high-confidence "lyrics" query as fallback
+        if normalized_title and artist_str:
+            queries.append(f"{normalized_title} {artist_str} lyrics")
         
         return {
             "original_title": song_title,
@@ -369,6 +373,83 @@ class YouTubeService:
             "normalized_artists": normalized_artists,
             "search_queries": queries
         }
+
+    def _calculate_similarity(self, s1: str, s2: str) -> float:
+        """Calculate string similarity using SequenceMatcher"""
+        return difflib.SequenceMatcher(None, s1.lower(), s2.lower()).ratio()
+
+    def _validate_result(self, 
+                        video_title: str, 
+                        channel_title: str,
+                        duration_iso: Optional[str],
+                        target_title: str, 
+                        target_artists: List[str],
+                        target_duration_ms: Optional[int] = None) -> float:
+        """
+        Validate a search result and return a confidence score (0.0 to 1.0).
+        """
+        score = 0.0
+        video_title_lower = video_title.lower()
+        channel_lower = channel_title.lower() if channel_title else ""
+        
+        # 1. Channel Validation (Boost for official channels)
+        official_channels = ['vevo', 'official', 'topic', 'artist']
+        if any(c in channel_lower for c in official_channels):
+            score += 0.2
+            
+        # Check if channel name contains artist name
+        if target_artists:
+            if any(artist.lower() in channel_lower for artist in target_artists):
+                score += 0.15
+
+        # 2. Negative Filtering (Ban words)
+        # If original title doesn't say "cover", "live", "remix", penalize video that does
+        target_lower = target_title.lower()
+        ban_words = ['cover', 'live', 'remix', 'karaoke', 'instrumental', 'concert']
+        
+        for word in ban_words:
+            if word in video_title_lower and word not in target_lower:
+                return 0.0  # Hard reject unwanted variants
+                
+        # 3. Title Similarity (Main Factor)
+        # Check normalized titles
+        sim_score = self._calculate_similarity(target_title, video_title)
+        
+        # Check if target title is contained in video title (common for 'Song Name - Artist')
+        if target_title.lower() in video_title_lower:
+            score += 0.4
+        elif sim_score > 0.6:
+            score += 0.4 * sim_score
+        else:
+            return 0.0 # Reject if titles are too different
+            
+        # 4. Duration Check (if available)
+        if target_duration_ms and duration_iso:
+            try:
+                # Parse ISO 8601 duration (PT#M#S) to seconds
+                # Simple parser for commonly returned format
+                # Note: isodate library is better but avoiding new deps
+                import re
+                dur_match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', duration_iso)
+                if dur_match:
+                    hours = int(dur_match.group(1) or 0)
+                    minutes = int(dur_match.group(2) or 0)
+                    seconds = int(dur_match.group(3) or 0)
+                    total_seconds = hours * 3600 + minutes * 60 + seconds
+                    
+                    target_seconds = target_duration_ms / 1000
+                    diff = abs(total_seconds - target_seconds)
+                    
+                    if diff < 10: # Exact match
+                        score += 0.3
+                    elif diff < 30: # Close match
+                        score += 0.15
+                    elif diff > 60: # Way off
+                        score -= 0.3
+            except:
+                pass
+
+        return min(1.0, score)
     
     def _get_cached_video_id(self, song_title: str, artists: list) -> Optional[str]:
         """
@@ -576,43 +657,34 @@ class YouTubeService:
                         for item in response['items']:
                             video_id = item['id']['videoId']
                             snippet = item.get('snippet', {})
-                            title = snippet.get('title', '').lower()
-                            description = snippet.get('description', '').lower()
+                            title = snippet.get('title', '')
+                            channel_title = snippet.get('channelTitle', '')
+                            description = snippet.get('description', '')
+                            # Note: contentDetails with duration requires an extra API call or different part
+                            # For search 'part=snippet', we don't get duration. We'd need 'contentDetails' on video lookup.
+                            # Skipping duration check for initial search result to save quota.
                             
                             # Validate video ID
                             if not self._is_valid_video_id(video_id):
                                 continue
-                            
-                            # Filter out non-music content (ads, playlists, etc.)
-                            title_lower = title.lower()
-                            if any(keyword in title_lower for keyword in ['#shorts', 'playlist', 'mix', 'compilation']):
-                                continue
-                            
-                            # Check if title/description matches song (use normalized title for matching)
-                            song_title_lower = normalized_title.lower() if normalized_title else song_title.lower()
-                            artist_lower = " ".join(normalized_artists[:2]).lower() if normalized_artists else (artist_str.lower() if artist_str else "")
-                            
-                            # Score match quality
-                            title_match = song_title_lower in title or any(
-                                word in title for word in song_title_lower.split() if len(word) > 3
-                            )
-                            artist_match = not artist_lower or any(
-                                artist.lower() in title or artist.lower() in description 
-                                for artist in (normalized_artists[:2] if normalized_artists else artists[:2])
+
+                            # Calculate Confidence Score
+                            confidence = self._validate_result(
+                                video_title=title,
+                                channel_title=channel_title,
+                                duration_iso=None, # Not available in search snippet
+                                target_title=normalized_title or song_title,
+                                target_artists=normalized_artists,
+                                target_duration_ms=None # Need to pass this through if available
                             )
                             
-                            # Prefer official audio/video
-                            is_official = 'official' in title or 'official audio' in title or 'official video' in title
-                            
-                            # Return best match (official preferred, then good title/artist match)
-                            if is_official and (title_match or artist_match):
-                                logger.info(f"Found official video via API (key {current_key_num}): {video_id} for {song_title}")
+                            logger.info(f"Checking video: {video_id} | Title: {title} | Score: {confidence:.2f}")
+
+                            if confidence > 0.6:
+                                logger.info(f"Found high confidence match ({confidence:.2f}): {video_id}")
                                 return video_id
                             
-                            # Good match even if not official
-                            if title_match and artist_match:
-                                logger.info(f"Found matching video via API (key {current_key_num}): {video_id} for {song_title}")
-                                return video_id
+
                         
                         # If no perfect match, return first result
                         if response['items']:

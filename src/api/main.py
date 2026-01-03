@@ -45,6 +45,9 @@ from src.services.llm_analysis_service import get_llm_analysis_service
 from src.services.rj_service import get_rj_service
 from src.services.song_storage_service import get_song_storage_service
 from src.services.auth_service import get_auth_service
+from src.services.friend_service import get_friend_service
+from src.services.room_service import get_room_service
+# WebSocket import will be done at module level later
 from src.database.models import init_database
 
 app = FastAPI(
@@ -234,12 +237,39 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     name: Optional[str] = None
+    username: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
     """User login request"""
     email: str
     password: str
+
+
+class UsernameUpdateRequest(BaseModel):
+    """Username update request"""
+    username: str
+
+
+class FriendRequestRequest(BaseModel):
+    """Friend request"""
+    receiver_username: str
+
+
+class FriendActionRequest(BaseModel):
+    """Friend action (accept/reject)"""
+    sender_id: str
+
+
+class CreateRoomRequest(BaseModel):
+    """Create room request"""
+    name: Optional[str] = None
+    is_friends_only: bool = False
+
+
+class JoinRoomRequest(BaseModel):
+    """Join room request"""
+    room_id: str
 
 
 @app.get("/")
@@ -381,13 +411,18 @@ async def login(request: LoginRequest, background_tasks: BackgroundTasks):
         return {
             "status": "success",
             "message": "Login successful",
-            "user": {
-                "user_id": result["user_id"],
-                "email": result["email"],
-                "name": result["name"]
-            },
-            "token": result["token"]
-        }
+            user_info = auth_service.get_user(result["user_id"])
+            return {
+                "status": "success",
+                "message": "Login successful",
+                "user": {
+                    "user_id": result["user_id"],
+                    "email": result["email"],
+                    "username": user_info.get("username") if user_info else None,
+                    "name": result["name"]
+                },
+                "token": result["token"]
+            }
     except ValueError as e:
         raise HTTPException(status_code=401, detail=str(e))
     except Exception as e:
@@ -436,6 +471,7 @@ async def verify_auth(user_id: Optional[str] = Depends(get_current_user)):
             "user": {
                 "user_id": user["user_id"],
                 "email": user["email"],
+                "username": user.get("username"),
                 "name": user.get("name", ""),
                 "created_at": user.get("created_at")
             }
@@ -1022,25 +1058,31 @@ async def chat_page():
 @app.post("/api/v1/chat/message")
 async def chat_message(request: ChatMessageRequest):
     """
-    Process chat message with RJ (Radio Jockey) using LLM.
-    RJ analyzes conversation and suggests songs based on context.
+    Process chat message with RJ (Radio Jockey) using Llama model.
+    RJ analyzes mood, engages in conversation, and suggests songs after rapport-building.
+    
+    Rate limited: 20 requests/minute, 200 requests/hour per user.
     """
     try:
         rj_service = get_rj_service()
         
-        # Get conversation history for context
-        conversation_history = rj_service.get_conversation_history(request.user_id, limit=5)
+        # Use the new chat() method with integrated mood analysis and rate limiting
+        result = rj_service.chat(request.message, request.user_id)
         
-        # Get RJ response with LLM and song suggestions
-        rj_response = rj_service.generate_rj_response(
-            request.message,
-            request.user_id,
-            conversation_history
-        )
+        # Check if rate limited
+        if result.get("rate_limited"):
+            return {
+                "response": result["response"],
+                "detected_mood": None,
+                "confidence": 0,
+                "recommended_songs": [],
+                "rate_limited": True,
+                "error": "Rate limit exceeded"
+            }
         
         # Format recommended songs
         formatted_songs = []
-        for song in rj_response.get("recommended_songs", []):
+        for song in result.get("songs", []):
             formatted_songs.append({
                 "title": song.get("title") or song.get("song", {}).get("title", ""),
                 "artists": song.get("artists") or song.get("song", {}).get("artists", []),
@@ -1051,19 +1093,14 @@ async def chat_message(request: ChatMessageRequest):
             })
         
         return {
-            "response": rj_response["response"],
-            "detected_mood": rj_response["detected_mood"],
-            "confidence": rj_response.get("confidence", 0.8),
-            "explanation": rj_response.get("explanation", ""),
+            "response": result["response"],
+            "detected_mood": result.get("mood"),
+            "confidence": result.get("mood_confidence", 0.8),
             "recommended_songs": formatted_songs,
-            "personalized": rj_response.get("personalized", False),
-            "taste_profile_used": len(formatted_songs) > 0
+            "conversation_turn": result.get("conversation_turn", 0),
+            "personalized": len(formatted_songs) > 0,
+            "rate_limited": False
         }
-        
-    except Exception as e:
-        import logging
-        logging.error(f"Error in RJ chat message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
         
     except Exception as e:
         import logging
@@ -1257,9 +1294,293 @@ async def get_youtube_video_id(
         }
 
 
+# Friend Management Endpoints
+@app.post("/api/v1/friends/search")
+async def search_users(
+    q: str = Query(..., description="Username search query"),
+    limit: int = Query(20, ge=1, le=50),
+    user_id: str = Depends(require_auth)
+):
+    """Search users by username"""
+    try:
+        friend_service = get_friend_service()
+        results = friend_service.search_user_by_username(q, limit)
+        return {
+            "query": q,
+            "results": results,
+            "count": len(results)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"User search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/friends/request")
+async def send_friend_request(
+    request: FriendRequestRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Send a friend request"""
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.send_friend_request(user_id, request.receiver_username)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Friend request error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/friends/accept")
+async def accept_friend_request(
+    request: FriendActionRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Accept a friend request"""
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.accept_friend_request(user_id, request.sender_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Accept friend request error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/friends/reject")
+async def reject_friend_request(
+    request: FriendActionRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Reject a friend request"""
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.reject_friend_request(user_id, request.sender_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Reject friend request error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/friends/requests")
+async def get_friend_requests(
+    type: str = Query("received", description="Type: 'sent' or 'received'"),
+    user_id: str = Depends(require_auth)
+):
+    """Get friend requests (sent or received)"""
+    try:
+        friend_service = get_friend_service()
+        requests = friend_service.get_friend_requests(user_id, type)
+        return {
+            "type": type,
+            "requests": requests,
+            "count": len(requests)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get friend requests error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/friends")
+async def get_friends(user_id: str = Depends(require_auth)):
+    """Get all friends"""
+    try:
+        friend_service = get_friend_service()
+        friends = friend_service.get_friends(user_id)
+        return {
+            "friends": friends,
+            "count": len(friends)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get friends error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/v1/friends/{friend_id}")
+async def remove_friend(friend_id: str, user_id: str = Depends(require_auth)):
+    """Remove a friend"""
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.remove_friend(user_id, friend_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Remove friend error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/auth/username")
+async def update_username(
+    request: UsernameUpdateRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Update username"""
+    try:
+        auth_service = get_auth_service()
+        result = auth_service.update_username(user_id, request.username)
+        return {
+            "status": "success",
+            "user": result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Update username error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Room Management Endpoints
+@app.post("/api/v1/rooms/create")
+async def create_room(
+    request: CreateRoomRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Create a music room"""
+    try:
+        room_service = get_room_service()
+        room = room_service.create_room(
+            host_id=user_id,
+            name=request.name,
+            is_friends_only=request.is_friends_only
+        )
+        return {
+            "status": "success",
+            **room
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Create room error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/rooms/join")
+async def join_room(
+    request: JoinRoomRequest,
+    user_id: str = Depends(require_auth)
+):
+    """Join a music room"""
+    try:
+        room_service = get_room_service()
+        room_state = room_service.join_room(request.room_id, user_id)
+        return {
+            "status": "success",
+            **room_state
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Join room error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/rooms/{room_id}/leave")
+async def leave_room(room_id: str, user_id: str = Depends(require_auth)):
+    """Leave a music room"""
+    try:
+        room_service = get_room_service()
+        result = room_service.leave_room(room_id, user_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Leave room error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/rooms/{room_id}")
+async def get_room(room_id: str, user_id: str = Depends(require_auth)):
+    """Get room state"""
+    try:
+        room_service = get_room_service()
+        room_state = room_service.get_room_state(room_id)
+        if not room_state:
+            raise HTTPException(status_code=404, detail="Room not found")
+        return {
+            "status": "success",
+            **room_state
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.error(f"Get room error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/v1/rooms")
+async def get_user_rooms(user_id: str = Depends(require_auth)):
+    """Get all rooms user is in"""
+    try:
+        room_service = get_room_service()
+        rooms = room_service.get_user_rooms(user_id)
+        return {
+            "rooms": rooms,
+            "count": len(rooms)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get user rooms error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Import for WebSocket support (will be loaded later)
+has_socketio = False
+sio = None
+
+
+# Create Socket.IO ASGI app wrapper
+try:
+    import socketio
+    from src.services.websocket_service import sio
+    socketio_asgi = socketio.ASGIApp(sio, app)
+    has_socketio = True
+    print("✓ Socket.IO WebSocket support enabled")
+except ImportError as e:
+    socketio_asgi = app
+    print(f"⚠ Socket.IO not available - WebSocket features disabled: {e}")
+except Exception as e:
+    socketio_asgi = app
+    print(f"⚠ Socket.IO initialization error - WebSocket features disabled: {e}")
+
+# Export socketio_asgi for uvicorn (used in Dockerfile)
+__all__ = ['app', 'socketio_asgi']
+
+
 if __name__ == "__main__":
     uvicorn.run(
-        "src.api.main:app",
+        socketio_asgi if 'socketio_asgi' in globals() else app,
         host="0.0.0.0",
         port=8000,
         reload=True

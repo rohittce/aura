@@ -217,11 +217,68 @@ class AuthService:
             return {
                 "user_id": user.user_id,
                 "email": user.email,
+                "username": user.username,
                 "name": user.name,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
                 "last_login": user.last_login.isoformat() if user.last_login else None,
                 "profile": user.profile or {}
             }
+        finally:
+            db.close()
+    
+    def update_username(self, user_id: str, username: str) -> Dict:
+        """
+        Update user's username.
+        
+        Args:
+            user_id: User ID
+            username: New username (must be unique, alphanumeric + underscore, 3-20 chars)
+            
+        Returns:
+            Updated user dictionary
+        """
+        db: Session = SessionLocal()
+        try:
+            # Validate username format
+            username = username.strip()
+            if len(username) < 3 or len(username) > 20:
+                raise ValueError("Username must be 3-20 characters")
+            
+            if not username.replace('_', '').isalnum():
+                raise ValueError("Username must contain only letters, numbers, and underscores")
+            
+            # Check if username already taken
+            existing = db.query(User).filter(
+                User.username.ilike(username),
+                User.user_id != user_id
+            ).first()
+            
+            if existing:
+                raise ValueError("Username already taken")
+            
+            # Update user
+            user = db.query(User).filter(User.user_id == user_id).first()
+            if not user:
+                raise ValueError("User not found")
+            
+            user.username = username
+            db.commit()
+            db.refresh(user)
+            
+            logger.info(f"Username updated for user {user_id}: {username}")
+            
+            return {
+                "user_id": user.user_id,
+                "username": user.username,
+                "email": user.email,
+                "name": user.name
+            }
+        except ValueError:
+            raise
+        except Exception as e:
+            db.rollback()
+            logger.error(f"Error updating username: {e}")
+            raise ValueError(f"Failed to update username: {str(e)}")
         finally:
             db.close()
 

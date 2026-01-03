@@ -26,3 +26,10 @@ google-generativeai==0.3.2
 
 # YouTube Data API
 google-api-python-client==2.108.0
+
+# WebSocket and Real-time
+python-socketio==5.11.0
+aiohttp==3.9.1
+
+# Rate limiting (optional - for production)
+slowapi==0.1.9
