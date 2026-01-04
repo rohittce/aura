@@ -910,12 +910,12 @@
 
         /* Mobile 2D Avatar Fallback */
         .mobile-cat-avatar {
-            width: 150px;
-            height: 150px;
+            width: 80px;
+            height: 80px;
             background: radial-gradient(circle at 30% 30%, #4b5563, #1f2937);
             border-radius: 50%;
             position: relative;
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
             display: none;
             /* Hidden by default */
         }
@@ -934,8 +934,8 @@
         }
 
         .mobile-cat-ear {
-            width: 40px;
-            height: 50px;
+            width: 20px;
+            height: 30px;
             background: #1f2937;
             clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
         }
@@ -950,8 +950,8 @@
         }
 
         .mobile-cat-eye {
-            width: 20px;
-            height: 25px;
+            width: 10px;
+            height: 15px;
             background: #fbbf24;
             border-radius: 50%;
             animation: blink 3s infinite;
@@ -1025,6 +1025,29 @@
         .mobile-mode .mobile-hidden {
             display: none !important;
         }
+
+        /* Chat Styles */
+        .chat-msg {
+            max-width: 85%;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+        }
+
+        .chat-msg-own {
+            background: rgba(99, 102, 241, 0.2);
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .chat-username {
+            font-weight: bold;
+            font-size: 11px;
+            color: #818cf8;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 
@@ -1051,7 +1074,8 @@
     <div class="cat-container" x-data="catEmotion()"
         :class="[playing ? 'cat-dancing' : 'cat-idle', isGlowing ? 'glow' : '']"
         :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @mouseenter="showSpeech('Meow! 🐱')"
-        @mouseleave="hideSpeech()" @mousedown="startDrag($event)">
+        @mouseleave="hideSpeech()" @mousedown="startDrag($event)" @touchstart.passive="startDrag($event)"
+        @touchmove.prevent="handleDrag($event)" @touchend="stopDrag()">
 
         <div class="cat-speech" :class="{ 'show': speechVisible }" x-text="speechText"></div>
 
@@ -1360,6 +1384,11 @@
                         <button @click="friendRoom.activeTab = 'rooms'"
                             class="flex-1 py-3 text-sm font-medium transition-colors"
                             :class="friendRoom.activeTab === 'rooms' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">Rooms</button>
+                        <button @click="friendRoom.activeTab = 'chat'"
+                            class="flex-1 py-3 text-sm font-medium transition-colors relative"
+                            :class="friendRoom.activeTab === 'chat' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">
+                            Chat
+                        </button>
                         <button @click="friendRoom.activeTab = 'requests'"
                             class="flex-1 py-3 text-sm font-medium transition-colors relative"
                             :class="friendRoom.activeTab === 'requests' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">
@@ -1558,6 +1587,61 @@
                                 </svg>
                                 <p class="text-sm">Create or join a room to listen together!</p>
                             </div>
+                        </div>
+
+                        <!-- Chat Tab -->
+                        <div x-show="friendRoom.activeTab === 'chat'" class="h-full flex flex-col">
+                            <template x-if="friendRoom.currentRoomId">
+                                <div class="h-full flex flex-col">
+                                    <div class="flex-1 overflow-y-auto space-y-2 mb-4 pr-2" id="room-chat-messages">
+                                        <template x-for="msg in friendRoom.messages" :key="msg.timestamp + msg.user_id">
+                                            <div class="chat-msg flex flex-col"
+                                                :class="msg.user_id === userId ? 'chat-msg-own' : ''">
+                                                <span class="chat-username" x-text="msg.username"></span>
+                                                <span class="text-white/90" x-text="msg.message"></span>
+                                                <span class="text-[9px] text-gray-500 mt-1 self-end"
+                                                    x-text="new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})"></span>
+                                            </div>
+                                        </template>
+                                        <div x-show="friendRoom.messages.length === 0"
+                                            class="text-center text-gray-500 text-sm py-10 italic">
+                                            No messages yet. Say hi! 👋
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2 mt-auto">
+                                        <input type="text" x-model="friendRoom.chatInput"
+                                            @keydown.enter="sendRoomMessage()" placeholder="Type a message..."
+                                            class="flex-1 glass px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                        <button @click="sendRoomMessage()"
+                                            class="bg-indigo-600 p-2 rounded-lg text-white">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="!friendRoom.currentRoomId">
+                                <div class="flex flex-col items-center justify-center py-20 text-center px-4">
+                                    <div
+                                        class="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-bold mb-2">Room Chat</h3>
+                                    <p class="text-sm text-gray-400 max-w-xs">
+                                        Join or create a music room to chat with others in real-time.
+                                    </p>
+                                    <button @click="friendRoom.activeTab = 'rooms'"
+                                        class="mt-6 bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        Go to Rooms
+                                    </button>
+                                </div>
+                            </template>
                         </div>
 
                         <!-- Requests Tab -->
@@ -1786,7 +1870,7 @@
                 // Friend & Room State
                 friendRoom: {
                     isOpen: false,
-                    activeTab: 'friends', // 'friends', 'requests', 'rooms'
+                    activeTab: 'friends', // 'friends', 'requests', 'rooms', 'chat'
                     friends: [],
                     requests: [],
                     rooms: [],
@@ -1797,7 +1881,9 @@
                     currentRoomId: null,
                     isHost: false,
                     participants: [],
-                    queue: []
+                    queue: [],
+                    messages: [],
+                    chatInput: ''
                 },
 
                 // Search Modal State
@@ -2021,6 +2107,22 @@
                         this.refreshRoomData();
                     };
 
+                    window.friendRoomClient.onRoomChat = (data) => {
+                        this.friendRoom.messages.push(data);
+                        // Auto-scroll chat to bottom
+                        this.$nextTick(() => {
+                            const chatContainer = document.getElementById('room-chat-messages');
+                            if (chatContainer) {
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            }
+                        });
+
+                        // Show toast if chat tab isn't active
+                        if (!this.friendRoom.isOpen || this.friendRoom.activeTab !== 'chat') {
+                            this.showToast('info', 'New Message', `${data.username}: ${data.message.substring(0, 20)}${data.message.length > 20 ? '...' : ''}`, 3000);
+                        }
+                    };
+
                     // New: Join room by ID
                     this.joinRoomById = async (roomId) => {
                         try {
@@ -2212,6 +2314,14 @@
                         this.showToast('error', 'Error', 'Failed to join room');
                         console.error(e);
                     }
+                },
+
+                sendRoomMessage() {
+                    const msg = this.friendRoom.chatInput.trim();
+                    if (!msg || !window.friendRoomClient) return;
+
+                    window.friendRoomClient.sendChatMessage(msg);
+                    this.friendRoom.chatInput = '';
                 },
 
                 clearQueue() {
@@ -3105,7 +3215,6 @@
                         this.updateMood();
                     }, 50);
 
-                    // Track mouse for eyes
                     document.addEventListener('mousemove', (e) => {
                         this.mouseX = e.clientX;
                         this.mouseY = e.clientY;
@@ -3114,7 +3223,18 @@
                         }
                     });
 
+                    document.addEventListener('touchmove', (e) => {
+                        if (e.touches && e.touches[0]) {
+                            this.mouseX = e.touches[0].clientX;
+                            this.mouseY = e.touches[0].clientY;
+                            if (this.isDragging) {
+                                this.handleDrag(e.touches[0]);
+                            }
+                        }
+                    }, { passive: false });
+
                     document.addEventListener('mouseup', () => this.stopDrag());
+                    document.addEventListener('touchend', () => this.stopDrag());
                 },
 
                 onMusicStart() {
@@ -3253,14 +3373,31 @@
                 },
 
                 handleDrag(event) {
-                    this.catX = window.innerWidth - event.clientX - 70;
-                    this.catY = window.innerHeight - event.clientY - 70;
+                    const clientX = event.clientX || (event.touches ? event.touches[0].clientX : 0);
+                    const clientY = event.clientY || (event.touches ? event.touches[0].clientY : 0);
+
+                    // Calculate target position from right/bottom
+                    let targetX = (window.innerWidth - clientX) - this.dragOffsetX;
+                    let targetY = (window.innerHeight - clientY) - this.dragOffsetY;
+
+                    // Screen Boundaries (80px cat size, 20px margin)
+                    const margin = 20;
+                    const catSize = window.playAppInstance?.mobileMode ? 80 : 150;
+                    const navPadding = window.playAppInstance?.mobileMode ? 100 : 40;
+
+                    this.catX = Math.max(margin, Math.min(window.innerWidth - catSize - margin, targetX));
+                    this.catY = Math.max(navPadding, Math.min(window.innerHeight - catSize - margin, targetY));
                 },
 
                 startDrag(event) {
                     this.isDragging = true;
-                    this.dragStartX = event.clientX;
-                    this.dragStartY = event.clientY;
+                    const clientX = event.clientX || (event.touches ? event.touches[0].clientX : 0);
+                    const clientY = event.clientY || (event.touches ? event.touches[0].clientY : 0);
+
+                    // Store the offset from the cat's bottom-right corner to the click point
+                    this.dragOffsetX = (window.innerWidth - clientX) - this.catX;
+                    this.dragOffsetY = (window.innerHeight - clientY) - this.catY;
+
                     const messages = ['Wheee! 🙀', 'Put me down! 😹', 'I can fly! ✨', 'Higher! 🚀'];
                     this.showSpeech(messages[Math.floor(Math.random() * messages.length)], 1000);
                 },
@@ -3327,6 +3464,26 @@
                     this.speechVisible = true;
                     if (this.speechTimeout) clearTimeout(this.speechTimeout);
                     this.speechTimeout = setTimeout(() => this.speechVisible = false, duration);
+
+                    // --- Cat Voice (Tuned Meow) ---
+                    if (window.speechSynthesis) {
+                        window.speechSynthesis.cancel();
+
+                        // Speak a cat-like sound instead of the full text
+                        const meows = ['meow', 'mew', 'meowww', 'mrrp'];
+                        const randomMeow = meows[Math.floor(Math.random() * meows.length)];
+                        const utterance = new SpeechSynthesisUtterance(randomMeow);
+
+                        const voices = window.speechSynthesis.getVoices();
+                        const kittyVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google US English') || v.lang === 'en-US');
+                        if (kittyVoice) utterance.voice = kittyVoice;
+
+                        utterance.pitch = 1.8 + (Math.random() * 0.4); // Very high pitch
+                        utterance.rate = 1.2 + (Math.random() * 0.3);  // Fast
+                        utterance.volume = 0.4;
+
+                        window.speechSynthesis.speak(utterance);
+                    }
                 },
 
                 hideSpeech() {

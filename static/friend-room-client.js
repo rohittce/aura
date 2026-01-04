@@ -150,6 +150,28 @@ class FriendRoomClient {
             console.log('WebSocket disconnected');
             this.stopSync();
         });
+
+        this.socket.on('room_chat', (data) => {
+            console.log('Room chat:', data);
+            if (this.onRoomChat) {
+                this.onRoomChat(data);
+            }
+        });
+    }
+
+    /**
+     * Send a chat message to the current room
+     */
+    sendChatMessage(message) {
+        if (!this.socket || !this.currentRoom || !message.trim()) {
+            return;
+        }
+
+        const rId = this.currentRoom.toUpperCase();
+        this.socket.emit('room_chat', {
+            room_id: rId,
+            message: message.trim()
+        });
     }
 
     /**

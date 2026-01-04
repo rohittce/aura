@@ -318,6 +318,57 @@ async def sync_state(sid, data):
 
 
 @sio.event
+async def room_chat(sid, data):
+    """
+    User sends a chat message to the room.
+    
+    Expected payload:
+    {
+        "room_id": "room_xxx",
+        "message": "Hello world!"
+    }
+    """
+    try:
+        user_id = user_socket_map.get(sid)
+        if not user_id:
+            return
+        
+        room_id = data.get('room_id')
+        message = data.get('message')
+        
+        if not room_id or not message:
+            return
+        
+        room_id = room_id.upper()
+        
+        # In a real app, we'd fetch the name from DB. 
+        # For efficiency, we can pass it from client or use a cached name if available.
+        # Let's try to get user info if possible
+        username = "User"
+        try:
+            from src.database.models import User, SessionLocal
+            db = SessionLocal()
+            user = db.query(User).filter(User.user_id == user_id).first()
+            if user:
+                username = user.username or user.name or user_id
+            db.close()
+        except:
+            pass
+
+        # Broadcast message to everyone in the room
+        await sio.emit('room_chat', {
+            "user_id": user_id,
+            "username": username,
+            "message": message,
+            "timestamp": datetime.utcnow().isoformat()
+        }, room=room_id)
+        
+        logger.info(f"Chat in room {room_id} from {user_id}: {message[:50]}...")
+    except Exception as e:
+        logger.error(f"Error in room_chat: {e}")
+
+
+@sio.event
 async def request_sync(sid, data):
     """
     Listener requests current sync state (for late joiners or reconnects).
