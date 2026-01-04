@@ -1,15 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA // Discover Your Sound</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap"
+        rel="stylesheet">
+    <script src="/static/shared-app.js"></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020202; }
-        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020202;
+        }
+
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -21,9 +27,17 @@
         }
 
         @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, 50px) scale(1.2); }
-            100% { transform: translate(-50px, 100px) scale(0.8); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(100px, 50px) scale(1.2);
+            }
+
+            100% {
+                transform: translate(-50px, 100px) scale(0.8);
+            }
         }
 
         .glass {
@@ -39,21 +53,41 @@
             transform: translateY(-2px);
         }
 
-        .fade-in { animation: fadeIn 0.8s ease-out; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
         }
 
-        .slide-up { animation: slideUp 0.8s ease-out 0.2s both; }
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .text-glow { 
+        .slide-up {
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .text-glow {
             text-shadow: 0 0 30px rgba(139, 92, 246, 0.5),
-                         0 0 60px rgba(139, 92, 246, 0.3);
+                0 0 60px rgba(139, 92, 246, 0.3);
         }
 
         .pulse-glow {
@@ -61,17 +95,21 @@
         }
 
         @keyframes pulseGlow {
-            0%, 100% { 
+
+            0%,
+            100% {
                 box-shadow: 0 0 20px rgba(139, 92, 246, 0.4),
-                           0 0 40px rgba(139, 92, 246, 0.2);
+                    0 0 40px rgba(139, 92, 246, 0.2);
             }
-            50% { 
+
+            50% {
                 box-shadow: 0 0 30px rgba(139, 92, 246, 0.6),
-                           0 0 60px rgba(139, 92, 246, 0.4);
+                    0 0 60px rgba(139, 92, 246, 0.4);
             }
         }
     </style>
 </head>
+
 <body class="text-white overflow-x-hidden" x-data="landingApp()" x-init="init()">
 
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
@@ -87,12 +125,13 @@
             <div class="w-10 h-10 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-lg rotate-12"></div>
             <span class="text-2xl font-extrabold tracking-tighter">AURA</span>
         </div>
-        
+
         <div class="flex items-center space-x-4">
             <a href="/login" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-all">
                 Sign In
             </a>
-            <a href="/register" class="px-6 py-2 glass rounded-lg text-sm font-bold hover:bg-white hover:text-black transition-all">
+            <a href="/register"
+                class="px-6 py-2 glass rounded-lg text-sm font-bold hover:bg-white hover:text-black transition-all">
                 Get Started
             </a>
         </div>
@@ -103,29 +142,40 @@
         <div class="max-w-6xl mx-auto text-center">
             <!-- Main Heading -->
             <div class="fade-in">
-                <div class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-xs font-bold tracking-widest uppercase mb-8">
+                <div
+                    class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-xs font-bold tracking-widest uppercase mb-8">
                     The Future of Music Discovery
                 </div>
                 <h1 class="text-6xl md:text-7xl lg:text-9xl font-extrabold tracking-tighter mb-6 leading-tight">
                     Discover Your
-                    <span class="bg-gradient-to-r from-indigo-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent text-glow block mt-2">
+                    <span
+                        class="bg-gradient-to-r from-indigo-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent text-glow block mt-2">
                         Perfect Sound
                     </span>
                 </h1>
                 <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-                    AI-powered music recommendations that understand your taste. 
+                    AI-powered music recommendations that understand your taste.
                     Build your musical DNA and explore endless possibilities.
                 </p>
+                <div class="flex items-center justify-center space-x-2 mb-12 text-sm text-gray-400">
+                    <span class="flex h-2 w-2 relative">
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span><strong class="text-white" x-text="onlineUsers"></strong> music lovers listening right
+                        now</span>
+                </div>
             </div>
 
             <!-- CTA Buttons -->
             <div class="slide-up flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-                <a href="/register" 
-                   class="px-8 py-4 glass rounded-xl font-bold text-lg hover:bg-white hover:text-black transition-all duration-300 active:scale-95 pulse-glow">
+                <a href="/register"
+                    class="px-8 py-4 glass rounded-xl font-bold text-lg hover:bg-white hover:text-black transition-all duration-300 active:scale-95 pulse-glow">
                     Start Your Journey
                 </a>
-                <a href="/login" 
-                   class="px-8 py-4 glass rounded-xl font-medium text-lg hover:bg-indigo-500/20 transition-all active:scale-95">
+                <a href="/login"
+                    class="px-8 py-4 glass rounded-xl font-medium text-lg hover:bg-indigo-500/20 transition-all active:scale-95">
                     Sign In
                 </a>
             </div>
@@ -134,9 +184,11 @@
             <div class="grid md:grid-cols-3 gap-6 mt-20 max-w-5xl mx-auto">
                 <!-- Feature 1 -->
                 <div class="glass rounded-2xl p-8 fade-in" style="animation-delay: 0.3s;">
-                    <div class="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold mb-3">AI-Powered Analysis</h3>
@@ -147,9 +199,11 @@
 
                 <!-- Feature 2 -->
                 <div class="glass rounded-2xl p-8 fade-in" style="animation-delay: 0.5s;">
-                    <div class="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-tr from-rose-500 to-pink-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold mb-3">Personalized Discovery</h3>
@@ -160,9 +214,11 @@
 
                 <!-- Feature 3 -->
                 <div class="glass rounded-2xl p-8 fade-in" style="animation-delay: 0.7s;">
-                    <div class="w-16 h-16 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
+                    <div
+                        class="w-16 h-16 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-xl mb-6 flex items-center justify-center mx-auto">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                         </svg>
                     </div>
                     <h3 class="text-xl font-bold mb-3">Instant Playback</h3>
@@ -192,16 +248,22 @@
     <script>
         function landingApp() {
             return {
+                onlineUsers: 1240,
                 init() {
-                    // Check if user is already logged in
-                    if (localStorage.getItem('aura_user_token')) {
-                        // Redirect to main app
+                    // Check if user is already logged in via SharedApp
+                    if (SharedApp.isLoggedIn()) {
                         window.location.href = '/app';
+                        return;
                     }
+
+                    // Simulate dynamic user count
+                    setInterval(() => {
+                        this.onlineUsers += Math.floor(Math.random() * 3) - 1;
+                    }, 5000);
                 }
             }
         }
     </script>
 </body>
-</html>
 
+</html>

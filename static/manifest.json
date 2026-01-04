@@ -1,0 +1,23 @@
+{
+    "name": "Aura - Social Music Player",
+    "short_name": "Aura",
+    "description": "Interactive social music player with synchronized rooms and a cat companion.",
+    "start_url": "/static/play.html",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#6366f1",
+    "icons": [
+        {
+            "src": "https://img.icons8.com/clouds/100/cat.png",
+            "sizes": "100x100",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "https://img.icons8.com/clouds/500/cat.png",
+            "sizes": "500x500",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

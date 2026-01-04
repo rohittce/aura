@@ -18,6 +18,8 @@ class FriendRoomClient {
         this.onRoomStateChange = null;
         this.onUserJoined = null;
         this.onUserLeft = null;
+        this.onRoomChat = null;
+        this.onParticipantsUpdate = null;
         this.onError = null;
     }
 
@@ -155,6 +157,13 @@ class FriendRoomClient {
             console.log('Room chat:', data);
             if (this.onRoomChat) {
                 this.onRoomChat(data);
+            }
+        });
+
+        this.socket.on('room_participants_update', (data) => {
+            console.log('Room participants update:', data);
+            if (this.onParticipantsUpdate) {
+                this.onParticipantsUpdate(data);
             }
         });
     }

@@ -110,6 +110,9 @@ async def disconnect(sid):
                 "user_id": user_id,
                 "timestamp": datetime.utcnow().isoformat()
             }, room=room_id)
+            
+            # Broadcast updated participant list
+            await broadcast_participant_list(room_id)
         
         # Clean up
         del connected_users[user_id]
@@ -187,6 +190,9 @@ async def join_room(sid, data):
             "timestamp": datetime.utcnow().isoformat()
         }, room=room_id, skip_sid=sid)
         
+        # Broadcast updated participant list to everyone in the room
+        await broadcast_participant_list(room_id)
+        
         logger.info(f"User {user_id} joined room {room_id}")
     except Exception as e:
         logger.error(f"Error in join_room: {e}")
@@ -243,6 +249,9 @@ async def leave_room_socket(sid, data):
             "user_id": user_id,
             "timestamp": datetime.utcnow().isoformat()
         }, room=room_id)
+        
+        # Broadcast updated participant list
+        await broadcast_participant_list(room_id)
         
         # Send confirmation to user
         await sio.emit('room_left', {
@@ -416,6 +425,43 @@ async def ping(sid, data):
         }, room=sid)
     except Exception as e:
         logger.error(f"Error in ping: {e}")
+
+
+async def broadcast_participant_list(room_id: str):
+    """Broadcast the list of currently online participants in a room"""
+    try:
+        user_ids = list(room_users.get(room_id, set()))
+        if not user_ids:
+            return
+
+        participants = []
+        try:
+            from src.database.models import User, SessionLocal
+            db = SessionLocal()
+            users = db.query(User).filter(User.user_id.in_(user_ids)).all()
+            
+            # Create a map for quick lookup
+            user_map = {u.user_id: u.username or u.name or u.user_id for u in users}
+            
+            for uid in user_ids:
+                participants.append({
+                    "user_id": uid,
+                    "username": user_map.get(uid, "Unknown User")
+                })
+            db.close()
+        except Exception as e:
+            logger.error(f"Error fetching usernames for participant list: {e}")
+            # Fallback to just IDs if DB fails
+            for uid in user_ids:
+                participants.append({"user_id": uid, "username": uid})
+
+        await sio.emit('room_participants_update', {
+            "room_id": room_id,
+            "participants": participants,
+            "timestamp": datetime.utcnow().isoformat()
+        }, room=room_id)
+    except Exception as e:
+        logger.error(f"Error broadcasting participant list: {e}")
 
 
 def get_socketio_app():

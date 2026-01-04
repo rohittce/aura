@@ -7,6 +7,12 @@
     <title>AURA // Music Player</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- PWA -->
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/clouds/100/cat.png">
+    <script src="/static/shared-app.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.min.js"></script>
     <!-- Three.js for 3D Cat -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1052,6 +1058,57 @@
 </head>
 
 <body class="bg-[#020202] text-white overflow-hidden" x-data="playApp()" x-init="init()">
+    <!-- Unified Navigation -->
+    <nav class="relative z-[100] flex items-center justify-between px-6 md:px-10 py-6 md:py-8">
+        <div class="flex items-center space-x-6">
+            <a href="/" class="flex items-center space-x-2 group">
+                <div
+                    class="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-lg rotate-12 group-hover:rotate-45 transition-transform">
+                </div>
+                <span class="text-2xl font-black tracking-tighter">AURA.</span>
+            </a>
+
+            <div
+                class="hidden md:flex items-center space-x-6 text-[10px] uppercase font-bold tracking-[0.2em] text-gray-400">
+                <a href="/app#seed" class="hover:text-white transition-all">DNA</a>
+                <a href="/app#recommendations" class="hover:text-white transition-all">Discovery</a>
+                <a href="/play" class="text-white">Player</a>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <template x-if="authToken">
+                <div class="flex items-center space-x-4">
+                    <div class="hidden sm:flex flex-col items-end">
+                        <span class="text-xs font-bold" x-text="username || 'User'"></span>
+                        <span class="text-[10px] text-gray-500" x-text="userEmail"></span>
+                    </div>
+                    <button @click="friendRoom.isOpen = true"
+                        class="w-10 h-10 rounded-full glass border-2 border-white/10 overflow-hidden hover:scale-105 transition-transform">
+                        <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${username || userId}`"
+                            class="w-full h-full object-cover">
+                    </button>
+                    <button @click="handleLogout()"
+                        class="glass p-2 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
+                </div>
+            </template>
+            <template x-if="!authToken">
+                <a href="/login"
+                    class="px-6 py-2 glass rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all">Sign
+                    In</a>
+            </template>
+        </div>
+    </nav>
+
+    <!-- SharedApp handles Toasts -->
+    <!-- Hidden audio for background playback persistence -->
+    <audio id="bg-persistence-audio" loop style="display: none;"
+        src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=="></audio>
 
     <!-- YouTube IFrame API -->
     <div id="youtube-player"></div>
@@ -1071,7 +1128,7 @@
     </div>
 
     <!-- Aesthetic 2D Interactive Cat -->
-    <div class="cat-container" x-data="catEmotion()"
+    <div class="cat-container" x-data="catEmotion()" x-show="!friendRoom.isOpen && !searchModal"
         :class="[playing ? 'cat-dancing' : 'cat-idle', isGlowing ? 'glow' : '']"
         :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @mouseenter="showSpeech('Meow! 🐱')"
         @mouseleave="hideSpeech()" @mousedown="startDrag($event)" @touchstart.passive="startDrag($event)"
@@ -1593,6 +1650,23 @@
                         <div x-show="friendRoom.activeTab === 'chat'" class="h-full flex flex-col">
                             <template x-if="friendRoom.currentRoomId">
                                 <div class="h-full flex flex-col">
+                                    <!-- Online Participants -->
+                                    <div x-show="friendRoom.participants.length > 0"
+                                        class="flex items-center space-x-2 pb-2 mb-2 border-b border-white/10 overflow-x-auto no-scrollbar shrink-0">
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-wider font-bold mr-1">
+                                            Online:</div>
+                                        <template x-for="p in friendRoom.participants" :key="p.user_id">
+                                            <div
+                                                class="flex items-center space-x-1 bg-white/5 px-2 py-1 rounded-full whitespace-nowrap border border-white/5 ring-1 ring-white/10">
+                                                <div
+                                                    class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_5px_rgba(34,197,94,0.5)]">
+                                                </div>
+                                                <span class="text-[10px] text-gray-300 font-medium"
+                                                    x-text="p.username"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+
                                     <div class="flex-1 overflow-y-auto space-y-2 mb-4 pr-2" id="room-chat-messages">
                                         <template x-for="msg in friendRoom.messages" :key="msg.timestamp + msg.user_id">
                                             <div class="chat-msg flex flex-col"
@@ -1894,40 +1968,12 @@
                 songSearchTimeout: null,
 
                 // Toast notification helper
-                showToast(type, title, message, duration = 4000) {
-                    let container = document.getElementById('toast-container');
-                    if (!container) {
-                        container = document.createElement('div');
-                        container.id = 'toast-container';
-                        container.className = 'toast-container';
-                        document.body.appendChild(container);
-                    }
+                handleLogout() {
+                    SharedApp.logout();
+                },
 
-                    const icons = {
-                        info: 'ℹ️',
-                        success: '✅',
-                        warning: '⚠️',
-                        error: '❌'
-                    };
-
-                    const toast = document.createElement('div');
-                    toast.className = `toast toast-${type}`;
-                    toast.innerHTML = `
-                        <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
-                        <div class="toast-content">
-                            <div class="toast-title">${title}</div>
-                            <div class="toast-message">${message}</div>
-                        </div>
-                        <button class="toast-close" onclick="this.parentElement.remove()">×</button>
-                    `;
-
-                    container.appendChild(toast);
-
-                    // Auto-remove after duration
-                    setTimeout(() => {
-                        toast.classList.add('toast-exit');
-                        setTimeout(() => toast.remove(), 300);
-                    }, duration);
+                showToast(type, title, message, duration = 3000) {
+                    SharedApp.showToast(type, title, message, duration);
                 },
 
                 // Initialize Socket.IO for real-time room sync
@@ -1975,22 +2021,23 @@
                 },
 
                 async init() {
-                    // 0. Detect Mobile Mode (Optimization)
-                    // Refined: Only use width. Touchscreen laptops often have maxTouchPoints > 0.
-                    this.mobileMode = window.innerWidth < 768;
+                    // Shared Init
+                    this.mobileMode = SharedApp.checkMobileMode();
                     if (this.mobileMode) {
-                        console.log('📱 Mobile mode detected: Disabling 3D Cat & optimizing visualizer');
                         document.body.classList.add('mobile-mode');
                     }
 
-                    // 1. Auth Check - Persist Identity
-                    if (this.authToken) {
-                        // Use existing token
-                        console.log('Using persisted auth:', this.username);
-                    } else {
-                        // Save guest ID
-                        localStorage.setItem('aura_user_id', this.userId);
+                    // Check Auth via SharedApp
+                    const isValid = await SharedApp.verifyToken();
+                    if (!isValid && localStorage.getItem('aura_user_token')) {
+                        this.handleLogout();
+                        return;
                     }
+
+                    this.authToken = localStorage.getItem('aura_user_token');
+                    this.userId = localStorage.getItem('aura_user_id') || 'guest_' + Math.random().toString(36).substr(2, 9);
+                    this.username = localStorage.getItem('aura_username') || 'Guest';
+                    this.userEmail = localStorage.getItem('aura_user_email') || '';
 
                     // 2. Initialize Socket.IO
                     this.initSocket();
@@ -2006,6 +2053,16 @@
 
                     // 5. Start Keep-Alive System
                     this.startKeepAlive();
+
+                    // 6. Register Service Worker
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.register('/static/sw.js')
+                            .then(() => console.log('🚀 Service Worker Registered'))
+                            .catch(err => console.error('❌ SW Registration failed:', err));
+                    }
+
+                    // 7. Initialize Media Session API
+                    this.initMediaSession();
                 },
 
                 // Wait for YouTube API and then load songs
@@ -2066,7 +2123,7 @@
                             const incomingTitle = state.current_song.song?.title || state.current_song.title;
                             const currentTitle = this.currentSong?.song?.title || this.currentSong?.title;
 
-                            if (incomingTitle && incomingTitle !== currentTitle) {
+                            if (incomingTitle && incomingTitle.trim().toLowerCase() !== (currentTitle || '').trim().toLowerCase()) {
                                 console.log('Syncing song from room:', incomingTitle);
                                 this.currentSong = state.current_song;
                                 this.loadSong(this.currentSong);
@@ -2120,6 +2177,13 @@
                         // Show toast if chat tab isn't active
                         if (!this.friendRoom.isOpen || this.friendRoom.activeTab !== 'chat') {
                             this.showToast('info', 'New Message', `${data.username}: ${data.message.substring(0, 20)}${data.message.length > 20 ? '...' : ''}`, 3000);
+                        }
+                    };
+
+                    window.friendRoomClient.onParticipantsUpdate = (data) => {
+                        console.log('Participants updated:', data);
+                        if (data.participants) {
+                            this.friendRoom.participants = data.participants;
                         }
                     };
 
@@ -2492,6 +2556,48 @@
                     });
                 },
 
+                initMediaSession() {
+                    if ('mediaSession' in navigator) {
+                        navigator.mediaSession.setActionHandler('play', () => {
+                            if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
+                        });
+                        navigator.mediaSession.setActionHandler('pause', () => {
+                            if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+                        });
+                        navigator.mediaSession.setActionHandler('previoustrack', () => {
+                            this.previousSong();
+                        });
+                        navigator.mediaSession.setActionHandler('nexttrack', () => {
+                            this.nextSong();
+                        });
+                        navigator.mediaSession.setActionHandler('seekto', (details) => {
+                            if (ytPlayer && details.seekTime && typeof ytPlayer.seekTo === 'function') {
+                                ytPlayer.seekTo(details.seekTime, true);
+                            }
+                        });
+                    }
+                },
+
+                updateMediaSession() {
+                    if ('mediaSession' in navigator && this.currentSong) {
+                        const song = this.currentSong.song || this.currentSong;
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: song.title || 'Unknown Title',
+                            artist: (song.artists && Array.isArray(song.artists) ? song.artists.join(', ') : song.artists) || 'Unknown Artist',
+                            album: 'Aura Social Player',
+                            artwork: [
+                                { src: song.image || 'https://img.icons8.com/clouds/500/cat.png', sizes: '512x512', type: 'image/png' }
+                            ]
+                        });
+
+                        // Start silent audio to keep session active on mobile background
+                        const silentAudio = document.getElementById('bg-persistence-audio');
+                        if (silentAudio && silentAudio.paused) {
+                            silentAudio.play().catch(e => console.log('Silent audio play blocked by browser policy'));
+                        }
+                    }
+                },
+
                 async loadRecommendations(preserveCurrentSong = false, genre = null) {
                     this.loading = true;
                     try {
@@ -2648,6 +2754,9 @@
                 async loadSong(song) {
                     if (!song) return;
 
+                    // Update Media Session Metadata
+                    this.updateMediaSession();
+
                     const cacheKey = this.getCacheKey(song);
 
                     // Check prefetch cache first
@@ -2749,7 +2858,7 @@
                         // Trigger immediate sync for room
                         if (window.friendRoomClient && window.friendRoomClient.isHost) {
                             window.friendRoomClient.syncState({
-                                is_playing: false,
+                                is_playing: this.playing,
                                 current_time: 0,
                                 timestamp: Date.now()
                             }, song);
@@ -2824,6 +2933,15 @@
                     this.loadSong(song);
                     this.syncCatState();
                     this.vibrate(10); // Haptic feedback
+
+                    // Immediate sync to room
+                    if (window.friendRoomClient && window.friendRoomClient.isHost) {
+                        window.friendRoomClient.syncState({
+                            is_playing: this.playing,
+                            current_time: 0,
+                            timestamp: Date.now()
+                        }, this.currentSong);
+                    }
                 },
 
                 togglePlay() {
@@ -3464,26 +3582,6 @@
                     this.speechVisible = true;
                     if (this.speechTimeout) clearTimeout(this.speechTimeout);
                     this.speechTimeout = setTimeout(() => this.speechVisible = false, duration);
-
-                    // --- Cat Voice (Tuned Meow) ---
-                    if (window.speechSynthesis) {
-                        window.speechSynthesis.cancel();
-
-                        // Speak a cat-like sound instead of the full text
-                        const meows = ['meow', 'mew', 'meowww', 'mrrp'];
-                        const randomMeow = meows[Math.floor(Math.random() * meows.length)];
-                        const utterance = new SpeechSynthesisUtterance(randomMeow);
-
-                        const voices = window.speechSynthesis.getVoices();
-                        const kittyVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google US English') || v.lang === 'en-US');
-                        if (kittyVoice) utterance.voice = kittyVoice;
-
-                        utterance.pitch = 1.8 + (Math.random() * 0.4); // Very high pitch
-                        utterance.rate = 1.2 + (Math.random() * 0.3);  // Fast
-                        utterance.volume = 0.4;
-
-                        window.speechSynthesis.speak(utterance);
-                    }
                 },
 
                 hideSpeech() {
