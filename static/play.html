@@ -404,17 +404,27 @@
         }
 
         .cat-body {
-            fill: #1f2937;
+            fill: url(#catGradient);
             transition: fill 0.5s ease;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        }
+
+        .cat-inner-ear {
+            fill: #fca5a1;
+            opacity: 0.6;
+        }
+
+        .cat-fur-accent {
+            fill: rgba(255, 255, 255, 0.05);
         }
 
         .cat-accent {
-            fill: #6366f1;
+            fill: #818cf8;
         }
 
         .glow .cat-body {
-            fill: #312e81;
-            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8));
+            fill: url(#catGlowGradient);
+            filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.8)) drop-shadow(0 0 30px rgba(129, 140, 248, 0.4));
         }
 
         .cat-speech {
@@ -947,11 +957,6 @@
             animation: blink 3s infinite;
         }
 
-        /* Mobile Beat Reaction */
-        .mobile-cat-avatar.beating {
-            animation: mobileBeat 0.5s ease-in-out infinite alternate;
-        }
-
         @keyframes mobileBeat {
             from {
                 transform: scale(1);
@@ -960,6 +965,65 @@
             to {
                 transform: scale(1.05);
             }
+        }
+
+        /* Mobile Bottom Nav */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-mode .mobile-bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .mobile-mode .md-only {
+            display: none !important;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            width: 33.33%;
+        }
+
+        .nav-item.active {
+            color: #818cf8;
+        }
+
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Adjust main padding for bottom nav */
+        .mobile-mode main {
+            padding-bottom: 100px;
+        }
+
+        /* Hide specific elements on mobile */
+        .mobile-mode .mobile-hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -993,40 +1057,71 @@
 
         <div class="cat-wrapper">
             <svg viewBox="0 0 200 200" class="cat-svg">
-                <!-- Body -->
+                <defs>
+                    <linearGradient id="catGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#2d3748;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#1a202c;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="catGlowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4338ca;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#312e81;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+
+                <!-- Tail with organic curve -->
+                <path class="cat-body" d="M160,130 C195,130 200,180 170,195 C155,202 140,190 145,175" fill="none"
+                    stroke-width="14" stroke-linecap="round" />
+
+                <!-- Body - More organic shape -->
                 <path class="cat-body"
-                    d="M100,50 C140,50 160,80 160,130 C160,170 140,190 100,190 C60,190 40,170 40,130 C40,80 60,50 100,50" />
+                    d="M100,45 C145,45 165,85 165,135 C165,175 145,195 100,195 C55,195 35,175 35,135 C35,85 55,45 100,45" />
 
-                <!-- Ears -->
-                <path class="cat-body" d="M60,65 L40,20 L80,55 Z" />
-                <path class="cat-body" d="M140,65 L160,20 L120,55 Z" />
+                <!-- Cheek Fur Accents -->
+                <path class="cat-fur-accent" d="M40,140 Q30,150 40,160 Z" />
+                <path class="cat-fur-accent" d="M160,140 Q170,150 160,160 Z" />
 
-                <!-- Tail -->
-                <path class="cat-body" d="M160,130 C190,130 190,170 170,180" fill="none" stroke-width="12"
-                    stroke-linecap="round" />
-
-                <!-- Eyes Container (for movement) -->
-                <g :style="`transform: translate(${eyeOffsetX}px, ${eyeOffsetY}px)`">
-                    <!-- Eye White Left -->
-                    <circle cx="80" cy="110" r="12" fill="white" />
-                    <!-- Eye Pupil Left -->
-                    <circle cx="80" cy="110" r="6" fill="#000" />
-
-                    <!-- Eye White Right -->
-                    <circle cx="120" cy="110" r="12" fill="white" />
-                    <!-- Eye Pupil Right -->
-                    <circle cx="120" cy="110" r="6" fill="#000" />
+                <!-- Ears - More detailed -->
+                <g class="cat-ear-left">
+                    <path class="cat-body" d="M65,65 Q35,10 85,55 Z" />
+                    <path class="cat-inner-ear" d="M60,60 Q45,30 75,55 Z" />
+                </g>
+                <g class="cat-ear-right">
+                    <path class="cat-body" d="M135,65 Q165,10 115,55 Z" />
+                    <path class="cat-inner-ear" d="M140,60 Q155,30 125,55 Z" />
                 </g>
 
-                <!-- Nose -->
-                <path d="M95,125 L105,125 L100,130 Z" fill="#f43f5e" />
+                <!-- Chest Fur Accent -->
+                <path class="cat-fur-accent" d="M100,150 Q80,170 100,185 Q120,170 100,150 Z" />
 
-                <!-- Whiskers -->
-                <g stroke="rgba(255,255,255,0.2)" stroke-width="2">
-                    <line x1="50" y1="130" x2="20" y2="125" />
-                    <line x1="50" y1="140" x2="20" y2="145" />
-                    <line x1="150" y1="130" x2="180" y2="125" />
-                    <line x1="150" y1="140" x2="180" y2="145" />
+                <!-- Eyes Container -->
+                <g :style="`transform: translate(${eyeOffsetX}px, ${eyeOffsetY}px)`">
+                    <!-- Left Eye -->
+                    <g class="cat-eye">
+                        <ellipse cx="78" cy="115" rx="14" ry="16" fill="white" />
+                        <ellipse cx="78" cy="115" rx="7" ry="12" fill="#000" class="cat-pupil" />
+                        <circle cx="82" cy="108" r="3" fill="white" opacity="0.8" />
+                    </g>
+                    <!-- Right Eye -->
+                    <g class="cat-eye">
+                        <ellipse cx="122" cy="115" rx="14" ry="16" fill="white" />
+                        <ellipse cx="122" cy="115" rx="7" ry="12" fill="#000" class="cat-pupil" />
+                        <circle cx="126" cy="108" r="3" fill="white" opacity="0.8" />
+                    </g>
+                </g>
+
+                <!-- Nose - More detailed shape -->
+                <path d="M96,128 Q100,132 104,128 Q100,134 96,128 Z" fill="#ffb7b7" />
+
+                <!-- Mouth -->
+                <path d="M92,142 Q100,148 108,142" fill="none" stroke="#ffb7b7" stroke-width="2"
+                    stroke-linecap="round" />
+
+                <!-- Whiskers - Thinner and more delicate -->
+                <g stroke="rgba(255,255,255,0.3)" stroke-width="1.5">
+                    <line x1="55" y1="135" x2="25" y2="130" />
+                    <line x1="55" y1="145" x2="25" y2="150" />
+                    <line x1="145" y1="135" x2="175" y2="130" />
+                    <line x1="145" y1="145" x2="175" y2="150" />
                 </g>
             </svg>
         </div>
@@ -1170,7 +1265,7 @@
                 </button>
 
                 <button @click="friendRoom.isOpen = true"
-                    class="glass px-6 py-3 rounded-full text-sm hover:bg-indigo-500/20 transition-all active:scale-95 flex items-center space-x-2">
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-indigo-500/20 transition-all active:scale-95 flex items-center space-x-2 mobile-hidden">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -1182,7 +1277,7 @@
                 </button>
 
                 <button @click="searchModal = true"
-                    class="glass px-6 py-3 rounded-full text-sm hover:bg-cyan-500/20 transition-all active:scale-95 flex items-center space-x-2">
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-cyan-500/20 transition-all active:scale-95 flex items-center space-x-2 mobile-hidden">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1235,11 +1330,17 @@
             </div>
             <!-- Friend & Room Panel Modal -->
             <div x-show="friendRoom.isOpen"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                x-transition.opacity style="display: none;">
+                class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-full md:translate-y-0"
+                x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-full md:translate-y-0" style="display: none;">
 
-                <div class="glass w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl bg-black/40"
+                <div class="glass w-full max-w-lg rounded-t-3xl md:rounded-2xl overflow-hidden shadow-2xl bg-black/40 h-[85vh] md:h-auto"
                     @click.away="friendRoom.isOpen = false">
+                    <!-- Mobile Drag Handle -->
+                    <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto my-3 md:hidden"></div>
                     <!-- Header -->
                     <div class="p-4 border-b border-white/10 flex justify-between items-center">
                         <h2 class="text-lg font-bold">Social Hub</h2>
@@ -1500,11 +1601,17 @@
 
             <!-- Search Songs Modal -->
             <div x-show="searchModal"
-                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-                x-transition.opacity style="display: none;">
+                class="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-black/60 backdrop-blur-sm"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-full md:translate-y-0"
+                x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 translate-y-full md:translate-y-0" style="display: none;">
 
-                <div class="glass w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl bg-black/40 max-h-[80vh] flex flex-col"
+                <div class="glass w-full max-w-2xl rounded-t-3xl md:rounded-2xl overflow-hidden shadow-2xl bg-black/40 h-[85vh] md:h-auto max-h-[85vh] md:max-h-[80vh] flex flex-col"
                     @click.away="searchModal = false">
+                    <!-- Mobile Drag Handle -->
+                    <div class="w-12 h-1.5 bg-white/20 rounded-full mx-auto my-3 md:hidden"></div>
                     <!-- Header -->
                     <div class="p-4 border-b border-white/10 flex justify-between items-center flex-shrink-0">
                         <h2 class="text-lg font-bold">Search Songs</h2>
@@ -1595,6 +1702,39 @@
             </div>
         </main>
     </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <button @click="searchModal = false; friendRoom.isOpen = false" class="nav-item"
+            :class="!searchModal && !friendRoom.isOpen ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+            </svg>
+            <span>Player</span>
+        </button>
+        <button @click="searchModal = true; friendRoom.isOpen = false" class="nav-item"
+            :class="searchModal ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Search</span>
+        </button>
+        <button @click="friendRoom.isOpen = true; searchModal = false" class="nav-item"
+            :class="friendRoom.isOpen ? 'active' : ''">
+            <div class="relative">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span x-show="friendRoom.requests.length > 0"
+                    class="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] w-3 h-3 flex items-center justify-center rounded-full"
+                    x-text="friendRoom.requests.length"></span>
+            </div>
+            <span>Social</span>
+        </button>
+    </nav>
 
     <script>
         // Auto-detect API URL

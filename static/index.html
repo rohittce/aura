@@ -260,16 +260,73 @@
             }
         }
 
+        /* Mobile Bottom Nav */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-mode .mobile-bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            color: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            width: 25%;
+        }
+
+        .nav-item.active {
+            color: #818cf8;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Adjust sections for mobile nav */
+        .mobile-mode section {
+            padding-bottom: 100px;
+        }
+
+        /* Hide specific elements on mobile */
+        .mobile-mode .mobile-hidden {
+            display: none !important;
+        }
+
         @media (max-width: 640px) {
             .chat-widget {
-                bottom: 10px;
-                left: 10px;
+                bottom: 80px;
+                /* Move up for nav */
+                right: 20px;
+                left: auto;
             }
 
             .chat-window {
-                width: calc(100vw - 20px);
-                height: calc(100vh - 80px);
-                max-height: calc(100vh - 80px);
+                width: calc(100vw - 40px);
+                height: calc(100vh - 120px);
+                max-height: calc(100vh - 120px);
             }
         }
     </style>
@@ -1313,6 +1370,7 @@
         function auraApp() {
             return {
                 currentSection: 'seed',
+                mobileMode: false,
                 seedSongs: [],
                 searchQuery: '',
                 searchResults: [],
@@ -1361,7 +1419,13 @@
                 searchTimeout: null,
 
                 async init() {
-                    // Initialize tasteProfile with default structure to prevent null errors
+                    // 0. Detect Mobile Mode
+                    this.mobileMode = window.innerWidth < 768;
+                    if (this.mobileMode) {
+                        document.body.classList.add('mobile-mode');
+                    }
+
+                    // 1. Initialize tasteProfile with default structure to prevent null errors
                     if (!this.tasteProfile) {
                         this.tasteProfile = {
                             mood_profiles: {},
@@ -2374,6 +2438,37 @@
             </svg>
         </button>
     </div>
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav">
+        <button @click="showSection('seed')" class="nav-item" :class="currentSection === 'seed' ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.673.336a4 4 0 01-2.054.366l-1.147-.077a11 11 0 00-1.567.054l-1.3.13a2 2 0 00-1.631 2.506l.547 2.19a2 2 0 002.506 1.487l.2-.05a2 2 0 011.215.083l1.24.595a3 3 0 002.39.11l1.54-.513a2 2 0 011.028-.094l1.1.183a2 2 0 001.022-.547l1.3-1.3a2 2 0 00.547-1.022l-.183-1.1a2 2 0 01.094-1.028l.513-1.54a3 3 0 00-.11-2.39l-.595-1.24a2 2 0 01-.083-1.215l.05-.2z" />
+            </svg>
+            <span>DNA</span>
+        </button>
+        <button @click="showSection('search')" class="nav-item" :class="currentSection === 'search' ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Search</span>
+        </button>
+        <button @click="showSection('social')" class="nav-item" :class="currentSection === 'social' ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span>Social</span>
+        </button>
+        <button @click="showSection('taste')" class="nav-item" :class="currentSection === 'taste' ? 'active' : ''">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>Profile</span>
+        </button>
+    </nav>
 </body>
 
 </html>
