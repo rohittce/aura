@@ -349,14 +349,34 @@
 
         .cat-listening .cat-ear {
             animation: earTwitch 2s ease-in-out infinite;
+            transition: all 0.5s ease;
         }
 
-        .cat-listening .cat-ear-right {
-            animation: earTwitch 2s ease-in-out infinite;
-            animation-delay: 0.1s;
+        /* Animations */
+        @keyframes cat-float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
         }
 
-        /* Cat Eyes Blink */
+        @keyframes cat-dance {
+
+            0%,
+            100% {
+                transform: rotate(-5deg) translateY(0);
+            }
+
+            50% {
+                transform: rotate(5deg) translateY(-8px);
+            }
+        }
+
         @keyframes blink {
 
             0%,
@@ -370,40 +390,55 @@
             }
         }
 
+        .cat-dancing .cat-wrapper {
+            animation: cat-dance 0.6s ease-in-out infinite;
+        }
+
+        .cat-idle .cat-wrapper {
+            animation: cat-float 3s ease-in-out infinite;
+        }
+
         .cat-eye {
-            animation: blink 3s ease-in-out infinite;
+            transform-origin: center;
+            animation: blink 4s infinite;
         }
 
-        .cat-eye-right {
-            animation: blink 3s ease-in-out infinite;
-            animation-delay: 0.1s;
+        .cat-body {
+            fill: #1f2937;
+            transition: fill 0.5s ease;
         }
 
-        /* Cat Speech Bubble */
+        .cat-accent {
+            fill: #6366f1;
+        }
+
+        .glow .cat-body {
+            fill: #312e81;
+            filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.8));
+        }
+
         .cat-speech {
             position: absolute;
-            bottom: 200px;
+            top: -60px;
             right: 0;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(139, 92, 246, 0.5);
-            border-radius: 16px;
-            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px 20px 20px 0;
             font-size: 14px;
-            font-weight: 500;
             color: white;
             white-space: nowrap;
             opacity: 0;
-            transform: translateY(10px) scale(0.9);
-            transition: all 0.3s ease;
+            transform: scale(0.5) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            max-width: 250px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
         .cat-speech.show {
             opacity: 1;
-            transform: translateY(0);
+            transform: scale(1) translateY(0);
         }
 
         .cat-speech::after {
@@ -521,6 +556,203 @@
         .cat-container.spinning {
             animation: catSpin 0.8s ease-in-out;
         }
+
+        /* Musical Notes Particles */
+        @keyframes noteFloat {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg) scale(0);
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-80px) translateX(30px) rotate(360deg) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .cat-note {
+            position: absolute;
+            font-size: 18px;
+            animation: noteFloat 2s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        /* Rainbow Dancing Aura */
+        @keyframes rainbowAura {
+            0% {
+                box-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b40;
+            }
+
+            16% {
+                box-shadow: 0 0 20px #feca57, 0 0 40px #feca5740;
+            }
+
+            33% {
+                box-shadow: 0 0 20px #48dbfb, 0 0 40px #48dbfb40;
+            }
+
+            50% {
+                box-shadow: 0 0 20px #ff9ff3, 0 0 40px #ff9ff340;
+            }
+
+            66% {
+                box-shadow: 0 0 20px #54a0ff, 0 0 40px #54a0ff40;
+            }
+
+            83% {
+                box-shadow: 0 0 20px #5f27cd, 0 0 40px #5f27cd40;
+            }
+
+            100% {
+                box-shadow: 0 0 20px #ff6b6b, 0 0 40px #ff6b6b40;
+            }
+        }
+
+        .cat-dancing .cat-wrapper {
+            animation: cat-dance 0.6s ease-in-out infinite, rainbowAura 2s linear infinite;
+            border-radius: 50%;
+        }
+
+        /* Pulsing Aura Effect */
+        @keyframes pulseAura {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 15px rgba(139, 92, 246, 0);
+            }
+        }
+
+        .cat-container.pulsing {
+            animation: pulseAura 1s ease-in-out infinite;
+        }
+
+        /* Purring Effect */
+        @keyframes purr {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.02);
+            }
+
+            50% {
+                transform: scale(0.98);
+            }
+
+            75% {
+                transform: scale(1.02);
+            }
+        }
+
+        .cat-purring .cat-wrapper {
+            animation: purr 0.3s ease-in-out infinite;
+        }
+
+        /* Cat Nap (Zzz) */
+        @keyframes zzzFloat {
+            0% {
+                transform: translateY(0) translateX(0) scale(0.5);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px) translateX(20px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .cat-zzz {
+            position: absolute;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            animation: zzzFloat 3s ease-out forwards;
+            pointer-events: none;
+        }
+
+        /* Cat Ears Dancing */
+        @keyframes earBop {
+
+            0%,
+            100% {
+                transform: rotate(-5deg);
+            }
+
+            50% {
+                transform: rotate(10deg);
+            }
+        }
+
+        .cat-dancing .cat-ear-left {
+            animation: earBop 0.3s ease-in-out infinite;
+            transform-origin: center bottom;
+        }
+
+        .cat-dancing .cat-ear-right {
+            animation: earBop 0.3s ease-in-out infinite 0.15s;
+            transform-origin: center bottom;
+        }
+
+        /* Vibing Cat Head Bob */
+        @keyframes headBob {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-3px) rotate(-3deg);
+            }
+
+            75% {
+                transform: translateY(-3px) rotate(3deg);
+            }
+        }
+
+        .cat-vibing .cat-head {
+            animation: headBob 0.4s ease-in-out infinite;
+        }
+
+        /* Love Eyes */
+        .cat-love .cat-pupil {
+            fill: #ff6b6b !important;
+            filter: drop-shadow(0 0 4px #ff6b6b);
+        }
+
+        /* Sparkle Eyes */
+        @keyframes sparkleEye {
+
+            0%,
+            100% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.5) drop-shadow(0 0 3px #fff);
+            }
+        }
+
+        .cat-excited .cat-eye {
+            animation: sparkleEye 0.5s ease-in-out infinite;
+        }
+
 
         /* Toast Notification System */
         .toast-container {
@@ -751,26 +983,52 @@
             style="animation-delay: -9s;"></div>
     </div>
 
-    <!-- Interactive 2D Cat -->
+    <!-- Aesthetic 2D Interactive Cat -->
     <div class="cat-container" x-data="catEmotion()"
-        :class="[following ? 'following' : '', isRolling ? 'rolling-around' : '', isGlowing ? 'glow' : '', isBouncing ? 'bouncing' : '', isSpinning ? 'spinning' : '']"
-        :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @dblclick="rollCat()"
-        @mouseenter="showSpeech('Meow! 🐱')" @mouseleave="hideSpeech()" @mousemove="handleMouseMove($event)"
-        @mousedown="startDrag($event)" @mouseup="stopDrag()" draggable="false" id="cat-3d-container">
+        :class="[playing ? 'cat-dancing' : 'cat-idle', isGlowing ? 'glow' : '']"
+        :style="`bottom: ${catY}px; right: ${catX}px;`" @click="interactWithCat()" @mouseenter="showSpeech('Meow! 🐱')"
+        @mouseleave="hideSpeech()" @mousedown="startDrag($event)">
 
         <div class="cat-speech" :class="{ 'show': speechVisible }" x-text="speechText"></div>
 
-        <!-- 2D Cat SVG Fallback (Mobile Only) -->
-        <div class="mobile-cat-avatar"
-            :class="{ 'visible': window.playAppInstance?.mobileMode, 'beating': window.playAppInstance?.playing }">
-            <div class="mobile-cat-ears">
-                <div class="mobile-cat-ear"></div>
-                <div class="mobile-cat-ear"></div>
-            </div>
-            <div class="mobile-cat-eyes">
-                <div class="mobile-cat-eye"></div>
-                <div class="mobile-cat-eye"></div>
-            </div>
+        <div class="cat-wrapper">
+            <svg viewBox="0 0 200 200" class="cat-svg">
+                <!-- Body -->
+                <path class="cat-body"
+                    d="M100,50 C140,50 160,80 160,130 C160,170 140,190 100,190 C60,190 40,170 40,130 C40,80 60,50 100,50" />
+
+                <!-- Ears -->
+                <path class="cat-body" d="M60,65 L40,20 L80,55 Z" />
+                <path class="cat-body" d="M140,65 L160,20 L120,55 Z" />
+
+                <!-- Tail -->
+                <path class="cat-body" d="M160,130 C190,130 190,170 170,180" fill="none" stroke-width="12"
+                    stroke-linecap="round" />
+
+                <!-- Eyes Container (for movement) -->
+                <g :style="`transform: translate(${eyeOffsetX}px, ${eyeOffsetY}px)`">
+                    <!-- Eye White Left -->
+                    <circle cx="80" cy="110" r="12" fill="white" />
+                    <!-- Eye Pupil Left -->
+                    <circle cx="80" cy="110" r="6" fill="#000" />
+
+                    <!-- Eye White Right -->
+                    <circle cx="120" cy="110" r="12" fill="white" />
+                    <!-- Eye Pupil Right -->
+                    <circle cx="120" cy="110" r="6" fill="#000" />
+                </g>
+
+                <!-- Nose -->
+                <path d="M95,125 L105,125 L100,130 Z" fill="#f43f5e" />
+
+                <!-- Whiskers -->
+                <g stroke="rgba(255,255,255,0.2)" stroke-width="2">
+                    <line x1="50" y1="130" x2="20" y2="125" />
+                    <line x1="50" y1="140" x2="20" y2="145" />
+                    <line x1="150" y1="130" x2="180" y2="125" />
+                    <line x1="150" y1="140" x2="180" y2="145" />
+                </g>
+            </svg>
         </div>
     </div>
 
@@ -1057,8 +1315,23 @@
                             </div>
                         </div>
 
+
                         <!-- Rooms Tab -->
                         <div x-show="friendRoom.activeTab === 'rooms'">
+                            <!-- Join Room by Code -->
+                            <div class="mb-6">
+                                <h3 class="text-sm font-medium mb-3">Join Room</h3>
+                                <div class="flex space-x-2">
+                                    <input type="text" x-model="friendRoom.joinCode" placeholder="Enter 6-char code"
+                                        maxlength="6"
+                                        class="flex-1 glass px-4 py-2 rounded-lg text-sm font-mono uppercase tracking-widest focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                                        @input="friendRoom.joinCode = friendRoom.joinCode.toUpperCase()">
+                                    <button @click="joinRoomByCode()"
+                                        class="bg-cyan-600 hover:bg-cyan-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Join</button>
+                                </div>
+                            </div>
+
+                            <!-- Create Room -->
                             <div class="mb-6">
                                 <h3 class="text-sm font-medium mb-3">Create Room</h3>
                                 <div class="flex space-x-2">
@@ -1069,18 +1342,20 @@
                                 </div>
                             </div>
 
-                            <!-- Current Room Info if joined ... -->
+                            <!-- Current Room Info -->
                             <div x-show="friendRoom.currentRoomId"
-                                class="glass p-4 rounded-lg bg-indigo-500/10 border-indigo-500/30 mb-4">
-                                <div class="flex items-center justify-between mb-3">
+                                class="glass p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 mb-4">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between mb-4">
                                     <div>
                                         <h3 class="text-sm font-bold text-indigo-300">Current Room</h3>
                                         <div class="flex items-center space-x-2 mt-1">
-                                            <span class="text-lg font-mono font-bold tracking-wider"
+                                            <span class="text-2xl font-mono font-bold tracking-wider text-white"
                                                 x-text="friendRoom.currentRoomId"></span>
                                             <button
                                                 @click="navigator.clipboard.writeText(friendRoom.currentRoomId); showToast('success', 'Copied', 'Room code copied!')"
-                                                class="p-1 hover:text-indigo-400 transition-colors" title="Copy Code">
+                                                class="p-1.5 hover:bg-white/10 rounded transition-colors"
+                                                title="Copy Code">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -1090,13 +1365,97 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <div
-                                        class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                        Live Sync</div>
+                                    <div class="flex items-center space-x-2">
+                                        <span x-show="friendRoom.isHost"
+                                            class="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Host</span>
+                                        <span
+                                            class="bg-green-500/20 text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase flex items-center">
+                                            <span
+                                                class="w-1.5 h-1.5 bg-green-400 rounded-full mr-1 animate-pulse"></span>
+                                            Live
+                                        </span>
+                                    </div>
                                 </div>
+
+                                <!-- Participants -->
+                                <div class="mb-4">
+                                    <h4 class="text-xs uppercase text-gray-400 font-bold tracking-wider mb-2">
+                                        Participants (<span x-text="friendRoom.participants.length"></span>)</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="p in friendRoom.participants" :key="p.user_id">
+                                            <div
+                                                class="flex items-center space-x-1.5 bg-white/5 px-2 py-1 rounded-full text-xs">
+                                                <div class="w-5 h-5 rounded-full bg-indigo-500/30 flex items-center justify-center text-[10px] font-bold"
+                                                    x-text="(p.username || 'U').charAt(0).toUpperCase()"></div>
+                                                <span x-text="p.username || 'User'"></span>
+                                                <span x-show="p.is_host" class="text-amber-400">👑</span>
+                                            </div>
+                                        </template>
+                                        <div x-show="friendRoom.participants.length === 0"
+                                            class="text-gray-500 text-xs">No participants yet</div>
+                                    </div>
+                                </div>
+
+                                <!-- Queue (visible to all, editable by host) -->
+                                <div class="mb-4" x-show="friendRoom.queue.length > 0">
+                                    <h4 class="text-xs uppercase text-gray-400 font-bold tracking-wider mb-2">Up Next
+                                    </h4>
+                                    <div class="space-y-1 max-h-32 overflow-y-auto">
+                                        <template x-for="(song, idx) in friendRoom.queue" :key="idx">
+                                            <div
+                                                class="flex items-center justify-between bg-white/5 p-2 rounded-lg text-xs">
+                                                <div class="flex items-center space-x-2 min-w-0">
+                                                    <span class="text-gray-500 w-4" x-text="idx + 1"></span>
+                                                    <span class="truncate"
+                                                        x-text="song.title || song.song?.title"></span>
+                                                </div>
+                                                <button x-show="friendRoom.isHost" @click="removeFromQueue(idx)"
+                                                    class="text-red-400 hover:text-red-300 p-1 flex-shrink-0">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Host Controls -->
+                                <div x-show="friendRoom.isHost" class="flex space-x-2 mb-3">
+                                    <button @click="nextSong()"
+                                        class="flex-1 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 text-xs py-2 rounded-lg transition-colors flex items-center justify-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7" />
+                                        </svg>
+                                        <span>Skip</span>
+                                    </button>
+                                    <button @click="clearQueue()"
+                                        class="flex-1 bg-gray-500/20 hover:bg-gray-500/40 text-gray-300 text-xs py-2 rounded-lg transition-colors flex items-center justify-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span>Clear Queue</span>
+                                    </button>
+                                </div>
+
+                                <!-- Leave Button -->
                                 <button @click="leaveRoom()"
-                                    class="w-full bg-red-500/20 hover:bg-red-500/40 text-red-200 text-xs py-2 rounded transition-colors">Leave
+                                    class="w-full bg-red-500/20 hover:bg-red-500/40 text-red-200 text-xs py-2 rounded-lg transition-colors">Leave
                                     Room</button>
+                            </div>
+
+                            <!-- No Room State -->
+                            <div x-show="!friendRoom.currentRoomId" class="text-center py-8 text-gray-500">
+                                <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <p class="text-sm">Create or join a room to listen together!</p>
                             </div>
                         </div>
 
@@ -1293,7 +1652,12 @@
                     rooms: [],
                     searchQuery: '',
                     searchResults: [],
-                    newRoomName: ''
+                    newRoomName: '',
+                    joinCode: '',
+                    currentRoomId: null,
+                    isHost: false,
+                    participants: [],
+                    queue: []
                 },
 
                 // Search Modal State
@@ -1645,7 +2009,21 @@
                     try {
                         const res = await window.friendRoomClient.createRoom(name);
                         if (res.status === 'success') {
-                            this.showToast('success', 'Room Created', `You are now host of "${name}"`);
+                            this.friendRoom.currentRoomId = res.room_id;
+                            this.friendRoom.isHost = true;
+                            this.friendRoom.participants = [{ user_id: this.userId, username: this.username, is_host: true }];
+
+                            // Populate queue with host's recommendations
+                            this.friendRoom.queue = this.recommendations.map(rec => ({
+                                title: rec.song?.title || rec.title,
+                                artists: rec.song?.artists || rec.artists,
+                                image: rec.song?.image || rec.image,
+                                platform_id: rec.song?.platform_id || rec.platform_id,
+                                recommendation_id: rec.recommendation_id,
+                                song: rec.song || rec
+                            }));
+
+                            this.showToast('success', 'Room Created', `You are now host of "${name}" with ${this.friendRoom.queue.length} songs`);
                             this.friendRoom.newRoomName = '';
                             this.refreshRoomData();
 
@@ -1663,10 +2041,57 @@
                     if (!this.friendRoom.currentRoomId) return;
                     try {
                         await window.friendRoomClient.leaveRoom();
+                        this.friendRoom.currentRoomId = null;
+                        this.friendRoom.isHost = false;
+                        this.friendRoom.participants = [];
+                        this.friendRoom.queue = [];
                         this.showToast('info', 'Left Room', 'You have left the room');
                         this.refreshRoomData();
-                        // Reset player state if needed, or keep playing locally
                     } catch (e) { console.error(e); }
+                },
+
+                async joinRoomByCode() {
+                    const code = this.friendRoom.joinCode.trim().toUpperCase();
+                    if (!code || code.length !== 6) {
+                        this.showToast('error', 'Invalid Code', 'Please enter a valid 6-character room code');
+                        return;
+                    }
+                    try {
+                        const res = await window.friendRoomClient.joinRoomAPI(code);
+                        if (res.status === 'success' || res.room_id) {
+                            this.friendRoom.currentRoomId = code;
+                            this.friendRoom.isHost = res.is_host || false;
+                            this.showToast('success', 'Joined Room', `You are now in room ${code}`);
+                            this.friendRoom.joinCode = '';
+                            await window.friendRoomClient.joinRoom(code);
+                            this.refreshRoomData();
+                        } else {
+                            this.showToast('error', 'Join Failed', res.message || 'Could not join room');
+                        }
+                    } catch (e) {
+                        this.showToast('error', 'Error', 'Failed to join room');
+                        console.error(e);
+                    }
+                },
+
+                clearQueue() {
+                    this.friendRoom.queue = [];
+                    // Emit to room if host
+                    if (window.friendRoomClient && window.friendRoomClient.isHost) {
+                        window.friendRoomClient.syncState({
+                            is_playing: this.playing,
+                            current_time: ytPlayer ? ytPlayer.getCurrentTime() : 0,
+                            timestamp: Date.now()
+                        }, this.currentSong);
+                    }
+                    this.showToast('info', 'Queue Cleared', 'The queue has been cleared');
+                },
+
+                removeFromQueue(index) {
+                    if (index >= 0 && index < this.friendRoom.queue.length) {
+                        const removed = this.friendRoom.queue.splice(index, 1);
+                        this.showToast('info', 'Removed', `Removed "${removed[0]?.title || 'song'}" from queue`);
+                    }
                 },
 
                 // Keep-Alive System (Client-side)
@@ -2170,6 +2595,28 @@
                     // Stop ad monitoring when skipping
                     this.stopAdMonitoring();
 
+                    // If in a room with queue, play from queue
+                    if (this.friendRoom.currentRoomId && this.friendRoom.queue.length > 0) {
+                        // Take the first song from queue
+                        const nextFromQueue = this.friendRoom.queue.shift();
+                        if (nextFromQueue) {
+                            // Play and sync to room if host
+                            this.loadSong(nextFromQueue.song || nextFromQueue);
+
+                            if (this.friendRoom.isHost && window.friendRoomClient) {
+                                window.friendRoomClient.syncState({
+                                    is_playing: true,
+                                    current_time: 0,
+                                    timestamp: Date.now(),
+                                    queue: this.friendRoom.queue
+                                }, nextFromQueue.song || nextFromQueue);
+                            }
+                            this.vibrate(15);
+                            return;
+                        }
+                    }
+
+                    // Fall back to recommendations
                     if (this.recommendations.length === 0) return;
 
                     const currentIndex = this.recommendations.findIndex(r =>
@@ -2409,8 +2856,45 @@
 
                 async playSongFromSearch(song) {
                     console.log('Playing song from search:', song);
-                    // Load the song immediately
-                    await this.loadSong(song);
+
+                    // If host and in a room, add to queue and sync
+                    if (this.friendRoom.currentRoomId && this.friendRoom.isHost) {
+                        // Add to queue
+                        this.friendRoom.queue.push({
+                            title: song.title,
+                            artists: song.artists,
+                            image: song.image,
+                            platform_id: song.platform_id,
+                            song: song
+                        });
+                        this.showToast('success', 'Added to Queue', `"${song.title}" added to room queue`);
+
+                        // Sync queue to room
+                        if (window.friendRoomClient) {
+                            window.friendRoomClient.syncState({
+                                is_playing: this.playing,
+                                current_time: ytPlayer ? ytPlayer.getCurrentTime() : 0,
+                                timestamp: Date.now(),
+                                queue: this.friendRoom.queue
+                            }, this.currentSong);
+                        }
+                    } else {
+                        // Not in room or not host - play immediately
+                        await this.loadSong(song);
+                    }
+                },
+
+                // Add song to queue (host only)
+                addToQueue(song) {
+                    if (!this.friendRoom.isHost) return;
+                    this.friendRoom.queue.push({
+                        title: song.title || song.song?.title,
+                        artists: song.artists || song.song?.artists,
+                        image: song.image || song.song?.image,
+                        platform_id: song.platform_id || song.song?.platform_id,
+                        song: song.song || song
+                    });
+                    this.showToast('success', 'Added', `"${song.title || song.song?.title}" added to queue`);
                 },
 
                 // Mobile Haptics
@@ -2437,103 +2921,276 @@
             }
         }
 
-        // Cat Emotion System
+        // Cat Emotion System - Advanced Version
         function catEmotion() {
             return {
-                emotion: 'idle',  // Initialize with 'idle' to prevent undefined errors
-                catState: 'cat-idle',
+                emotion: 'idle',
+                mood: 'content', // content, happy, excited, sleepy, vibing
                 speechVisible: false,
                 speechText: '',
                 lastSongTitle: '',
-                interactionCount: 0,
-                catX: 20,
-                catY: 20,
-                following: false,
-                mouseX: 0,
-                mouseY: 0,
-                isRolling: false,
-                isRollingAround: false,
+                catX: 40,
+                catY: 40,
+                eyeOffsetX: 0,
+                eyeOffsetY: 0,
                 isGlowing: false,
-                isBouncing: false,
-                isSpinning: false,
+                isPurring: false,
+                isVibing: false,
                 isDragging: false,
                 dragStartX: 0,
                 dragStartY: 0,
+                playing: false,
+                clickCount: 0,
                 lastClickTime: 0,
-                autoRollInterval: null,
+                particleInterval: null,
+                zzzInterval: null,
 
                 init() {
-                    // Ensure emotion is always defined to prevent Alpine.js errors
-                    if (!this.emotion || this.emotion === undefined) {
-                        this.emotion = 'idle';
-                    }
+                    // Update state from main app
+                    setInterval(() => {
+                        if (window.playAppInstance) {
+                            const wasPlaying = this.playing;
+                            this.playing = window.playAppInstance.playing;
 
-                    // Update emotion periodically and watch for changes
-                    const updateInterval = setInterval(() => {
-                        this.updateEmotion();
+                            // Detect state changes
+                            if (!wasPlaying && this.playing) {
+                                this.onMusicStart();
+                            } else if (wasPlaying && !this.playing) {
+                                this.onMusicStop();
+                            }
+                        }
+                        this.updateEyes();
                         this.checkForNewSong();
                         this.updatePosition();
-                    }, 100);
+                        this.updateMood();
+                    }, 50);
 
-                    // Track mouse position globally
+                    // Track mouse for eyes
                     document.addEventListener('mousemove', (e) => {
                         this.mouseX = e.clientX;
                         this.mouseY = e.clientY;
+                        if (this.isDragging) {
+                            this.handleDrag(e);
+                        }
                     });
 
-                    // Cleanup on component destroy
-                    this.$el.addEventListener('alpine:destroyed', () => {
-                        clearInterval(updateInterval);
-                    });
+                    document.addEventListener('mouseup', () => this.stopDrag());
                 },
 
-                handleMouseMove(event) {
-                    // Handle dragging - no boundaries
-                    if (this.isDragging) {
-                        const newX = window.innerWidth - (event.clientX - this.dragStartX + this.$el.offsetWidth);
-                        const newY = window.innerHeight - (event.clientY - this.dragStartY + this.$el.offsetHeight);
-                        this.catX = newX;
-                        this.catY = newY;
-                        return;
+                onMusicStart() {
+                    this.mood = 'vibing';
+                    this.isVibing = true;
+                    this.startNoteParticles();
+                    this.stopZzzParticles();
+                    const messages = [
+                        '🎵 Yesss, music time!',
+                        '🎧 Let\'s vibe!',
+                        '🎶 My jam!',
+                        '💃 Dance mode activated!',
+                        '✨ This slaps!'
+                    ];
+                    this.showSpeech(messages[Math.floor(Math.random() * messages.length)], 2000);
+                },
+
+                onMusicStop() {
+                    this.mood = 'sleepy';
+                    this.isVibing = false;
+                    this.stopNoteParticles();
+                    setTimeout(() => this.startZzzParticles(), 3000);
+                    const messages = [
+                        '😴 Sleepy time...',
+                        '💤 *yawns*',
+                        '🥱 More music pls...',
+                        '😿 Why did it stop?'
+                    ];
+                    this.showSpeech(messages[Math.floor(Math.random() * messages.length)], 2000);
+                },
+
+                startNoteParticles() {
+                    if (this.particleInterval) clearInterval(this.particleInterval);
+                    this.particleInterval = setInterval(() => {
+                        if (this.playing) this.spawnNote();
+                    }, 800);
+                },
+
+                stopNoteParticles() {
+                    if (this.particleInterval) {
+                        clearInterval(this.particleInterval);
+                        this.particleInterval = null;
                     }
+                },
 
-                    // Slight follow effect when mouse is near
-                    const rect = this.$el.getBoundingClientRect();
-                    const catCenterX = rect.left + rect.width / 2;
-                    const catCenterY = rect.top + rect.height / 2;
-                    const distance = Math.sqrt(
-                        Math.pow(event.clientX - catCenterX, 2) +
-                        Math.pow(event.clientY - catCenterY, 2)
-                    );
+                startZzzParticles() {
+                    if (this.zzzInterval) clearInterval(this.zzzInterval);
+                    this.zzzInterval = setInterval(() => {
+                        if (!this.playing) this.spawnZzz();
+                    }, 2000);
+                },
 
-                    if (distance < 200) {
-                        this.following = true;
-                        const followStrength = 0.12;
-                        const deltaX = (event.clientX - catCenterX) * followStrength;
-                        const deltaY = (event.clientY - catCenterY) * followStrength;
+                stopZzzParticles() {
+                    if (this.zzzInterval) {
+                        clearInterval(this.zzzInterval);
+                        this.zzzInterval = null;
+                    }
+                },
 
-                        // Calculate new position from right and bottom - no boundaries
-                        const newRight = window.innerWidth - (rect.right - deltaX);
-                        const newBottom = window.innerHeight - (rect.bottom - deltaY);
+                spawnNote() {
+                    const cat = document.querySelector('.cat-container');
+                    if (!cat) return;
+                    const notes = ['♪', '♫', '♬', '🎵', '🎶'];
+                    const note = document.createElement('span');
+                    note.className = 'cat-note';
+                    note.textContent = notes[Math.floor(Math.random() * notes.length)];
+                    note.style.left = (Math.random() * 60 + 20) + 'px';
+                    note.style.top = (Math.random() * 30) + 'px';
+                    note.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    cat.appendChild(note);
+                    setTimeout(() => note.remove(), 2000);
+                },
 
-                        this.catX = newRight;
-                        this.catY = newBottom;
+                spawnZzz() {
+                    const cat = document.querySelector('.cat-container');
+                    if (!cat) return;
+                    const zzz = document.createElement('span');
+                    zzz.className = 'cat-zzz';
+                    zzz.textContent = 'Z';
+                    zzz.style.left = (Math.random() * 40 + 30) + 'px';
+                    zzz.style.top = '10px';
+                    cat.appendChild(zzz);
+                    setTimeout(() => zzz.remove(), 3000);
+                },
+
+                spawnHeart() {
+                    const cat = document.querySelector('.cat-container');
+                    if (!cat) return;
+                    const heart = document.createElement('span');
+                    heart.className = 'cat-heart';
+                    heart.textContent = '❤️';
+                    heart.style.left = (Math.random() * 60 + 20) + 'px';
+                    heart.style.top = (Math.random() * 20) + 'px';
+                    cat.appendChild(heart);
+                    setTimeout(() => heart.remove(), 1500);
+                },
+
+                spawnStar() {
+                    const cat = document.querySelector('.cat-container');
+                    if (!cat) return;
+                    const star = document.createElement('span');
+                    star.className = 'cat-star';
+                    star.textContent = '⭐';
+                    star.style.left = (Math.random() * 60 + 20) + 'px';
+                    star.style.top = (Math.random() * 20) + 'px';
+                    cat.appendChild(star);
+                    setTimeout(() => star.remove(), 2000);
+                },
+
+                updateMood() {
+                    const hour = new Date().getHours();
+                    if (this.playing) {
+                        this.mood = 'vibing';
+                    } else if (hour >= 23 || hour < 6) {
+                        this.mood = 'sleepy';
                     } else {
-                        this.following = false;
+                        this.mood = 'content';
                     }
+                },
+
+                updateEyes() {
+                    if (this.isDragging) return;
+
+                    const catEl = document.querySelector('.cat-container');
+                    if (!catEl) return;
+
+                    const rect = catEl.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    const angle = Math.atan2(this.mouseY - centerY, this.mouseX - centerX);
+                    const distance = Math.min(5, Math.sqrt(Math.pow(this.mouseX - centerX, 2) + Math.pow(this.mouseY - centerY, 2)) / 50);
+
+                    this.eyeOffsetX = Math.cos(angle) * distance;
+                    this.eyeOffsetY = Math.sin(angle) * distance;
+                },
+
+                handleDrag(event) {
+                    this.catX = window.innerWidth - event.clientX - 70;
+                    this.catY = window.innerHeight - event.clientY - 70;
+                },
+
+                startDrag(event) {
+                    this.isDragging = true;
+                    this.dragStartX = event.clientX;
+                    this.dragStartY = event.clientY;
+                    const messages = ['Wheee! 🙀', 'Put me down! 😹', 'I can fly! ✨', 'Higher! 🚀'];
+                    this.showSpeech(messages[Math.floor(Math.random() * messages.length)], 1000);
+                },
+
+                stopDrag() {
+                    this.isDragging = false;
                 },
 
                 updatePosition() {
-                    // Autonomous wandering when not following and not dragging
-                    if (!this.following && !this.isDragging) {
-                        // Cat moves around independently with gentle drift
-                        const time = Date.now() / 2000; // Slower movement
-                        const wanderX = 20 + Math.sin(time * 0.3) * 40;
-                        const wanderY = 20 + Math.cos(time * 0.4) * 35;
+                    if (!this.isDragging) {
+                        const time = Date.now() / 2000;
+                        const driftX = Math.sin(time) * 5;
+                        const driftY = Math.cos(time * 0.8) * 3;
 
-                        this.catX += (wanderX - this.catX) * 0.02;
-                        this.catY += (wanderY - this.catY) * 0.02;
+                        const targetX = 40 + driftX;
+                        const targetY = 40 + driftY;
+
+                        this.catX += (targetX - this.catX) * 0.05;
+                        this.catY += (targetY - this.catY) * 0.05;
                     }
+                },
+
+                interactWithCat() {
+                    const now = Date.now();
+                    if (now - this.lastClickTime < 500) {
+                        this.clickCount++;
+                    } else {
+                        this.clickCount = 1;
+                    }
+                    this.lastClickTime = now;
+
+                    // Combo reactions based on click count
+                    if (this.clickCount >= 5) {
+                        this.showSpeech('🌟 SUPER KITTY MODE! 🌟', 2000);
+                        this.isGlowing = true;
+                        this.spawnStar();
+                        this.spawnStar();
+                        this.spawnHeart();
+                        for (let i = 0; i < 5; i++) setTimeout(() => this.spawnNote(), i * 200);
+                        setTimeout(() => this.isGlowing = false, 2000);
+                        this.clickCount = 0;
+                    } else if (this.clickCount >= 3) {
+                        this.showSpeech('More pets! 💕', 1500);
+                        this.isPurring = true;
+                        this.spawnHeart();
+                        this.spawnHeart();
+                        setTimeout(() => this.isPurring = false, 1500);
+                    } else {
+                        const messages = [
+                            'Purrr... 🎶', 'I love this track!', 'Meow! 🐱',
+                            'High five! 🐾', 'Need more bass!', 'Aura is the best!',
+                            '*purrs loudly*', 'Pet me more! 💜', 'You\'re the best! ⭐',
+                            'Let\'s party! 🎉', 'Vibes on point! ✨'
+                        ];
+                        this.showSpeech(messages[Math.floor(Math.random() * messages.length)]);
+                        this.spawnHeart();
+                        this.isGlowing = true;
+                        setTimeout(() => this.isGlowing = false, 1000);
+                    }
+                },
+
+                showSpeech(text, duration = 3000) {
+                    this.speechText = text;
+                    this.speechVisible = true;
+                    if (this.speechTimeout) clearTimeout(this.speechTimeout);
+                    this.speechTimeout = setTimeout(() => this.speechVisible = false, duration);
+                },
+
+                hideSpeech() {
+                    this.speechVisible = false;
                 },
 
                 async checkForNewSong() {
@@ -2542,645 +3199,22 @@
                         const currentTitle = playApp.currentSong.song?.title || playApp.currentSong.title;
                         if (currentTitle && currentTitle !== this.lastSongTitle) {
                             this.lastSongTitle = currentTitle;
-
-                            // Simple reaction to new song
-                            this.setEmotion('excited', 2000);
-                            this.showSpeech('New song! 🎵', 2000);
+                            const reactions = [
+                                `🎵 "${currentTitle.substring(0, 20)}..." Nice!`,
+                                '✨ Ooh, new song!',
+                                '🎧 Great choice!',
+                                '💜 I love this one!',
+                                '🔥 This one\'s fire!'
+                            ];
+                            this.showSpeech(reactions[Math.floor(Math.random() * reactions.length)], 3000);
+                            this.isGlowing = true;
+                            this.spawnStar();
+                            setTimeout(() => this.isGlowing = false, 2000);
                         }
                     }
-                },
-
-                updateEmotion() {
-                    const playApp = window.playAppInstance;
-                    if (!playApp) return;
-
-                    if (playApp.playing) {
-                        // Dancing when music is playing
-                        this.setEmotion('dancing');
-                        // Trigger 3D dance animation
-                        if (window.catDance) {
-                            window.catDance();
-                        }
-                        // Auto-roll occasionally when music is playing
-                        if (!this.autoRollInterval && Math.random() < 0.01) {
-                            this.rollAround();
-                        }
-                    } else if (playApp.currentSong) {
-                        // Happy but paused
-                        this.setEmotion('happy');
-                    } else {
-                        // Sleeping when no song
-                        this.setEmotion('sleeping');
-                    }
-                },
-
-                setEmotion(newEmotion, duration = null) {
-                    this.emotion = newEmotion || 'idle';
-
-                    // Remove all emotion classes
-                    const classes = ['cat-idle', 'cat-dancing', 'cat-happy', 'cat-sad', 'cat-excited', 'cat-sleeping', 'cat-depressed', 'cat-playing', 'cat-listening'];
-                    classes.forEach(cls => {
-                        if (this.catState.includes(cls)) {
-                            this.catState = this.catState.replace(cls, '').trim();
-                        }
-                    });
-
-                    // Add new emotion class
-                    this.catState = `cat-${newEmotion}`;
-
-                    // Add playing class if music is playing
-                    if (window.playAppInstance?.playing) {
-                        this.catState += ' cat-playing cat-listening';
-                    }
-
-                    // Reset after duration if specified
-                    if (duration) {
-                        setTimeout(() => {
-                            this.updateEmotion();
-                        }, duration);
-                    }
-                },
-
-                interactWithCat() {
-                    this.interactionCount++;
-                    const playApp = window.playAppInstance;
-
-                    // Check for double click
-                    const now = Date.now();
-                    if (now - this.lastClickTime < 300) {
-                        // Double click detected - roll!
-                        this.rollCat();
-                        this.lastClickTime = 0;
-                        return;
-                    }
-                    this.lastClickTime = now;
-
-                    const messages = [
-                        'Purr purr! 🐾',
-                        'Meow! Play me some music! 🎵',
-                        'I love this song! 💜',
-                        'Scratch my ears! 😸',
-                        'More music please! 🎶',
-                        'You\'re the best! ⭐',
-                        'This beat is purrfect! 🎵',
-                        'Keep the music coming! 🎧',
-                        'Double click to see me roll! 🎲',
-                        'I\'m having so much fun! 🎉',
-                        'Wheee! This is awesome! 🌟'
-                    ];
-
-                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-                    this.showSpeech(randomMessage, 2000);
-
-                    // Set excited emotion briefly
-                    this.setEmotion('excited', 1500);
-
-                    // Add glow effect
-                    this.addGlow();
-
-                    // Create heart and star particles
-                    this.createHearts();
-                    this.createStars();
-                    this.createSparkles();
-                },
-
-                rollCat() {
-                    if (this.isRolling) return;
-
-                    this.isRolling = true;
-                    this.showSpeech('Wheee! Rolling! 🎲', 2000);
-                    this.createStars();
-
-                    // Trigger 3D roll animation
-                    if (window.doCatRoll) {
-                        window.doCatRoll(1);
-                    }
-
-                    // Smooth transition
-                    this.$el.style.transition = 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)';
-
-                    setTimeout(() => {
-                        this.isRolling = false;
-                        this.$el.style.transition = '';
-                    }, 1500);
-                },
-
-                rollAround() {
-                    if (this.isRollingAround) return;
-
-                    this.isRollingAround = true;
-                    this.showSpeech('Rolling around! 🎪', 3000);
-                    this.createSparkles();
-
-                    // Smooth transition
-                    this.$el.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-
-                    setTimeout(() => {
-                        this.isRollingAround = false;
-                        this.$el.style.transition = '';
-                    }, 3000);
-                },
-
-                addGlow() {
-                    this.isGlowing = true;
-                    setTimeout(() => {
-                        this.isGlowing = false;
-                    }, 2000);
-                },
-
-                bounce() {
-                    this.isBouncing = true;
-                    setTimeout(() => {
-                        this.isBouncing = false;
-                    }, 600);
-                },
-
-                spin() {
-                    this.isSpinning = true;
-                    setTimeout(() => {
-                        this.isSpinning = false;
-                    }, 800);
-                },
-
-                startDrag(event) {
-                    if (event.button !== 0) return; // Only left mouse button
-                    this.isDragging = true;
-                    const rect = this.$el.getBoundingClientRect();
-                    this.dragStartX = event.clientX - rect.left;
-                    this.dragStartY = event.clientY - rect.top;
-                    this.$el.style.cursor = 'grabbing';
-                },
-
-                stopDrag() {
-                    if (this.isDragging) {
-                        this.isDragging = false;
-                        this.$el.style.cursor = 'pointer';
-                        this.bounce();
-                    }
-                },
-
-                createHearts() {
-                    const catContainer = this.$el;
-                    const heartEmojis = ['💜', '❤️', '💕', '💖', '💗'];
-                    for (let i = 0; i < 5; i++) {
-                        setTimeout(() => {
-                            const heart = document.createElement('div');
-                            heart.className = 'cat-heart';
-                            heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
-                            heart.style.left = `${50 + (Math.random() - 0.5) * 60}%`;
-                            heart.style.top = `${50 + (Math.random() - 0.5) * 60}%`;
-                            catContainer.appendChild(heart);
-
-                            setTimeout(() => heart.remove(), 1500);
-                        }, i * 150);
-                    }
-                },
-
-                createStars() {
-                    const catContainer = this.$el;
-                    const starEmojis = ['⭐', '✨', '🌟', '💫'];
-                    for (let i = 0; i < 8; i++) {
-                        setTimeout(() => {
-                            const star = document.createElement('div');
-                            star.className = 'cat-star';
-                            star.textContent = starEmojis[Math.floor(Math.random() * starEmojis.length)];
-                            star.style.left = `${50 + (Math.random() - 0.5) * 80}%`;
-                            star.style.top = `${50 + (Math.random() - 0.5) * 80}%`;
-                            catContainer.appendChild(star);
-
-                            setTimeout(() => star.remove(), 2000);
-                        }, i * 100);
-                    }
-                },
-
-                createSparkles() {
-                    const catContainer = this.$el;
-                    for (let i = 0; i < 12; i++) {
-                        setTimeout(() => {
-                            const sparkle = document.createElement('div');
-                            sparkle.className = 'cat-sparkle';
-                            sparkle.style.left = `${Math.random() * 100}%`;
-                            sparkle.style.top = `${Math.random() * 100}%`;
-                            sparkle.style.animationDelay = `${Math.random() * 0.6}s`;
-                            catContainer.appendChild(sparkle);
-
-                            setTimeout(() => sparkle.remove(), 1000);
-                        }, i * 50);
-                    }
-                },
-
-                showSpeech(text, duration = 3000) {
-                    this.speechText = text;
-                    this.speechVisible = true;
-
-                    if (duration) {
-                        setTimeout(() => {
-                            this.hideSpeech();
-                        }, duration);
-                    }
-                },
-
-                hideSpeech() {
-                    this.speechVisible = false;
                 }
             }
         }
-
-        // Initialize 3D Cat with Three.js
-        function init3DCat() {
-            // OPTIMIZATION: Skip 3D initialization on mobile
-            if (window.playAppInstance && window.playAppInstance.mobileMode) {
-                console.log('Skipping 3D Cat initialization (Mobile Mode)');
-                return;
-            }
-
-            const container = document.getElementById('cat-3d-container');
-            if (!container) return;
-
-            // Clear previous content
-            container.innerHTML = '<div class="cat-speech" :class="{ \'show\': speechVisible }" x-text="speechText"></div>';
-
-            // Scene setup
-            const scene = new THREE.Scene();
-
-            // Camera setup
-            const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000); // Square aspect ratio
-            camera.position.z = 5;
-            camera.position.y = 0.5;
-
-            // Renderer setup
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            renderer.setSize(200, 200);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            container.appendChild(renderer.domElement);
-
-            // Lighting
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
-
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(2, 5, 5);
-            scene.add(directionalLight);
-
-            const spotLight = new THREE.SpotLight(0x6366f1, 1);
-            spotLight.position.set(-2, 3, 2);
-            scene.add(spotLight);
-
-            // Group to hold the entire cat
-            const catGroup = new THREE.Group();
-            scene.add(catGroup);
-
-            // Materials
-            const bodyMat = new THREE.MeshPhongMaterial({
-                color: 0x1f2937, // Dark Gray
-                specular: 0x6366f1, // Indigo highlight
-                shininess: 30,
-                emissive: 0x000000
-            });
-
-            const accentMat = new THREE.MeshPhongMaterial({
-                color: 0xf43f5e, // Rose
-                shininess: 50
-            });
-
-            const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffa500 }); // Orange eyes
-            const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-            // --- Constructing the Cat (Procedural Low-Poly Style) ---
-
-            // Body (Capsule-like)
-            const bodyGeom = new THREE.SphereGeometry(1, 32, 32);
-            bodyGeom.scale(0.9, 1.1, 0.8);
-            const body = new THREE.Mesh(bodyGeom, bodyMat);
-            body.position.y = 0;
-            catGroup.add(body);
-
-            // Head Group (for independent rotation)
-            const headGroup = new THREE.Group();
-            headGroup.position.set(0, 0.8, 0.3);
-            catGroup.add(headGroup);
-
-            // Head Mesh
-            const headGeom = new THREE.SphereGeometry(0.75, 32, 32);
-            headGeom.scale(1, 0.85, 0.85);
-            const head = new THREE.Mesh(headGeom, bodyMat);
-            headGroup.add(head);
-
-            // Ears
-            const earGeom = new THREE.ConeGeometry(0.25, 0.5, 4);
-            const earL = new THREE.Mesh(earGeom, bodyMat);
-            earL.position.set(-0.45, 0.6, 0);
-            earL.rotation.z = 0.5;
-            earL.rotation.y = -0.2;
-            headGroup.add(earL);
-
-            const earR = new THREE.Mesh(earGeom, bodyMat);
-            earR.position.set(0.45, 0.6, 0);
-            earR.rotation.z = -0.5;
-            earR.rotation.y = 0.2;
-            headGroup.add(earR);
-
-            // Ear Inners (Holo-glow)
-            const earInnerGeom = new THREE.ConeGeometry(0.15, 0.3, 4);
-            const earInnerL = new THREE.Mesh(earInnerGeom, accentMat);
-            earInnerL.position.set(-0.45, 0.6, 0.05);
-            earInnerL.rotation.z = 0.5;
-            earInnerL.rotation.y = -0.2;
-            headGroup.add(earInnerL);
-
-            const earInnerR = new THREE.Mesh(earInnerGeom, accentMat);
-            earInnerR.position.set(0.45, 0.6, 0.05);
-            earInnerR.rotation.z = -0.5;
-            earInnerR.rotation.y = 0.2;
-            headGroup.add(earInnerR);
-
-            // Eyes
-            const eyeGeom = new THREE.CapsuleGeometry(0.12, 0.15, 4, 8);
-            eyeGeom.rotateZ(Math.PI / 2);
-
-            const eyeL = new THREE.Mesh(eyeGeom, eyeMat);
-            eyeL.position.set(-0.25, 0.1, 0.65);
-            headGroup.add(eyeL);
-
-            const eyeR = new THREE.Mesh(eyeGeom, eyeMat);
-            eyeR.position.set(0.25, 0.1, 0.65);
-            headGroup.add(eyeR);
-
-            // Pupils (Black)
-            const pupilGeom = new THREE.SphereGeometry(0.06, 8, 8);
-            const pupilMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-
-            const pupilL = new THREE.Mesh(pupilGeom, pupilMat);
-            pupilL.position.set(0, 0, 0.12);
-            eyeL.add(pupilL);
-
-            const pupilR = new THREE.Mesh(pupilGeom, pupilMat);
-            pupilR.position.set(0, 0, 0.12);
-            eyeR.add(pupilR);
-
-            const blinkMeshL = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), bodyMat);
-            blinkMeshL.scale.y = 0;
-            blinkMeshL.position.set(-0.25, 0.1, 0.64);
-            headGroup.add(blinkMeshL);
-
-            const blinkMeshR = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 8), bodyMat);
-            blinkMeshR.scale.y = 0;
-            blinkMeshR.position.set(0.25, 0.1, 0.64);
-            headGroup.add(blinkMeshR);
-
-            // Visor / Glasses (Cyberpunk feel)
-            // const visorGeom = new THREE.BoxGeometry(0.8, 0.25, 0.1);
-            // const visorMat = new THREE.MeshPhongMaterial({ 
-            //    color: 0x00ffff, 
-            //    transparent: true, 
-            //    opacity: 0.4,
-            //    shininess: 100
-            // });
-            // const visor = new THREE.Mesh(visorGeom, visorMat);
-            // visor.position.set(0, 0.1, 0.75);
-            // headGroup.add(visor);
-
-            // Nose
-            const nose = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.05, 4), accentMat);
-            nose.rotation.x = Math.PI / 2;
-            nose.position.set(0, -0.05, 0.75);
-            headGroup.add(nose);
-
-            // Whiskers (Lines)
-            const whiskerGroup = new THREE.Group();
-            headGroup.add(whiskerGroup);
-
-            function createWhisker(x, y, z, rotZ) {
-                const geometry = new THREE.BoxGeometry(0.3, 0.01, 0.01);
-                const material = new THREE.MeshBasicMaterial({ color: 0x9ca3af });
-                const whisker = new THREE.Mesh(geometry, material);
-                whisker.position.set(x, y, z);
-                whisker.rotation.z = rotZ;
-                whiskerGroup.add(whisker);
-                return whisker;
-            }
-
-            createWhisker(-0.4, -0.1, 0.65, 0.2);
-            createWhisker(-0.4, -0.18, 0.63, 0);
-            createWhisker(0.4, -0.1, 0.65, -0.2);
-            createWhisker(0.4, -0.18, 0.63, 0);
-
-            // Paws
-            const pawGeom = new THREE.SphereGeometry(0.25, 16, 16);
-            pawGeom.scale(1, 0.8, 1.2);
-
-            const pawFL = new THREE.Mesh(pawGeom, whiteMat);
-            pawFL.position.set(-0.3, -0.8, 0.6);
-            catGroup.add(pawFL);
-
-            const pawFR = new THREE.Mesh(pawGeom, whiteMat);
-            pawFR.position.set(0.3, -0.8, 0.6);
-            catGroup.add(pawFR);
-
-            // Tail
-            const tailCurve = new THREE.CatmullRomCurve3([
-                new THREE.Vector3(0, -0.5, -0.8),
-                new THREE.Vector3(0, 0.2, -1.2),
-                new THREE.Vector3(0, 0.6, -1.0)
-            ]);
-            const tailGeom = new THREE.TubeGeometry(tailCurve, 20, 0.08, 8, false);
-            const tail = new THREE.Mesh(tailGeom, bodyMat);
-            catGroup.add(tail);
-
-            // --- Animation State ---
-            let time = 0;
-            let targetLookX = 0;
-            let targetLookY = 0;
-            let currentLookX = 0;
-            let currentLookY = 0;
-            let isHovered = false;
-            let jumpForce = 0;
-
-            // Globals exposure for interaction
-            window.cat3D = {
-                renderer,
-                scene,
-                camera,
-                catGroup
-            };
-
-            // Mapping mouse to 3D interaction
-            const raycaster = new THREE.Raycaster();
-            const mouse = new THREE.Vector2();
-
-            container.addEventListener('mousemove', (event) => {
-                const rect = renderer.domElement.getBoundingClientRect();
-                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-                // Update Look Target (Screen relative)
-                // We want the cat to look at the global mouse position, but we only have local canvas data here easily.
-                // Actually, let's use the global window mouse tracked by Alpine if possible, 
-                // OR just use the local offset for "fine" looking.
-
-                // Global mouse tracking from Alpine store
-                // const globalX = (event.clientX / window.innerWidth) * 2 - 1;
-                // const globalY = -(event.clientY / window.innerHeight) * 2 + 1;
-
-                // targetLookX = globalX * 0.5;
-                // targetLookY = globalY * 0.5;
-
-                // Raycast for hover effect
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObjects(catGroup.children, true);
-                isHovered = intersects.length > 0;
-
-                if (isHovered) {
-                    document.body.style.cursor = 'pointer';
-                } else {
-                    document.body.style.cursor = 'default';
-                }
-            });
-
-            // Click interaction (Jump)
-            container.addEventListener('click', () => {
-                window.catJumpForce = 0.3; // Jump!
-
-                // Trigger emotion in Alpine if available
-                const alp = document.querySelector('[x-data="catEmotion()"]');
-                if (alp && alp.__x) {
-                    alp.__x.$data.setEmotion('excited', 1000);
-                    alp.__x.$data.showSpeech('Meow!', 1000);
-                }
-            });
-
-            // Global mouse tracking for head turning
-            document.addEventListener('mousemove', (e) => {
-                const x = (e.clientX / window.innerWidth) * 2 - 1;
-                const y = -(e.clientY / window.innerHeight) * 2 + 1;
-                // Limit neck rotation
-                targetLookX = Math.max(-0.6, Math.min(0.6, x));
-                targetLookY = Math.max(-0.4, Math.min(0.4, y));
-            });
-
-            // Animation Loop
-            function animate() {
-                requestAnimationFrame(animate);
-
-                time += 0.05;
-
-                // Alpine State Integration
-                const appState = window.playAppInstance;
-                const playing = appState ? appState.playing : false;
-
-                // 1. Idle Breathing
-                const breath = Math.sin(time) * 0.02;
-                body.scale.set(0.9 + breath, 1.1 - breath, 0.8 + breath);
-
-                // 2. Head Look - Smooth Lerp
-                currentLookX += (targetLookX - currentLookX) * 0.1;
-                currentLookY += (targetLookY - currentLookY) * 0.1;
-                headGroup.rotation.y = -currentLookX;
-                headGroup.rotation.x = currentLookY * 0.5;
-
-                // 3. Tail Wag
-                const tailSpeed = playing ? 0.2 : 0.05;
-                const tailAmp = playing ? 0.3 : 0.1;
-                tail.rotation.z = Math.sin(time * tailSpeed * 5) * tailAmp;
-                tail.rotation.y = Math.cos(time * tailSpeed * 3) * (tailAmp * 0.5);
-
-                // 4. Music Reacting (Dancing)
-                if (playing) {
-                    // Bobbing head
-                    const bob = Math.abs(Math.sin(time * 2)) * 0.1;
-                    headGroup.position.y = 0.8 - bob;
-
-                    // Body groove
-                    catGroup.rotation.z = Math.sin(time) * 0.05;
-                    catGroup.position.y = Math.abs(Math.sin(time * 4)) * 0.1;
-
-                    // Ear twitch
-                    if (Math.random() < 0.02) {
-                        earL.rotation.x = Math.random() * 0.2;
-                    } else {
-                        earL.rotation.x = 0;
-                    }
-                } else {
-                    // Reset positions
-                    headGroup.position.y = 0.8;
-                    catGroup.rotation.z = 0;
-                    catGroup.position.y = 0;
-                }
-
-                // 5. Blinking
-                if (Math.random() < 0.005) {
-                    blinkMeshL.scale.y = 1;
-                    blinkMeshR.scale.y = 1;
-                    setTimeout(() => {
-                        blinkMeshL.scale.y = 0;
-                        blinkMeshR.scale.y = 0;
-                    }, 150);
-                }
-
-                // 6. Interaction Animation (Jump/Meow)
-                // If clicked, we apply a force manually via interactWithCat below
-                if (window.catJumpForce > 0) {
-                    catGroup.position.y += window.catJumpForce;
-                    window.catJumpForce -= 0.02;
-                    if (catGroup.position.y < 0) {
-                        catGroup.position.y = 0;
-                        window.catJumpForce = 0;
-                    }
-                }
-
-                // Render
-                renderer.render(scene, camera);
-            }
-
-            animate();
-        }
-
-        // Hook into existing Alpine.js store and events
-        window.doCatRoll = function () {
-            // Spin the group
-            const cat3D = window.cat3D;
-            if (cat3D) {
-                // Simple GSAP-like spin if we had it, but manual for now
-                let spin = 0;
-                const spinInterval = setInterval(() => {
-                    spin += 0.2;
-                    cat3D.catGroup.rotation.y = spin;
-                    if (spin > Math.PI * 2) {
-                        cat3D.catGroup.rotation.y = 0;
-                        clearInterval(spinInterval);
-                    }
-                }, 16);
-            }
-        };
-
-        // Initialize on load
-        function startCatInit() {
-            if (typeof THREE === 'undefined') {
-                setTimeout(startCatInit, 100);
-                return;
-            }
-            if (typeof Alpine === 'undefined') {
-                setTimeout(startCatInit, 100);
-                return;
-            }
-
-            Alpine.nextTick(() => {
-                setTimeout(init3DCat, 300);
-            });
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', startCatInit);
-        } else {
-            startCatInit();
-        }
-
-        // Hijack the interact function to add 3D specific logic
-        window.catJumpForce = 0;
-        const originalInteract = window.playAppInstance ? window.playAppInstance.interactWithCat : null; // This might be hard to access inside closure
-        // We rely on the DOM event handler in HTML calling the Alpine method
-
-
     </script>
     <!-- Friend & Room Client -->
     <script src="/static/friend-room-client.js"></script>
