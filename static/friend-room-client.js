@@ -13,14 +13,14 @@ class FriendRoomClient {
         this.isHost = false;
         this.syncInterval = null;
         this.lastSyncTime = null;
-        
+
         // Event callbacks
         this.onRoomStateChange = null;
         this.onUserJoined = null;
         this.onUserLeft = null;
         this.onError = null;
     }
-    
+
     /**
      * Initialize Socket.IO connection
      */
@@ -29,13 +29,13 @@ class FriendRoomClient {
             console.error("Token required for WebSocket connection");
             return false;
         }
-        
+
         try {
             // Load Socket.IO client library if not already loaded
             if (typeof io === 'undefined') {
                 await this.loadSocketIO();
             }
-            
+
             // Connect to Socket.IO server
             const wsUrl = this.apiBase.replace('/api/v1', '');
             this.socket = io(wsUrl, {
@@ -45,16 +45,16 @@ class FriendRoomClient {
                 reconnectionDelay: 1000,
                 reconnectionAttempts: 5
             });
-            
+
             // Setup event handlers
             this.setupSocketHandlers();
-            
+
             return new Promise((resolve) => {
                 this.socket.on('connect', () => {
                     console.log('WebSocket connected');
                     resolve(true);
                 });
-                
+
                 this.socket.on('connect_error', (error) => {
                     console.error('WebSocket connection error:', error);
                     resolve(false);
@@ -65,7 +65,7 @@ class FriendRoomClient {
             return false;
         }
     }
-    
+
     /**
      * Load Socket.IO client library dynamically
      */
@@ -75,7 +75,7 @@ class FriendRoomClient {
                 resolve();
                 return;
             }
-            
+
             const script = document.createElement('script');
             script.src = 'https://cdn.socket.io/4.5.4/socket.io.min.js';
             script.onload = resolve;
@@ -83,7 +83,7 @@ class FriendRoomClient {
             document.head.appendChild(script);
         });
     }
-    
+
     /**
      * Setup Socket.IO event handlers
      */
@@ -92,45 +92,45 @@ class FriendRoomClient {
             console.log('Authenticated:', data);
             this.userId = data.user_id;
         });
-        
+
         this.socket.on('room_joined', (data) => {
             console.log('Joined room:', data);
             this.currentRoom = data.room_id;
             this.isHost = data.is_host;
-            
+
             // Request current state
             this.requestSync();
-            
+
             if (this.onRoomStateChange) {
                 this.onRoomStateChange(data.room_state);
             }
         });
-        
+
         this.socket.on('room_left', (data) => {
             console.log('Left room:', data);
             this.currentRoom = null;
             this.isHost = false;
             this.stopSync();
         });
-        
+
         this.socket.on('user_joined', (data) => {
             console.log('User joined:', data);
             if (this.onUserJoined) {
                 this.onUserJoined(data);
             }
         });
-        
+
         this.socket.on('user_left', (data) => {
             console.log('User left:', data);
             if (this.onUserLeft) {
                 this.onUserLeft(data);
             }
         });
-        
+
         this.socket.on('state_synced', (data) => {
             console.log('State synced:', data);
             this.lastSyncTime = new Date(data.timestamp);
-            
+
             if (this.onRoomStateChange) {
                 this.onRoomStateChange({
                     current_song: data.current_song,
@@ -138,20 +138,20 @@ class FriendRoomClient {
                 });
             }
         });
-        
+
         this.socket.on('error', (data) => {
             console.error('Socket error:', data);
             if (this.onError) {
                 this.onError(data);
             }
         });
-        
+
         this.socket.on('disconnect', () => {
             console.log('WebSocket disconnected');
             this.stopSync();
         });
     }
-    
+
     /**
      * Join a music room
      */
@@ -159,22 +159,24 @@ class FriendRoomClient {
         if (!this.socket || !this.socket.connected) {
             await this.connect();
         }
-        
-        this.socket.emit('join_room', { room_id: roomId });
+
+        const rId = roomId.toUpperCase();
+        this.socket.emit('join_room', { room_id: rId });
     }
-    
+
     /**
      * Leave current room
      */
     leaveRoom() {
         if (this.socket && this.currentRoom) {
-            this.socket.emit('leave_room_socket', { room_id: this.currentRoom });
+            const rId = this.currentRoom.toUpperCase();
+            this.socket.emit('leave_room_socket', { room_id: rId });
             this.currentRoom = null;
             this.isHost = false;
             this.stopSync();
         }
     }
-    
+
     /**
      * Send sync state (host only)
      */
@@ -182,14 +184,15 @@ class FriendRoomClient {
         if (!this.isHost || !this.socket || !this.currentRoom) {
             return;
         }
-        
+
+        const rId = this.currentRoom.toUpperCase();
         this.socket.emit('sync_state', {
-            room_id: this.currentRoom,
+            room_id: rId,
             playback_state: playbackState,
             current_song: currentSong
         });
     }
-    
+
     /**
      * Request current sync state (for late joiners)
      */
@@ -197,10 +200,11 @@ class FriendRoomClient {
         if (!this.socket || !this.currentRoom) {
             return;
         }
-        
-        this.socket.emit('request_sync', { room_id: this.currentRoom });
+
+        const rId = this.currentRoom.toUpperCase();
+        this.socket.emit('request_sync', { room_id: rId });
     }
-    
+
     /**
      * Start periodic sync (host only)
      */
@@ -208,9 +212,9 @@ class FriendRoomClient {
         if (!this.isHost) {
             return;
         }
-        
+
         this.stopSync();
-        
+
         this.syncInterval = setInterval(() => {
             if (updateCallback) {
                 const state = updateCallback();
@@ -220,7 +224,7 @@ class FriendRoomClient {
             }
         }, intervalMs);
     }
-    
+
     /**
      * Stop periodic sync
      */
@@ -230,22 +234,22 @@ class FriendRoomClient {
             this.syncInterval = null;
         }
     }
-    
+
     /**
      * Disconnect WebSocket
      */
     disconnect() {
         this.leaveRoom();
         this.stopSync();
-        
+
         if (this.socket) {
             this.socket.disconnect();
             this.socket = null;
         }
     }
-    
+
     // Friend Management API methods
-    
+
     async searchUsers(query, limit = 20) {
         const response = await fetch(`${this.apiBase}/friends/search?q=${encodeURIComponent(query)}&limit=${limit}`, {
             method: 'POST',
@@ -256,7 +260,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async sendFriendRequest(username) {
         const response = await fetch(`${this.apiBase}/friends/request`, {
             method: 'POST',
@@ -268,7 +272,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async acceptFriendRequest(senderId) {
         const response = await fetch(`${this.apiBase}/friends/accept`, {
             method: 'POST',
@@ -280,7 +284,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async rejectFriendRequest(senderId) {
         const response = await fetch(`${this.apiBase}/friends/reject`, {
             method: 'POST',
@@ -292,7 +296,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async getFriendRequests(type = 'received') {
         const response = await fetch(`${this.apiBase}/friends/requests?type=${type}`, {
             headers: {
@@ -301,7 +305,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async getFriends() {
         const response = await fetch(`${this.apiBase}/friends`, {
             headers: {
@@ -310,7 +314,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async removeFriend(friendId) {
         const response = await fetch(`${this.apiBase}/friends/${friendId}`, {
             method: 'DELETE',
@@ -320,9 +324,9 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     // Room Management API methods
-    
+
     async createRoom(name = null, isFriendsOnly = false) {
         const response = await fetch(`${this.apiBase}/rooms/create`, {
             method: 'POST',
@@ -334,7 +338,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async joinRoomAPI(roomId) {
         const response = await fetch(`${this.apiBase}/rooms/join`, {
             method: 'POST',
@@ -346,7 +350,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async leaveRoomAPI(roomId) {
         const response = await fetch(`${this.apiBase}/rooms/${roomId}/leave`, {
             method: 'POST',
@@ -356,7 +360,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async getRoomState(roomId) {
         const response = await fetch(`${this.apiBase}/rooms/${roomId}`, {
             headers: {
@@ -365,7 +369,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async getUserRooms() {
         const response = await fetch(`${this.apiBase}/rooms`, {
             headers: {
@@ -374,7 +378,7 @@ class FriendRoomClient {
         });
         return response.json();
     }
-    
+
     async updateUsername(username) {
         const response = await fetch(`${this.apiBase}/auth/username`, {
             method: 'POST',

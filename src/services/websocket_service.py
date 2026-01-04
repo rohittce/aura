@@ -148,6 +148,8 @@ async def join_room(sid, data):
             }, room=sid)
             return
         
+        room_id = room_id.upper()
+        
         # Join room in database
         room_service = get_room_service()
         try:
@@ -219,6 +221,8 @@ async def leave_room_socket(sid, data):
             }, room=sid)
             return
         
+        room_id = room_id.upper()
+        
         # Leave room in database
         room_service = get_room_service()
         try:
@@ -283,6 +287,8 @@ async def sync_state(sid, data):
             }, room=sid)
             return
         
+        room_id = room_id.upper()
+        
         # Update room state (only host can do this)
         room_service = get_room_service()
         try:
@@ -329,6 +335,8 @@ async def request_sync(sid, data):
         room_id = data.get('room_id')
         if not room_id:
             return
+        
+        room_id = room_id.upper()
         
         # Get current room state
         room_service = get_room_service()

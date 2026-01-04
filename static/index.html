@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AURA // The Future of Sound</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700;800&display=swap"
+        rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020202; }
-        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020202;
+        }
+
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -21,9 +26,17 @@
         }
 
         @keyframes drift {
-            0% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(100px, 50px) scale(1.2); }
-            100% { transform: translate(-50px, 100px) scale(0.8); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(100px, 50px) scale(1.2);
+            }
+
+            100% {
+                transform: translate(-50px, 100px) scale(0.8);
+            }
         }
 
         .glass {
@@ -39,24 +52,75 @@
             transform: translateY(-2px);
         }
 
-        .text-glow { text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #020202; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        
-        .fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .slide-in { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #020202;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
 
         .pulse-ring {
             animation: pulseRing 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
         @keyframes pulseRing {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.05); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.05);
+            }
         }
 
         .spinner {
@@ -65,17 +129,31 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .toast {
             animation: toastSlide 0.3s ease-out;
         }
+
         @keyframes toastSlide {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .progress-bar {
@@ -168,10 +246,14 @@
         }
 
         @keyframes typing {
-            0%, 60%, 100% {
+
+            0%,
+            60%,
+            100% {
                 transform: translateY(0);
                 opacity: 0.7;
             }
+
             30% {
                 transform: translateY(-10px);
                 opacity: 1;
@@ -183,6 +265,7 @@
                 bottom: 10px;
                 left: 10px;
             }
+
             .chat-window {
                 width: calc(100vw - 20px);
                 height: calc(100vh - 80px);
@@ -191,32 +274,46 @@
         }
     </style>
 </head>
-<body class="text-white selection:bg-indigo-500/40" 
-      x-data="auraApp()" 
-      x-init="init()"
-      @keydown.escape="closeToast()">
+
+<body class="text-white selection:bg-indigo-500/40" x-data="auraApp()" x-init="init()" @keydown.escape="closeToast()">
 
     <!-- Toast Notification -->
-    <div x-show="toast.show" 
-         x-transition:enter="toast"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed top-4 right-4 z-[200] glass px-6 py-4 rounded-xl shadow-2xl max-w-sm"
-         :class="toast.type === 'error' ? 'border-red-500/50' : toast.type === 'success' ? 'border-green-500/50' : 'border-indigo-500/50'">
+    <div x-show="toast.show" x-transition:enter="toast" x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed top-4 right-4 z-[200] glass px-6 py-4 rounded-xl shadow-2xl max-w-sm"
+        :class="toast.type === 'error' ? 'border-red-500/50' : toast.type === 'success' ? 'border-green-500/50' : 'border-indigo-500/50'">
         <div class="flex items-center space-x-3">
-            <div x-show="toast.type === 'success'" class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
-                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+            <div x-show="toast.type === 'success'"
+                class="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                </svg>
             </div>
-            <div x-show="toast.type === 'error'" class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            <div x-show="toast.type === 'error'"
+                class="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
             </div>
-            <div x-show="toast.type === 'info'" class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
-                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+            <div x-show="toast.type === 'info'"
+                class="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center">
+                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clip-rule="evenodd" />
+                </svg>
             </div>
             <p class="flex-1 text-sm font-medium" x-text="toast.message"></p>
             <button @click="closeToast()" class="text-gray-400 hover:text-white">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
             </button>
         </div>
     </div>
@@ -230,67 +327,81 @@
     <!-- Navigation -->
     <nav class="relative z-50 flex items-center justify-between px-6 md:px-10 py-6 md:py-8">
         <a href="/" class="flex items-center space-x-2 group">
-            <div class="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-lg rotate-12 group-hover:rotate-45 transition-transform"></div>
+            <div
+                class="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-lg rotate-12 group-hover:rotate-45 transition-transform">
+            </div>
             <span class="text-xl font-extrabold tracking-tighter">AURA</span>
         </a>
-        
-        <div class="hidden lg:flex items-center space-x-8 text-[11px] uppercase tracking-[0.3em] font-bold text-gray-400">
+
+        <div
+            class="hidden lg:flex items-center space-x-8 text-[11px] uppercase tracking-[0.3em] font-bold text-gray-400">
             <a href="/chat" class="hover:text-white transition-all">
                 Chat
             </a>
             <a href="#search" @click.prevent="showSection('search')"
-               :class="currentSection === 'search' ? 'text-white' : 'hover:text-white'"
-               class="transition-all relative">
+                :class="currentSection === 'search' ? 'text-white' : 'hover:text-white'"
+                class="transition-all relative">
                 Search
-                <span x-show="currentSection === 'search'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+                <span x-show="currentSection === 'search'"
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
             </a>
-            <a href="#recommendations" @click.prevent="showSection('recommendations')" 
-               :class="currentSection === 'recommendations' ? 'text-white' : 'hover:text-white'"
-               class="transition-all relative">
+            <a href="#social" @click.prevent="showSection('social')"
+                :class="currentSection === 'social' ? 'text-white' : 'hover:text-white'"
+                class="transition-all relative">
+                Social
+                <span x-show="currentSection === 'social'"
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+            </a>
+            <a href="#recommendations" @click.prevent="showSection('recommendations')"
+                :class="currentSection === 'recommendations' ? 'text-white' : 'hover:text-white'"
+                class="transition-all relative">
                 Recommendations
-                <span x-show="currentSection === 'recommendations'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+                <span x-show="currentSection === 'recommendations'"
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
             </a>
             <a href="#taste" @click.prevent="showSection('taste')"
-               :class="currentSection === 'taste' ? 'text-white' : 'hover:text-white'"
-               class="transition-all relative">
+                :class="currentSection === 'taste' ? 'text-white' : 'hover:text-white'" class="transition-all relative">
                 Taste Profile
-                <span x-show="currentSection === 'taste'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+                <span x-show="currentSection === 'taste'"
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
             </a>
             <a href="#seed" @click.prevent="showSection('seed')"
-               :class="currentSection === 'seed' ? 'text-white' : 'hover:text-white'"
-               class="transition-all relative">
+                :class="currentSection === 'seed' ? 'text-white' : 'hover:text-white'" class="transition-all relative">
                 Seed Songs
-                <span x-show="currentSection === 'seed'" class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
+                <span x-show="currentSection === 'seed'"
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-indigo-500"></span>
             </a>
         </div>
 
         <div class="flex items-center space-x-4">
-            <button @click="showSection('seed')" 
-                    class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95">
+            <button @click="showSection('seed')"
+                class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95">
                 <span class="hidden md:inline">GENERATE DNA</span>
                 <span class="md:hidden">DNA</span>
             </button>
-            
+
             <!-- User Menu -->
             <div class="relative" x-data="{ open: false }" @click.away="open = false">
-                <button @click="open = !open" class="glass px-3 py-2 rounded-full text-xs font-medium hover:bg-white/10 transition-all flex items-center space-x-2">
+                <button @click="open = !open"
+                    class="glass px-3 py-2 rounded-full text-xs font-medium hover:bg-white/10 transition-all flex items-center space-x-2">
                     <span class="hidden md:inline" x-text="userName || userEmail || 'Guest'"></span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </button>
-                <div x-show="open" 
-                     x-transition
-                     class="absolute right-0 mt-2 w-48 glass rounded-xl p-2 shadow-2xl z-50">
+                <div x-show="open" x-transition class="absolute right-0 mt-2 w-48 glass rounded-xl p-2 shadow-2xl z-50">
                     <template x-if="userEmail || localStorage.getItem('aura_user_token')">
                         <div>
                             <div class="px-3 py-2 border-b border-white/10">
                                 <p class="text-xs text-gray-400">Signed in as</p>
                                 <p class="text-sm font-medium truncate" x-text="userName || userEmail || 'User'"></p>
                             </div>
-                            <button @click="handleLogout()" class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
+                            <button @click="handleLogout()"
+                                class="w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                 </svg>
                                 <span>Logout</span>
                             </button>
@@ -298,15 +409,19 @@
                     </template>
                     <template x-if="!userEmail && !localStorage.getItem('aura_user_token')">
                         <div>
-                            <a href="/login" class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
+                            <a href="/login"
+                                class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                                 </svg>
                                 <span>Login</span>
                             </a>
-                            <a href="/register" class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2 mt-1">
+                            <a href="/register"
+                                class="block w-full text-left px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center space-x-2 mt-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                                 </svg>
                                 <span>Register</span>
                             </a>
@@ -318,18 +433,20 @@
     </nav>
 
     <!-- Seed Songs Section -->
-    <section x-show="currentSection === 'seed'" 
-             x-transition:enter="section-transition"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
-        
+    <section x-show="currentSection === 'seed'" x-transition:enter="section-transition"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+
         <div class="text-center mb-10 md:mb-12">
-            <div class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold tracking-widest uppercase mb-6">
+            <div
+                class="inline-block px-4 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[10px] font-bold tracking-widest uppercase mb-6">
                 Step 1: Build Your Taste Profile
             </div>
             <h1 class="text-5xl md:text-6xl lg:text-8xl font-extrabold tracking-tighter mb-4 leading-tight">
-                Build Your <span class="bg-gradient-to-r from-indigo-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent">Taste DNA</span>
+                Build Your <span
+                    class="bg-gradient-to-r from-indigo-400 via-rose-400 to-cyan-400 bg-clip-text text-transparent">Taste
+                    DNA</span>
             </h1>
             <p class="text-gray-400 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                 Select 5-15 songs you love. We'll analyze your taste and create personalized recommendations.
@@ -344,10 +461,11 @@
             </div>
             <div class="h-2 bg-white/5 rounded-full overflow-hidden">
                 <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 progress-bar rounded-full transition-all duration-300"
-                     :style="`width: ${(seedSongs.length / 15) * 100}%`"></div>
+                    :style="`width: ${(seedSongs.length / 15) * 100}%`"></div>
             </div>
             <p class="text-xs text-gray-500 mt-2" x-show="seedSongs.length < 5">
-                Add <span class="text-indigo-400 font-bold" x-text="5 - seedSongs.length"></span> more song<span x-show="5 - seedSongs.length > 1">s</span> to continue
+                Add <span class="text-indigo-400 font-bold" x-text="5 - seedSongs.length"></span> more song<span
+                    x-show="5 - seedSongs.length > 1">s</span> to continue
             </p>
         </div>
 
@@ -355,26 +473,26 @@
         <div class="glass rounded-2xl p-6 md:p-8 mb-8 glass-hover transition-all">
             <h2 class="text-xl md:text-2xl font-bold mb-6 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 Search Songs
             </h2>
-            
+
             <div class="relative mb-6">
-                <input x-model="searchQuery" 
-                       @input="handleSearchInput()"
-                       @keydown.enter.prevent="searchSongs()"
-                       type="text" 
-                       placeholder="Search for songs, artists, albums..." 
-                       class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <input x-model="searchQuery" @input="handleSearchInput()" @keydown.enter.prevent="searchSongs()"
+                    type="text" placeholder="Search for songs, artists, albums..."
+                    class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <div x-show="searching" class="absolute right-4 top-1/2 -translate-y-1/2">
                     <div class="spinner w-5 h-5"></div>
                 </div>
             </div>
-            
+
             <p class="text-xs text-gray-500 text-center" x-show="!searchQuery && searchResults.length === 0">
                 Type to search for songs. Results will appear below.
             </p>
@@ -386,43 +504,50 @@
                 <h3 class="text-lg font-bold">Search Results</h3>
                 <span class="text-sm text-gray-500" x-text="`${searchResults.length} songs found`"></span>
             </div>
-            
+
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 <template x-for="(song, index) in searchResults" :key="index">
                     <div @click="selectSong(song)"
-                         :class="isSongSelected(song) ? 'ring-2 ring-indigo-500 bg-indigo-500/10' : ''"
-                         class="glass rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group relative fade-in">
-                        
+                        :class="isSongSelected(song) ? 'ring-2 ring-indigo-500 bg-indigo-500/10' : ''"
+                        class="glass rounded-xl overflow-hidden cursor-pointer hover:scale-105 transition-all duration-300 group relative fade-in">
+
                         <!-- Song Image -->
-                        <div class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
+                        <div
+                            class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
                             <img :src="song.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
-                                 :alt="song.title"
-                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                 @error="$el.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'">
-                            
+                                :alt="song.title"
+                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                @error="$el.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'">
+
                             <!-- Selected Badge -->
-                            <div x-show="isSongSelected(song)" 
-                                 class="absolute top-2 right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                            <div x-show="isSongSelected(song)"
+                                class="absolute top-2 right-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
                                 <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            
+
                             <!-- Add Icon Overlay -->
-                            <div x-show="!isSongSelected(song)" 
-                                 class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            <div x-show="!isSongSelected(song)"
+                                class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div
+                                    class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4v16m8-8H4" />
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Song Info -->
                         <div class="p-3">
                             <h4 class="font-bold text-sm truncate mb-1" x-text="song.title"></h4>
-                            <p class="text-xs text-gray-400 truncate" x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
+                            <p class="text-xs text-gray-400 truncate"
+                                x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
                             <p x-show="song.album" class="text-xs text-gray-500 truncate mt-1" x-text="song.album"></p>
                         </div>
                     </div>
@@ -431,9 +556,11 @@
         </div>
 
         <!-- No Results Message -->
-        <div x-show="searchQuery && searchResults.length === 0 && !searching" class="text-center py-12 glass rounded-2xl mb-8">
+        <div x-show="searchQuery && searchResults.length === 0 && !searching"
+            class="text-center py-12 glass rounded-2xl mb-8">
             <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p class="text-gray-500 mb-2">No songs found</p>
             <p class="text-sm text-gray-600">Try a different search term</p>
@@ -445,34 +572,37 @@
                 <h3 class="text-lg font-bold">Selected Songs</h3>
                 <span class="text-sm text-gray-500" x-text="`${seedSongs.length} / 15 selected`"></span>
             </div>
-            
+
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 <template x-for="(song, index) in seedSongs" :key="index">
                     <div class="glass rounded-xl overflow-hidden group relative fade-in ring-2 ring-indigo-500/50">
                         <!-- Song Image -->
-                        <div class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
+                        <div
+                            class="aspect-square relative overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20">
                             <img :src="song.image || 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23999\'%3E%3Cpath d=\'M9 18V5l12-2v13\'/%3E%3Ccircle cx=\'6\' cy=\'18\' r=\'3\'/%3E%3Ccircle cx=\'18\' cy=\'16\' r=\'3\'/%3E%3C/svg%3E'"
-                                 :alt="song.title"
-                                 class="w-full h-full object-cover">
-                            
+                                :alt="song.title" class="w-full h-full object-cover">
+
                             <!-- Remove Button -->
                             <button @click="removeSeedSong(index)"
-                                    class="absolute top-2 right-2 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                class="absolute top-2 right-2 w-8 h-8 bg-red-500/80 hover:bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
-                            
+
                             <!-- Number Badge -->
-                            <div class="absolute top-2 left-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                            <div
+                                class="absolute top-2 left-2 w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
                                 <span class="text-xs font-bold text-white" x-text="index + 1"></span>
                             </div>
                         </div>
-                        
+
                         <!-- Song Info -->
                         <div class="p-3">
                             <h4 class="font-bold text-sm truncate mb-1" x-text="song.title"></h4>
-                            <p class="text-xs text-gray-400 truncate" x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
+                            <p class="text-xs text-gray-400 truncate"
+                                x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
                         </div>
                     </div>
                 </template>
@@ -481,15 +611,18 @@
 
         <!-- Analyze Button (shown when ready) -->
         <div x-show="seedSongs.length >= 5 && !analyzing" class="text-center mb-8">
-            <button @click="analyzeTaste()" 
-                    class="glass px-8 md:px-12 py-4 rounded-full text-base md:text-lg font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95 relative overflow-hidden group">
+            <button @click="analyzeTaste()"
+                class="glass px-8 md:px-12 py-4 rounded-full text-base md:text-lg font-bold hover:bg-white hover:text-black transition-all duration-300 active:scale-95 relative overflow-hidden group">
                 <span class="relative z-10 flex items-center space-x-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                     <span>Analyze My Taste</span>
                 </span>
-                <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 opacity-0 group-hover:opacity-20 transition-opacity"></div>
+                <div
+                    class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-rose-500 opacity-0 group-hover:opacity-20 transition-opacity">
+                </div>
             </button>
             <p class="text-xs text-gray-500 mt-3" x-show="seedSongs.length >= 5 && seedSongs.length < 15">
                 💡 Tip: Add more songs (up to 15) for better recommendations
@@ -509,7 +642,8 @@
         <!-- Empty State -->
         <div x-show="seedSongs.length === 0" class="text-center py-16 glass rounded-2xl">
             <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
             <p class="text-gray-500 mb-2">No songs added yet</p>
             <p class="text-sm text-gray-600">Start by adding your favorite songs above</p>
@@ -517,12 +651,11 @@
     </section>
 
     <!-- Search & Play Section -->
-    <section x-show="currentSection === 'search'" 
-             x-transition:enter="section-transition"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
-        
+    <section x-show="currentSection === 'search'" x-transition:enter="section-transition"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+
         <div class="mb-8 md:mb-12">
             <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Search & Play</h2>
             <p class="text-gray-500 text-sm">Search for your favorite songs and play them instantly</p>
@@ -531,21 +664,20 @@
         <!-- Search Bar -->
         <div class="glass rounded-2xl p-6 md:p-8 mb-8 glass-hover transition-all">
             <div class="relative mb-6">
-                <input id="play-search-input"
-                       x-model="playSearchQuery" 
-                       @input="handlePlaySearchInput()"
-                       @keydown.enter.prevent="searchPlaySongs()"
-                       type="text" 
-                       placeholder="Search for songs, artists, albums..." 
-                       class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <input id="play-search-input" x-model="playSearchQuery" @input="handlePlaySearchInput()"
+                    @keydown.enter.prevent="searchPlaySongs()" type="text"
+                    placeholder="Search for songs, artists, albums..."
+                    class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 text-lg">
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <div x-show="playSearching" class="absolute right-4 top-1/2 -translate-y-1/2">
                     <div class="spinner w-5 h-5"></div>
                 </div>
             </div>
-            
+
             <p class="text-xs text-gray-500 text-center" x-show="!playSearchQuery && playSearchResults.length === 0">
                 Type to search for songs. Results will appear below.
             </p>
@@ -557,49 +689,53 @@
                 <h3 class="text-lg font-bold">Search Results</h3>
                 <span class="text-sm text-gray-500" x-text="`${playSearchResults.length} songs found`"></span>
             </div>
-            
+
             <div class="space-y-2">
                 <template x-for="(song, index) in playSearchResults" :key="index">
                     <div class="glass rounded-xl p-4 hover:bg-white/5 transition-all cursor-pointer group fade-in"
-                         @click="playSongFromSearch(song)">
+                        @click="playSongFromSearch(song)">
                         <div class="flex items-center space-x-4">
                             <!-- Song Image -->
-                            <div class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20 flex-shrink-0">
-                                <img :src="song.image || ''" 
-                                     :alt="song.title"
-                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                     @error="$el.style.display='none'">
+                            <div
+                                class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500/20 to-rose-500/20 flex-shrink-0">
+                                <img :src="song.image || ''" :alt="song.title"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                    @error="$el.style.display='none'">
                                 <div x-show="!song.image" class="w-full h-full flex items-center justify-center">
-                                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                    <svg class="w-8 h-8 text-gray-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                                     </svg>
                                 </div>
                             </div>
-                            
+
                             <!-- Song Info -->
                             <div class="flex-1 min-w-0">
                                 <h4 class="font-bold text-base mb-1 truncate" x-text="song.title"></h4>
-                                <p class="text-sm text-gray-400 truncate" x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
-                                <p x-show="song.album" class="text-xs text-gray-500 truncate mt-1" x-text="song.album"></p>
+                                <p class="text-sm text-gray-400 truncate"
+                                    x-text="song.artists?.join(', ') || song.artists?.[0] || 'Unknown Artist'"></p>
+                                <p x-show="song.album" class="text-xs text-gray-500 truncate mt-1" x-text="song.album">
+                                </p>
                             </div>
-                            
+
                             <!-- Play Button -->
                             <button @click.stop="playSongFromSearch(song)"
-                                    class="glass p-3 rounded-full hover:bg-indigo-500/20 transition-all active:scale-95 flex-shrink-0 group-hover:bg-indigo-500/30">
+                                class="glass p-3 rounded-full hover:bg-indigo-500/20 transition-all active:scale-95 flex-shrink-0 group-hover:bg-indigo-500/30">
                                 <svg class="w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
+                                    <path d="M8 5v14l11-7z" />
                                 </svg>
                             </button>
-                            
+
                             <!-- Platform Links -->
                             <div class="flex items-center space-x-2 flex-shrink-0">
-                                <a :href="`https://open.spotify.com/search/${encodeURIComponent((song.title || '') + ' ' + (song.artists?.[0] || ''))}`" 
-                                   target="_blank"
-                                   @click.stop
-                                   class="glass p-2 rounded-lg hover:bg-green-500/20 transition-all active:scale-95"
-                                   title="Open in Spotify">
+                                <a :href="`https://open.spotify.com/search/${encodeURIComponent((song.title || '') + ' ' + (song.artists?.[0] || ''))}`"
+                                    target="_blank" @click.stop
+                                    class="glass p-2 rounded-lg hover:bg-green-500/20 transition-all active:scale-95"
+                                    title="Open in Spotify">
                                     <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
+                                        <path
+                                            d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z" />
                                     </svg>
                                 </a>
                             </div>
@@ -610,9 +746,11 @@
         </div>
 
         <!-- No Results Message -->
-        <div x-show="playSearchQuery && playSearchResults.length === 0 && !playSearching" class="text-center py-12 glass rounded-2xl mb-8">
+        <div x-show="playSearchQuery && playSearchResults.length === 0 && !playSearching"
+            class="text-center py-12 glass rounded-2xl mb-8">
             <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p class="text-gray-500 mb-2">No songs found</p>
             <p class="text-sm text-gray-600">Try a different search term</p>
@@ -621,31 +759,307 @@
         <!-- Empty State -->
         <div x-show="!playSearchQuery && playSearchResults.length === 0" class="text-center py-20 glass rounded-2xl">
             <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <p class="text-gray-500 mb-2 text-lg">Search for your favorite songs</p>
             <p class="text-sm text-gray-600 mb-6">Type in the search bar above to find and play music</p>
         </div>
     </section>
 
+    <!-- Social Section - Join Room & Add Friends -->
+    <section x-show="currentSection === 'social'" x-transition:enter="section-transition"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+
+        <div class="mb-8 md:mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Social</h2>
+            <p class="text-gray-500 text-sm">Join rooms with friends and listen together in sync</p>
+        </div>
+
+        <!-- Login Required Notice -->
+        <div x-show="!authToken" class="glass rounded-2xl p-8 text-center mb-8">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <h3 class="text-xl font-bold mb-2">Login Required</h3>
+            <p class="text-gray-500 mb-6">You need to be logged in to use social features</p>
+            <a href="/login"
+                class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all inline-block">
+                Login / Register
+            </a>
+        </div>
+
+        <!-- Social Features (when logged in) -->
+        <div x-show="authToken" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- Join Room Card -->
+            <div class="glass rounded-2xl p-6 md:p-8 glass-hover transition-all">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-indigo-500/20 rounded-lg flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Join Room</h3>
+                        <p class="text-gray-500 text-sm">Enter a room code to listen with friends</p>
+                    </div>
+                </div>
+
+                <div class="relative mb-4">
+                    <input x-model="joinRoomId" @keydown.enter.prevent="joinRoom()" type="text"
+                        placeholder="Enter room code (e.g. ABC123)"
+                        class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600 uppercase tracking-wider">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                </div>
+
+                <button @click="joinRoom()" :disabled="!joinRoomId || joiningRoom"
+                    class="w-full glass px-6 py-4 rounded-lg text-sm font-bold hover:bg-indigo-500 hover:text-white transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2">
+                    <div x-show="joiningRoom" class="spinner w-4 h-4"></div>
+                    <span x-show="!joiningRoom">Join Room</span>
+                    <span x-show="joiningRoom">Joining...</span>
+                </button>
+
+                <!-- Current Room Display -->
+                <div x-show="currentRoomId" class="mt-6 p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-400 mb-1">Currently in room</p>
+                            <p class="font-mono text-lg text-indigo-400" x-text="currentRoomId"></p>
+                        </div>
+                        <button @click="leaveRoom()"
+                            class="glass px-4 py-2 rounded-lg text-sm hover:bg-red-500/20 text-red-400 transition-all">
+                            Leave
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Friends Card -->
+            <div class="glass rounded-2xl p-6 md:p-8 glass-hover transition-all">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-rose-500/20 rounded-lg flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">Add Friends</h3>
+                        <p class="text-gray-500 text-sm">Search by username to send friend requests</p>
+                    </div>
+                </div>
+
+                <div class="relative mb-4">
+                    <input x-model="friendSearchQuery" @input="searchFriends()" @keydown.enter.prevent="searchFriends()"
+                        type="text" placeholder="Search username..."
+                        class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500/50 transition-all placeholder:text-gray-600">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <div x-show="searchingFriends" class="absolute right-4 top-1/2 -translate-y-1/2">
+                        <div class="spinner w-5 h-5"></div>
+                    </div>
+                </div>
+
+                <!-- Friend Search Results -->
+                <div x-show="friendSearchResults.length > 0" class="space-y-2 max-h-64 overflow-y-auto mb-4">
+                    <template x-for="user in friendSearchResults" :key="user.user_id">
+                        <div
+                            class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center text-sm font-bold"
+                                    x-text="(user.username || user.name || '?').charAt(0).toUpperCase()"></div>
+                                <div>
+                                    <p class="font-medium" x-text="user.username || user.name"></p>
+                                    <p class="text-xs text-gray-500" x-text="user.email"></p>
+                                </div>
+                            </div>
+                            <button @click="sendFriendRequest(user.username)"
+                                class="glass px-4 py-2 rounded-lg text-sm hover:bg-rose-500 hover:text-white transition-all active:scale-95">
+                                Add
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- No Results -->
+                <div x-show="friendSearchQuery && friendSearchResults.length === 0 && !searchingFriends"
+                    class="text-center py-8 text-gray-500">
+                    <p>No users found with that username</p>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="!friendSearchQuery" class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p class="text-sm">Enter a username to find friends</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div x-show="authToken" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+            <a href="/play" class="glass rounded-xl p-6 text-center hover:bg-white/5 transition-all group">
+                <svg class="w-8 h-8 mx-auto mb-3 text-indigo-400 group-hover:scale-110 transition-transform" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h4 class="font-bold mb-1">Open Player</h4>
+                <p class="text-xs text-gray-500">Full music player with room controls</p>
+            </a>
+
+            <button @click="createRoom()"
+                class="glass rounded-xl p-6 text-center hover:bg-white/5 transition-all group">
+                <svg class="w-8 h-8 mx-auto mb-3 text-rose-400 group-hover:scale-110 transition-transform" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <h4 class="font-bold mb-1">Create Room</h4>
+                <p class="text-xs text-gray-500">Start a room and invite friends</p>
+            </button>
+
+            <button @click="showSection('recommendations')"
+                class="glass rounded-xl p-6 text-center hover:bg-white/5 transition-all group">
+                <svg class="w-8 h-8 mx-auto mb-3 text-cyan-400 group-hover:scale-110 transition-transform" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+                <h4 class="font-bold mb-1">Get Recommendations</h4>
+                <p class="text-xs text-gray-500">Discover music based on your taste</p>
+            </button>
+        </div>
+
+        <!-- Song Search Section -->
+        <div x-show="authToken" class="mt-8">
+            <div class="glass rounded-2xl p-6 md:p-8">
+                <h3 class="text-xl font-bold mb-4">Pick a Song to Start With</h3>
+                <p class="text-gray-500 text-sm mb-6">Search for a song to play when you create or join a room</p>
+
+                <!-- Search Input -->
+                <div class="relative mb-6">
+                    <input x-model="socialSongQuery" @input="searchSocialSongs()"
+                        @keydown.enter.prevent="searchSocialSongs()" type="text"
+                        placeholder="Search for songs, artists..."
+                        class="w-full glass px-4 py-4 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder:text-gray-600">
+                    <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <div x-show="searchingSocialSongs" class="absolute right-4 top-1/2 -translate-y-1/2">
+                        <div class="spinner w-5 h-5"></div>
+                    </div>
+                </div>
+
+                <!-- Selected Song Display -->
+                <div x-show="selectedSocialSong"
+                    class="mb-6 p-4 rounded-lg bg-indigo-500/10 border border-indigo-500/30">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3 flex-1 min-w-0">
+                            <div
+                                class="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-rose-500 flex-shrink-0">
+                                <img x-show="selectedSocialSong?.image" :src="selectedSocialSong?.image"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-sm truncate" x-text="selectedSocialSong?.title"></p>
+                                <p class="text-xs text-gray-400 truncate"
+                                    x-text="selectedSocialSong?.artists?.join(', ')"></p>
+                            </div>
+                        </div>
+                        <button @click="selectedSocialSong = null" class="ml-2 text-gray-400 hover:text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    <button @click="createRoomWithSong()"
+                        class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 px-6 py-3 rounded-lg font-bold transition-all">
+                        Start Listening
+                    </button>
+                </div>
+
+                <!-- Search Results -->
+                <div x-show="socialSongResults.length > 0 && !selectedSocialSong"
+                    class="space-y-2 max-h-96 overflow-y-auto">
+                    <template x-for="song in socialSongResults" :key="song.song_id">
+                        <div @click="selectedSocialSong = song; socialSongResults = []"
+                            class="flex items-center space-x-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer transition-all">
+                            <div
+                                class="w-12 h-12 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-rose-500 flex-shrink-0">
+                                <img :src="song.image" :alt="song.title" class="w-full h-full object-cover"
+                                    @error="$el.style.display='none'">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-sm truncate" x-text="song.title"></p>
+                                <p class="text-xs text-gray-400 truncate"
+                                    x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
+                            </div>
+                            <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="!socialSongQuery && !selectedSocialSong" class="text-center py-8 text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-600" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
+                    <p class="text-sm">Search for a song to get started</p>
+                </div>
+
+                <!-- No Results -->
+                <div x-show="socialSongQuery && socialSongResults.length === 0 && !searchingSocialSongs && !selectedSocialSong"
+                    class="text-center py-8 text-gray-500">
+                    <p>No songs found</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Recommendations Section -->
-    <section x-show="currentSection === 'recommendations'" 
-             x-transition:enter="section-transition"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
-        
+    <section x-show="currentSection === 'recommendations'" x-transition:enter="section-transition"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+
         <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-8 md:mb-12 gap-4">
             <div>
                 <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Your Recommendations</h2>
-                <p class="text-gray-500 text-sm" x-text="recommendations.length > 0 ? `${recommendations.length} songs recommended` : 'Get recommendations based on your taste'"></p>
+                <p class="text-gray-500 text-sm"
+                    x-text="recommendations.length > 0 ? `${recommendations.length} songs recommended` : 'Get recommendations based on your taste'">
+                </p>
             </div>
             <div class="flex items-center space-x-3">
-                <button @click="loadRecommendations()" 
-                        :disabled="loadingRecommendations"
-                        class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 active:scale-95 flex items-center space-x-2">
-                    <svg x-show="!loadingRecommendations" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                <button @click="loadRecommendations()" :disabled="loadingRecommendations"
+                    class="glass px-4 md:px-6 py-2 rounded-full text-xs font-bold hover:bg-white hover:text-black transition-all duration-300 disabled:opacity-50 active:scale-95 flex items-center space-x-2">
+                    <svg x-show="!loadingRecommendations" class="w-4 h-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     <div x-show="loadingRecommendations" class="spinner w-4 h-4"></div>
                     <span x-show="!loadingRecommendations">Refresh</span>
@@ -667,47 +1081,58 @@
         </div>
 
         <!-- Recommendations Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="recommendations.length > 0 && !loadingRecommendations">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            x-show="recommendations.length > 0 && !loadingRecommendations">
             <template x-for="(rec, index) in recommendations" :key="index">
-                <div class="glass p-6 rounded-2xl hover:border-indigo-500/50 transition-all fade-in glass-hover group relative">
+                <div
+                    class="glass p-6 rounded-2xl hover:border-indigo-500/50 transition-all fade-in glass-hover group relative">
                     <!-- Score Badge -->
-                    <div class="absolute top-4 right-4 glass px-2 py-1 rounded-full text-xs font-mono" x-show="rec.score">
-                        <span class="text-cyan-400" x-text="((rec.score || rec.confidence || 0) * 100).toFixed(0)"></span><span class="text-gray-500">%</span>
+                    <div class="absolute top-4 right-4 glass px-2 py-1 rounded-full text-xs font-mono"
+                        x-show="rec.score">
+                        <span class="text-cyan-400"
+                            x-text="((rec.score || rec.confidence || 0) * 100).toFixed(0)"></span><span
+                            class="text-gray-500">%</span>
                     </div>
-                    
+
                     <!-- Song Image -->
                     <div class="mb-4" x-show="rec.song?.image">
-                        <img :src="rec.song.image" 
-                             :alt="rec.song.title"
-                             class="w-full h-48 object-cover rounded-lg mb-3">
+                        <img :src="rec.song.image" :alt="rec.song.title"
+                            class="w-full h-48 object-cover rounded-lg mb-3">
                     </div>
-                    
+
                     <div class="mb-4" :class="rec.song?.image ? '' : 'pr-16'">
-                        <h3 class="font-bold text-lg mb-1 truncate" x-text="rec.song?.title || rec.title || 'Unknown'"></h3>
-                        <p class="text-indigo-400 text-sm truncate" x-text="rec.song?.artists?.join(', ') || rec.artists?.join(', ') || 'Unknown Artist'"></p>
-                        <p class="text-gray-500 text-xs mt-1 truncate" x-show="rec.song?.album || rec.album" x-text="rec.song?.album || rec.album"></p>
+                        <h3 class="font-bold text-lg mb-1 truncate" x-text="rec.song?.title || rec.title || 'Unknown'">
+                        </h3>
+                        <p class="text-indigo-400 text-sm truncate"
+                            x-text="rec.song?.artists?.join(', ') || rec.artists?.join(', ') || 'Unknown Artist'"></p>
+                        <p class="text-gray-500 text-xs mt-1 truncate" x-show="rec.song?.album || rec.album"
+                            x-text="rec.song?.album || rec.album"></p>
                     </div>
-                    
+
                     <!-- Explanation -->
                     <div class="mb-4 p-3 rounded-lg bg-white/5" x-show="rec.explanation">
                         <p class="text-xs text-gray-400 mb-1 uppercase tracking-wider">Why recommended</p>
-                        <p class="text-sm leading-relaxed" x-text="rec.explanation.text || 'Based on your taste profile'"></p>
+                        <p class="text-sm leading-relaxed"
+                            x-text="rec.explanation.text || 'Based on your taste profile'"></p>
                     </div>
 
                     <!-- Platform Links -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex space-x-2">
                             <button @click="playSong(rec)"
-                                    class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
+                                class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
+                                    <path d="M8 5v14l11-7z" />
                                 </svg>
                                 <span>Play</span>
                             </button>
-                            <a :href="rec.platform_links?.spotify || `https://open.spotify.com/search/${encodeURIComponent((rec.song?.title || rec.title || '') + ' ' + (rec.song?.artists?.[0] || rec.artists?.[0] || ''))}`" 
-                               target="_blank"
-                               class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-green-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                            <a :href="rec.platform_links?.spotify || `https://open.spotify.com/search/${encodeURIComponent((rec.song?.title || rec.title || '') + ' ' + (rec.song?.artists?.[0] || rec.artists?.[0] || ''))}`"
+                                target="_blank"
+                                class="glass px-3 py-1.5 rounded-lg text-xs hover:bg-green-500 hover:text-white transition-all active:scale-95 flex items-center space-x-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.281c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z" />
+                                </svg>
                                 <span>Spotify</span>
                             </a>
                         </div>
@@ -715,17 +1140,20 @@
 
                     <!-- Feedback Buttons -->
                     <div class="flex space-x-2">
-                        <button @click="submitFeedback(rec.recommendation_id, 'like')" 
-                                class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-rose-500 transition-all active:scale-95 flex items-center justify-center space-x-1 group">
-                            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        <button @click="submitFeedback(rec.recommendation_id, 'like')"
+                            class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-rose-500 transition-all active:scale-95 flex items-center justify-center space-x-1 group">
+                            <svg class="w-4 h-4 group-hover:scale-110 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                             <span>Like</span>
                         </button>
-                        <button @click="submitFeedback(rec.recommendation_id, 'skip')" 
-                                class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-gray-600 transition-all active:scale-95 flex items-center justify-center space-x-1">
+                        <button @click="submitFeedback(rec.recommendation_id, 'skip')"
+                            class="flex-1 glass px-3 py-2 rounded-lg text-xs hover:bg-gray-600 transition-all active:scale-95 flex items-center justify-center space-x-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                             <span>Skip</span>
                         </button>
@@ -735,25 +1163,27 @@
         </div>
 
         <!-- Empty State -->
-        <div x-show="recommendations.length === 0 && !loadingRecommendations" class="text-center py-20 glass rounded-2xl">
+        <div x-show="recommendations.length === 0 && !loadingRecommendations"
+            class="text-center py-20 glass rounded-2xl">
             <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
             </svg>
             <p class="text-gray-500 mb-2 text-lg">No recommendations yet</p>
             <p class="text-sm text-gray-600 mb-6">Analyze your taste first to get personalized recommendations</p>
-            <button @click="showSection('seed')" class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
+            <button @click="showSection('seed')"
+                class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
                 Add Seed Songs
             </button>
         </div>
     </section>
 
     <!-- Taste Profile Section -->
-    <section x-show="currentSection === 'taste'" 
-             x-transition:enter="section-transition"
-             x-transition:enter-start="opacity-0 transform translate-y-4"
-             x-transition:enter-end="opacity-100 transform translate-y-0"
-             class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
-        
+    <section x-show="currentSection === 'taste'" x-transition:enter="section-transition"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        class="relative z-10 max-w-7xl mx-auto px-6 md:px-10 pt-8 md:pt-12 pb-20">
+
         <div class="mb-8 md:mb-12">
             <h2 class="text-3xl md:text-4xl font-bold tracking-tighter mb-2">Your Neural Map</h2>
             <p class="text-gray-500 text-sm">Your personalized taste profile based on your music preferences</p>
@@ -765,58 +1195,71 @@
             <div class="glass p-6 rounded-2xl glass-hover transition-all">
                 <div class="w-12 h-12 bg-indigo-500/20 rounded-lg mb-4 flex items-center justify-center">
                     <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
                 <h4 class="font-bold text-lg mb-1">Energy</h4>
                 <div class="mb-2">
                     <div class="h-2 bg-white/10 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 rounded-full"
-                             :style="`width: ${tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100) : 0}%`"></div>
+                            :style="`width: ${tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100) : 0}%`">
+                        </div>
                     </div>
                 </div>
-                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100).toFixed(0) + '%' : 'N/A'"></p>
+                <p class="text-gray-500 text-sm"
+                    x-text="tasteProfile?.global_taste?.energy_preference ? (tasteProfile.global_taste.energy_preference * 100).toFixed(0) + '%' : 'N/A'">
+                </p>
             </div>
 
             <!-- Acoustic Bias -->
             <div class="glass p-6 rounded-2xl glass-hover transition-all">
                 <div class="w-12 h-12 bg-rose-500/20 rounded-lg mb-4 flex items-center justify-center">
                     <svg class="w-6 h-6 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                 </div>
                 <h4 class="font-bold text-lg mb-1">Acoustic</h4>
                 <div class="mb-2">
                     <div class="h-2 bg-white/10 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-rose-500 to-cyan-500 rounded-full"
-                             :style="`width: ${tasteProfile?.global_taste?.acoustic_bias ? ((tasteProfile.global_taste.acoustic_bias + 1) * 50) : 50}%`"></div>
+                            :style="`width: ${tasteProfile?.global_taste?.acoustic_bias ? ((tasteProfile.global_taste.acoustic_bias + 1) * 50) : 50}%`">
+                        </div>
                     </div>
                 </div>
-                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.acoustic_bias ? (tasteProfile.global_taste.acoustic_bias > 0 ? 'Acoustic' : 'Electronic') : 'N/A'"></p>
+                <p class="text-gray-500 text-sm"
+                    x-text="tasteProfile?.global_taste?.acoustic_bias ? (tasteProfile.global_taste.acoustic_bias > 0 ? 'Acoustic' : 'Electronic') : 'N/A'">
+                </p>
             </div>
 
             <!-- Familiarity -->
             <div class="glass p-6 rounded-2xl glass-hover transition-all">
                 <div class="w-12 h-12 bg-cyan-500/20 rounded-lg mb-4 flex items-center justify-center">
                     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                 </div>
                 <h4 class="font-bold text-lg mb-1">Familiarity</h4>
                 <div class="mb-2">
                     <div class="h-2 bg-white/10 rounded-full overflow-hidden">
                         <div class="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full"
-                             :style="`width: ${tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference * 100) : 0}%`"></div>
+                            :style="`width: ${tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference * 100) : 0}%`">
+                        </div>
                     </div>
                 </div>
-                <p class="text-gray-500 text-sm" x-text="tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference > 0.5 ? 'Familiar' : 'Novel') : 'N/A'"></p>
+                <p class="text-gray-500 text-sm"
+                    x-text="tasteProfile?.global_taste?.familiarity_preference ? (tasteProfile.global_taste.familiarity_preference > 0.5 ? 'Familiar' : 'Novel') : 'N/A'">
+                </p>
             </div>
 
             <!-- Songs Analyzed -->
             <div class="glass p-6 rounded-2xl glass-hover transition-all">
                 <div class="w-12 h-12 bg-yellow-500/20 rounded-lg mb-4 flex items-center justify-center">
                     <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                 </div>
                 <h4 class="font-bold text-lg mb-1">Songs</h4>
@@ -826,18 +1269,20 @@
         </div>
 
         <!-- Mood Profiles -->
-        <div class="mt-8" x-show="tasteProfile?.mood_profiles && Object.keys(tasteProfile.mood_profiles || {}).length > 0">
+        <div class="mt-8"
+            x-show="tasteProfile?.mood_profiles && Object.keys(tasteProfile.mood_profiles || {}).length > 0">
             <h3 class="text-2xl font-bold mb-6">Mood Profiles</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <template x-for="(profile, mood) in (tasteProfile?.mood_profiles || {})" :key="mood">
                     <div class="glass p-4 rounded-xl glass-hover transition-all">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="font-bold capitalize" x-text="mood"></h4>
-                            <span class="text-xs text-gray-500" x-text="(profile.confidence * 100).toFixed(0) + '%'"></span>
+                            <span class="text-xs text-gray-500"
+                                x-text="(profile.confidence * 100).toFixed(0) + '%'"></span>
                         </div>
                         <div class="h-1.5 bg-white/10 rounded-full overflow-hidden">
                             <div class="h-full bg-indigo-500 rounded-full"
-                                 :style="`width: ${profile.confidence * 100}%`"></div>
+                                :style="`width: ${profile.confidence * 100}%`"></div>
                         </div>
                     </div>
                 </template>
@@ -847,11 +1292,13 @@
         <!-- Empty State -->
         <div x-show="!tasteProfile" class="text-center py-20 glass rounded-2xl">
             <svg class="w-20 h-20 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <p class="text-gray-500 mb-2 text-lg">No taste profile yet</p>
             <p class="text-sm text-gray-600 mb-6">Analyze your seed songs to create your taste profile</p>
-            <button @click="showSection('seed')" class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
+            <button @click="showSection('seed')"
+                class="glass px-6 py-3 rounded-full hover:bg-white hover:text-black transition-all active:scale-95">
                 Analyze Taste
             </button>
         </div>
@@ -862,7 +1309,7 @@
         const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:8000/api/v1'
             : window.location.origin + '/api/v1';
-        
+
         function auraApp() {
             return {
                 currentSection: 'seed',
@@ -876,7 +1323,7 @@
                 playSearchTimeout: null,
                 recommendations: [],
                 tasteProfile: null,
-                
+
                 // Initialize tasteProfile with default structure to prevent null errors
                 init() {
                     // Ensure tasteProfile has default structure
@@ -892,7 +1339,25 @@
                 userId: localStorage.getItem('aura_user_id') || 'user_' + Math.random().toString(36).substr(2, 9),
                 userEmail: localStorage.getItem('aura_user_email') || null,
                 userName: localStorage.getItem('aura_user_name') || null,
+                authToken: localStorage.getItem('aura_user_token') || null,
                 toast: { show: false, message: '', type: 'info' },
+
+                // Social feature state
+                joinRoomId: '',
+                currentRoomId: null,
+                joiningRoom: false,
+                friendSearchQuery: '',
+                friendSearchResults: [],
+                searchingFriends: false,
+                friendSearchTimeout: null,
+
+                // Social song search state
+                socialSongQuery: '',
+                socialSongResults: [],
+                searchingSocialSongs: false,
+                selectedSocialSong: null,
+                socialSongTimeout: null,
+
                 searchTimeout: null,
 
                 async init() {
@@ -903,15 +1368,13 @@
                             global_taste: {}
                         };
                     }
-                    
+
                     // Check authentication
                     const token = localStorage.getItem('aura_user_token');
-                    if (!token) {
-                        // Redirect to landing page if not authenticated
-                        window.location.href = '/';
-                        return;
-                    }
-                    
+
+                    // Update authToken for social features
+                    this.authToken = token;
+
                     if (token) {
                         // Verify token is still valid
                         try {
@@ -920,12 +1383,13 @@
                                     'Authorization': `Bearer ${token}`
                                 }
                             });
-                            
+
                             if (response.ok) {
                                 const data = await response.json();
                                 this.userId = data.user.user_id;
                                 this.userEmail = data.user.email;
-                                this.userName = data.user.name || null;
+                                this.userName = data.user.name || data.user.username || null;
+                                this.authToken = token;  // Ensure authToken is set
                                 localStorage.setItem('aura_user_id', this.userId);
                                 localStorage.setItem('aura_user_email', this.userEmail);
                                 if (this.userName) {
@@ -947,27 +1411,28 @@
                             return;
                         }
                     }
-                    
+
                     // Save user ID for persistence
                     localStorage.setItem('aura_user_id', this.userId);
-                    
+
                     // Load seed songs from storage
                     await this.loadSeedSongs();
-                    
+
                     // Check for hash in URL (e.g., #recommendations)
                     const hash = window.location.hash.substring(1);
-                    if (hash && ['recommendations', 'taste', 'seed'].includes(hash)) {
+                    if (hash && ['recommendations', 'taste', 'seed', 'social'].includes(hash)) {
                         this.showSection(hash);
-                    } else {
-                        // Load recommendations and taste profile on initial load
-                        this.loadRecommendations();
-                        this.loadTasteProfile();
                     }
-                    
+
+                    // Load recommendations and taste profile in background (non-blocking)
+                    // This allows users to navigate while they load
+                    this.loadRecommendations();
+                    this.loadTasteProfile();
+
                     // Listen for hash changes (when navigating from analyze page)
                     window.addEventListener('hashchange', () => {
                         const newHash = window.location.hash.substring(1);
-                        if (newHash && ['recommendations', 'taste', 'seed'].includes(newHash)) {
+                        if (newHash && ['recommendations', 'taste', 'seed', 'social'].includes(newHash)) {
                             this.showSection(newHash);
                         }
                     });
@@ -995,7 +1460,7 @@
                         localStorage.removeItem('aura_user_token');
                         localStorage.removeItem('aura_user_name');
                         localStorage.removeItem('aura_remember');
-                        
+
                         // Redirect to landing page
                         window.location.href = '/';
                     }
@@ -1014,10 +1479,220 @@
                     this.currentSection = section;
                     // Smooth scroll to top
                     window.scrollTo({ top: 0, behavior: 'smooth' });
-                    
+
                     // If switching to recommendations section, refresh recommendations
                     if (section === 'recommendations') {
                         this.loadRecommendations();
+                    }
+                },
+
+                // ==========================================
+                // Social Feature Functions
+                // ==========================================
+
+                async joinRoom() {
+                    if (!this.joinRoomId || this.joiningRoom) return;
+
+                    this.joiningRoom = true;
+                    try {
+                        const roomId = this.joinRoomId.trim().toUpperCase();
+                        const response = await fetch(`${API_BASE}/rooms/join`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ room_id: roomId })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.currentRoomId = roomId;
+                            this.joinRoomId = '';
+                            this.showToast(`Joined room ${this.currentRoomId}!`, 'success');
+                            // Redirect to player
+                            window.location.href = `/play?room=${this.currentRoomId}`;
+                        } else {
+                            this.showToast(data.detail || 'Failed to join room', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Join room error:', error);
+                        this.showToast('Error joining room', 'error');
+                    } finally {
+                        this.joiningRoom = false;
+                    }
+                },
+
+                async createRoom() {
+                    try {
+                        const response = await fetch(`${API_BASE}/rooms/create`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: null, is_friends_only: false })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.room_id) {
+                            this.currentRoomId = data.room_id;
+                            this.showToast(`Room created! Code: ${data.room_id}`, 'success');
+                            // Redirect to player with room
+                            window.location.href = `/play?room=${data.room_id}`;
+                        } else {
+                            this.showToast(data.detail || 'Failed to create room', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Create room error:', error);
+                        this.showToast('Error creating room', 'error');
+                    }
+                },
+
+                async leaveRoom() {
+                    if (!this.currentRoomId) return;
+
+                    try {
+                        await fetch(`${API_BASE}/rooms/${this.currentRoomId}/leave`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.authToken}`
+                            }
+                        });
+
+                        this.showToast('Left room', 'info');
+                        this.currentRoomId = null;
+                    } catch (error) {
+                        console.error('Leave room error:', error);
+                        this.currentRoomId = null;
+                    }
+                },
+
+                async searchFriends() {
+                    // Clear previous timeout
+                    if (this.friendSearchTimeout) {
+                        clearTimeout(this.friendSearchTimeout);
+                    }
+
+                    if (!this.friendSearchQuery || this.friendSearchQuery.length < 2) {
+                        this.friendSearchResults = [];
+                        return;
+                    }
+
+                    // Debounce search
+                    this.friendSearchTimeout = setTimeout(async () => {
+                        this.searchingFriends = true;
+                        try {
+                            const response = await fetch(`${API_BASE}/friends/search?q=${encodeURIComponent(this.friendSearchQuery)}&limit=10`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${this.authToken}`,
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok && data.users) {
+                                this.friendSearchResults = data.users;
+                            } else {
+                                this.friendSearchResults = [];
+                            }
+                        } catch (error) {
+                            console.error('Friend search error:', error);
+                            this.friendSearchResults = [];
+                        } finally {
+                            this.searchingFriends = false;
+                        }
+                    }, 300);
+                },
+
+                async sendFriendRequest(username) {
+                    try {
+                        const response = await fetch(`${API_BASE}/friends/request`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ receiver_username: username })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            this.showToast(`Friend request sent to ${username}!`, 'success');
+                            // Remove from search results
+                            this.friendSearchResults = this.friendSearchResults.filter(u => u.username !== username);
+                        } else {
+                            this.showToast(data.detail || 'Failed to send request', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Send friend request error:', error);
+                        this.showToast('Error sending friend request', 'error');
+                    }
+                },
+
+                async searchSocialSongs() {
+                    // Clear previous timeout
+                    if (this.socialSongTimeout) {
+                        clearTimeout(this.socialSongTimeout);
+                    }
+
+                    if (!this.socialSongQuery || this.socialSongQuery.length < 2) {
+                        this.socialSongResults = [];
+                        return;
+                    }
+
+                    // Debounce search
+                    this.socialSongTimeout = setTimeout(async () => {
+                        this.searchingSocialSongs = true;
+                        try {
+                            const response = await fetch(`${API_BASE}/songs/search?q=${encodeURIComponent(this.socialSongQuery)}&limit=10`);
+                            const data = await response.json();
+
+                            if (response.ok && data.songs) {
+                                this.socialSongResults = data.songs;
+                            } else {
+                                this.socialSongResults = [];
+                            }
+                        } catch (error) {
+                            console.error('Social song search error:', error);
+                            this.socialSongResults = [];
+                        } finally {
+                            this.searchingSocialSongs = false;
+                        }
+                    }, 300);
+                },
+
+                async createRoomWithSong() {
+                    if (!this.selectedSocialSong) return;
+
+                    try {
+                        const response = await fetch(`${API_BASE}/rooms/create`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${this.authToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ name: null, is_friends_only: false })
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && data.room_id) {
+                            this.currentRoomId = data.room_id;
+                            // Redirect to player with room and song
+                            const songId = this.selectedSocialSong.song_id || encodeURIComponent(this.selectedSocialSong.title);
+                            window.location.href = `/play?room=${data.room_id}&song=${songId}`;
+                        } else {
+                            this.showToast(data.detail || 'Failed to create room', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Create room with song error:', error);
+                        this.showToast('Error creating room', 'error');
                     }
                 },
 
@@ -1026,13 +1701,13 @@
                     if (this.searchTimeout) {
                         clearTimeout(this.searchTimeout);
                     }
-                    
+
                     // If query is too short, clear results
                     if (!this.searchQuery || this.searchQuery.length < 2) {
                         this.searchResults = [];
                         return;
                     }
-                    
+
                     // Debounce search - wait 500ms after user stops typing
                     this.searchTimeout = setTimeout(() => {
                         this.searchSongs();
@@ -1049,12 +1724,12 @@
                     try {
                         const url = `${API_BASE}/songs/search?q=${encodeURIComponent(this.searchQuery)}&limit=20`;
                         console.log('Searching:', url); // Debug log
-                        
+
                         const response = await fetch(url);
                         const data = await response.json();
-                        
+
                         console.log('Search response:', data); // Debug log
-                        
+
                         if (response.ok) {
                             if (data.results && Array.isArray(data.results)) {
                                 this.searchResults = data.results;
@@ -1084,13 +1759,13 @@
                     if (this.playSearchTimeout) {
                         clearTimeout(this.playSearchTimeout);
                     }
-                    
+
                     // If query is too short, clear results
                     if (!this.playSearchQuery || this.playSearchQuery.length < 2) {
                         this.playSearchResults = [];
                         return;
                     }
-                    
+
                     // Debounce search - wait 500ms after user stops typing
                     this.playSearchTimeout = setTimeout(() => {
                         this.searchPlaySongs();
@@ -1108,7 +1783,7 @@
                         const url = `${API_BASE}/songs/search?q=${encodeURIComponent(this.playSearchQuery)}&limit=30`;
                         const response = await fetch(url);
                         const data = await response.json();
-                        
+
                         if (response.ok) {
                             if (data.results && Array.isArray(data.results)) {
                                 this.playSearchResults = data.results;
@@ -1140,7 +1815,7 @@
                         song.artists || [],
                         'youtube'
                     );
-                    
+
                     // Navigate to play page with song data
                     const songData = {
                         title: song.title,
@@ -1149,7 +1824,7 @@
                         album: song.album || '',
                         genre: song.genre || []
                     };
-                    
+
                     window.location.href = `/play?song=${encodeURIComponent(JSON.stringify(songData))}`;
                 },
 
@@ -1188,18 +1863,18 @@
                 },
 
                 isSongSelected(song) {
-                    return this.seedSongs.some(s => 
+                    return this.seedSongs.some(s =>
                         s.title.toLowerCase() === song.title.toLowerCase() &&
-                        (s.artists?.[0]?.toLowerCase() === song.artists?.[0]?.toLowerCase() || 
-                         s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
+                        (s.artists?.[0]?.toLowerCase() === song.artists?.[0]?.toLowerCase() ||
+                            s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
                     );
                 },
 
                 removeSong(song) {
-                    const index = this.seedSongs.findIndex(s => 
+                    const index = this.seedSongs.findIndex(s =>
                         s.title.toLowerCase() === song.title.toLowerCase() &&
                         (s.artists?.[0]?.toLowerCase() === song.artists?.[0]?.toLowerCase() ||
-                         s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
+                            s.artists?.join(',').toLowerCase() === song.artists?.join(',').toLowerCase())
                     );
                     if (index > -1) {
                         this.seedSongs.splice(index, 1);
@@ -1220,7 +1895,7 @@
 
                     // Save seed songs to localStorage for analysis page
                     localStorage.setItem('pending_seed_songs', JSON.stringify(this.seedSongs));
-                    
+
                     // Navigate to analysis page
                     window.location.href = '/analyze';
                 },
@@ -1230,16 +1905,16 @@
                     try {
                         const response = await fetch(`${API_BASE}/recommendations?user_id=${this.userId}&limit=12`);
                         const data = await response.json();
-                        
+
                         if (response.ok) {
                             if (data.recommendations && data.recommendations.length > 0) {
-                            this.recommendations = data.recommendations;
+                                this.recommendations = data.recommendations;
                                 this.showToast(`Loaded ${data.recommendations.length} recommendations`, 'success', 2000);
                             } else {
                                 // Check analysis status if no recommendations
                                 const statusResponse = await fetch(`${API_BASE}/taste/analyze/status?user_id=${this.userId}`);
                                 const statusData = await statusResponse.json();
-                                
+
                                 if (statusData.status === 'complete' && statusData.result?.recommendations) {
                                     // Use recommendations from analysis result
                                     this.recommendations = statusData.result.recommendations;
@@ -1255,9 +1930,9 @@
                                     // Analysis in progress
                                     this.recommendations = [];
                                     this.showToast('Analysis in progress. Recommendations will appear soon...', 'info', 3000);
-                        } else {
+                                } else {
                                     // No analysis started
-                            this.recommendations = [];
+                                    this.recommendations = [];
                                     if (data.message) {
                                         this.showToast(data.message, 'info', 3000);
                                     } else {
@@ -1322,7 +1997,7 @@
                                 album: song.album || '',
                                 platform_id: song.platform_id || ''
                             }));
-                            
+
                             if (this.seedSongs.length > 0) {
                                 console.log(`Loaded ${this.seedSongs.length} seed songs from storage`);
                             }
@@ -1346,7 +2021,7 @@
                                 context: { time_of_day: this.getTimeOfDay() }
                             })
                         });
-                        
+
                         if (response.ok) {
                             this.showToast(feedbackType === 'like' ? 'Thanks for the feedback!' : 'Feedback recorded', 'success', 2000);
                         }
@@ -1375,7 +2050,7 @@
                                 metadata: {}
                             })
                         });
-                        
+
                         if (response.ok) {
                             // Silently track - no toast to avoid spam
                             console.log('Listening tracked:', songTitle);
@@ -1413,21 +2088,21 @@
 
                 async sendChatMessage() {
                     if (!this.chatInputMessage.trim() || this.chatSending) return;
-                    
+
                     const userMessage = this.chatInputMessage.trim();
                     this.chatInputMessage = '';
-                    
+
                     // Add user message
                     this.chatMessages.push({
                         type: 'user',
                         text: userMessage,
                         timestamp: new Date().toISOString()
                     });
-                    
+
                     this.scrollChatToBottom();
                     this.chatTyping = true;
                     this.chatSending = true;
-                    
+
                     try {
                         // Send to chatbot API
                         const response = await fetch(`${API_BASE}/chat/message`, {
@@ -1438,13 +2113,13 @@
                                 message: userMessage
                             })
                         });
-                        
+
                         const data = await response.json();
-                        
+
                         if (response.ok) {
                             // Update current mood
                             this.chatCurrentMood = data.detected_mood;
-                            
+
                             // Add bot response
                             this.chatMessages.push({
                                 type: 'bot',
@@ -1485,7 +2160,7 @@
                         'romantic': "I'm in a romantic mood.",
                         'focused': "I need to focus and concentrate."
                     };
-                    
+
                     this.chatInputMessage = messages[mood] || `I'm feeling ${mood}.`;
                     this.sendChatMessage();
                 },
@@ -1504,7 +2179,7 @@
                             metadata: { mood: this.chatCurrentMood }
                         })
                     }).catch(err => console.error('Error tracking:', err));
-                    
+
                     // Navigate to play page
                     const songData = {
                         title: song.title || song.song?.title,
@@ -1512,7 +2187,7 @@
                         image: song.image || song.song?.image,
                         youtube_video_id: song.youtube_video_id || song.song?.youtube_video_id
                     };
-                    
+
                     window.location.href = `/play?song=${encodeURIComponent(JSON.stringify(songData))}`;
                 },
 
@@ -1545,90 +2220,92 @@
     <!-- Chat Widget -->
     <div class="chat-widget">
         <!-- Chat Window -->
-        <div x-show="chatOpen" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-             x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-             class="chat-window glass mb-4">
-            
+        <div x-show="chatOpen" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-4" class="chat-window glass mb-4">
+
             <!-- Chat Header -->
             <div class="glass border-b border-white/10 p-4 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center">
+                    <div
+                        class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center">
                         <span class="text-lg">🤖</span>
                     </div>
                     <div>
                         <h3 class="font-bold text-sm">AURA Assistant</h3>
-                        <p class="text-xs text-gray-400" x-text="chatCurrentMood ? `Mood: ${chatCurrentMood}` : 'Online'"></p>
+                        <p class="text-xs text-gray-400"
+                            x-text="chatCurrentMood ? `Mood: ${chatCurrentMood}` : 'Online'"></p>
                     </div>
                 </div>
                 <button @click="toggleChat()" class="glass p-2 rounded-lg hover:bg-white/10 transition-all">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
 
             <!-- Chat Messages -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4" 
-                 x-ref="chatContainer"
-                 style="scroll-behavior: smooth;">
-                
+            <div class="flex-1 overflow-y-auto p-4 space-y-4" x-ref="chatContainer" style="scroll-behavior: smooth;">
+
                 <!-- Welcome Message -->
                 <div class="flex items-start space-x-3 fade-in" x-show="chatMessages.length === 0">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
                         <span class="text-sm">🤖</span>
                     </div>
                     <div class="glass rounded-2xl rounded-tl-sm p-3 max-w-[80%]">
                         <p class="text-xs leading-relaxed">
-                            Hi! I'm AURA, your music companion. Tell me about your day, how you're feeling, or what you're up to, and I'll find the perfect music for your mood! 🎵
+                            Hi! I'm AURA, your music companion. Tell me about your day, how you're feeling, or what
+                            you're up to, and I'll find the perfect music for your mood! 🎵
                         </p>
                     </div>
                 </div>
 
                 <!-- Chat Messages -->
                 <template x-for="(msg, index) in chatMessages" :key="index">
-                    <div class="flex items-start space-x-2 fade-in" 
-                         :class="msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''">
-                        
+                    <div class="flex items-start space-x-2 fade-in"
+                        :class="msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''">
+
                         <!-- Avatar -->
                         <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-                             :class="msg.type === 'user' ? 'bg-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-rose-500'">
+                            :class="msg.type === 'user' ? 'bg-indigo-500/20' : 'bg-gradient-to-br from-indigo-500 to-rose-500'">
                             <span class="text-xs" x-text="msg.type === 'user' ? '👤' : '🤖'"></span>
                         </div>
-                        
+
                         <!-- Message Bubble -->
                         <div class="glass rounded-2xl p-3 max-w-[80%]"
-                             :class="msg.type === 'user' ? 'rounded-tr-sm bg-indigo-500/10' : 'rounded-tl-sm'">
+                            :class="msg.type === 'user' ? 'rounded-tr-sm bg-indigo-500/10' : 'rounded-tl-sm'">
                             <p class="text-xs leading-relaxed" x-text="msg.text"></p>
-                            
+
                             <!-- Mood Badge -->
                             <div class="mt-2 flex items-center space-x-2" x-show="msg.mood">
                                 <span class="text-[10px] text-gray-400">Mood:</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded-full glass capitalize" 
-                                      :class="getChatMoodColor(msg.mood)"
-                                      x-text="msg.mood"></span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full glass capitalize"
+                                    :class="getChatMoodColor(msg.mood)" x-text="msg.mood"></span>
                             </div>
-                            
+
                             <!-- Song Recommendations -->
                             <div class="mt-2 space-y-1.5" x-show="msg.songs && msg.songs.length > 0">
                                 <p class="text-[10px] text-gray-400 mb-1">Suggested songs:</p>
                                 <template x-for="(song, idx) in msg.songs" :key="idx">
                                     <button @click="playChatSong(song)"
-                                            class="w-full glass rounded-lg p-2 text-left hover:bg-white/5 transition-all flex items-center space-x-2 group">
-                                        <img :src="(song.image || song.song?.image) || ''" 
-                                             :alt="song.title || song.song?.title"
-                                             class="w-8 h-8 rounded object-cover">
+                                        class="w-full glass rounded-lg p-2 text-left hover:bg-white/5 transition-all flex items-center space-x-2 group">
+                                        <img :src="(song.image || song.song?.image) || ''"
+                                            :alt="song.title || song.song?.title" class="w-8 h-8 rounded object-cover">
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-xs font-medium truncate" x-text="song.title || song.song?.title"></p>
-                                            <p class="text-[10px] text-gray-400 truncate" x-text="(song.artists || song.song?.artists || []).join(', ') || 'Unknown'"></p>
+                                            <p class="text-xs font-medium truncate"
+                                                x-text="song.title || song.song?.title"></p>
+                                            <p class="text-[10px] text-gray-400 truncate"
+                                                x-text="(song.artists || song.song?.artists || []).join(', ') || 'Unknown'">
+                                            </p>
                                         </div>
-                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-400 transition-colors flex-shrink-0" 
-                                             fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M8 5v14l11-7z"/>
+                                        <svg class="w-4 h-4 text-gray-400 group-hover:text-indigo-400 transition-colors flex-shrink-0"
+                                            fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z" />
                                         </svg>
                                     </button>
                                 </template>
@@ -1639,7 +2316,8 @@
 
                 <!-- Typing Indicator -->
                 <div class="flex items-start space-x-2 fade-in" x-show="chatTyping">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-rose-500 flex items-center justify-center flex-shrink-0">
                         <span class="text-sm">🤖</span>
                     </div>
                     <div class="glass rounded-2xl rounded-tl-sm p-3">
@@ -1655,30 +2333,29 @@
             <!-- Chat Input -->
             <div class="p-4 border-t border-white/10">
                 <form @submit.prevent="sendChatMessage()" class="flex items-end space-x-2 mb-2">
-                    <div class="flex-1 glass rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500/50 transition-all">
-                        <textarea x-model="chatInputMessage"
-                                  @keydown.enter.exact.prevent="sendChatMessage()"
-                                  @keydown.enter.shift.exact="chatInputMessage += '\n'"
-                                  placeholder="Tell me how you're feeling..."
-                                  rows="1"
-                                  class="w-full bg-transparent border-none outline-none resize-none text-xs"
-                                  style="min-height: 1.5rem; max-height: 4rem;"></textarea>
+                    <div
+                        class="flex-1 glass rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500/50 transition-all">
+                        <textarea x-model="chatInputMessage" @keydown.enter.exact.prevent="sendChatMessage()"
+                            @keydown.enter.shift.exact="chatInputMessage += '\n'"
+                            placeholder="Tell me how you're feeling..." rows="1"
+                            class="w-full bg-transparent border-none outline-none resize-none text-xs"
+                            style="min-height: 1.5rem; max-height: 4rem;"></textarea>
                     </div>
-                    <button type="submit"
-                            :disabled="!chatInputMessage.trim() || chatSending"
-                            class="glass p-2 rounded-xl hover:bg-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
+                    <button type="submit" :disabled="!chatInputMessage.trim() || chatSending"
+                        class="glass p-2 rounded-xl hover:bg-indigo-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                     </button>
                 </form>
-                
+
                 <!-- Quick Mood Buttons -->
                 <div class="flex flex-wrap gap-1.5">
                     <template x-for="mood in quickMoods" :key="mood">
                         <button @click="sendQuickChatMessage(mood)"
-                                class="glass px-2 py-1 rounded-full text-[10px] hover:bg-white/10 transition-all active:scale-95"
-                                :class="chatCurrentMood === mood ? 'ring-2 ring-indigo-500' : ''">
+                            class="glass px-2 py-1 rounded-full text-[10px] hover:bg-white/10 transition-all active:scale-95"
+                            :class="chatCurrentMood === mood ? 'ring-2 ring-indigo-500' : ''">
                             <span x-text="mood"></span>
                         </button>
                     </template>
@@ -1687,15 +2364,16 @@
         </div>
 
         <!-- Chat Toggle Button -->
-        <button @click="toggleChat()" 
-                class="chat-toggle-btn glass bg-gradient-to-br from-indigo-500 to-rose-500">
+        <button @click="toggleChat()" class="chat-toggle-btn glass bg-gradient-to-br from-indigo-500 to-rose-500">
             <svg x-show="!chatOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             <svg x-show="chatOpen" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
     </div>
 </body>
+
 </html>

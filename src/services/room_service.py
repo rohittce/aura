@@ -49,8 +49,12 @@ class RoomService:
             if not host:
                 raise ValueError("Host user not found")
             
-            # Generate unique room ID
-            room_id = f"room_{secrets.token_urlsafe(16)}"
+            # Generate unique room ID (simple 6-char code)
+            room_id = secrets.token_hex(3).upper()
+            
+            # Ensure uniqueness
+            while db.query(MusicRoom).filter(MusicRoom.room_id == room_id).first():
+                room_id = secrets.token_hex(3).upper()
             
             # Create room
             room = MusicRoom(
@@ -126,6 +130,7 @@ class RoomService:
             Room state dictionary
         """
         db: Session = SessionLocal()
+        room_id = room_id.upper() # Standardize to uppercase
         try:
             # Validate user
             user = db.query(User).filter(User.user_id == user_id).first()
@@ -205,18 +210,19 @@ class RoomService:
         finally:
             db.close()
     
-    def leave_room(self, room_id: str, user_id: str) -> Dict:
+    def leave_room(self, room_id: str, user_id: str) -> bool:
         """
         Leave a music room.
         
         Args:
             room_id: Room ID
-            user_id: User ID leaving
+            user_id: User ID
             
         Returns:
-            Status dictionary
+            True if successful, False otherwise
         """
         db: Session = SessionLocal()
+        room_id = room_id.upper()
         try:
             room = db.query(MusicRoom).filter(MusicRoom.room_id == room_id).first()
             if not room:
@@ -286,6 +292,7 @@ class RoomService:
             Room state dictionary or None
         """
         db: Session = SessionLocal()
+        room_id = room_id.upper()
         try:
             room = db.query(MusicRoom).filter(MusicRoom.room_id == room_id).first()
             if not room:
@@ -338,6 +345,7 @@ class RoomService:
             Updated room state
         """
         db: Session = SessionLocal()
+        room_id = room_id.upper()
         try:
             room = db.query(MusicRoom).filter(MusicRoom.room_id == room_id).first()
             if not room:

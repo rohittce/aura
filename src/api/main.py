@@ -65,7 +65,7 @@ async def add_security_headers(request, call_next):
     
     # Content Security Policy to block ad domains (must be single line)
     # Relaxed CSP for Render deployment - allow necessary external resources
-    csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://www.gstatic.com https://cdn.tailwindcss.com https://unpkg.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.replicate.com https://api-inference.huggingface.co https://www.youtube.com https://www.youtube-nocookie.com https://itunes.apple.com https://ws.audioscrobbler.com; media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';"
+    csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://www.gstatic.com https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.replicate.com https://api-inference.huggingface.co https://www.youtube.com https://www.youtube-nocookie.com https://itunes.apple.com https://ws.audioscrobbler.com https://cdn.socket.io https://cdnjs.cloudflare.com; media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';"
     
     response.headers["Content-Security-Policy"] = csp
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -521,6 +521,281 @@ async def verify_auth(user_id: Optional[str] = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail="Verification failed")
 
 
+# ============================================================
+# Friend Management Endpoints
+# ============================================================
+
+@app.post("/api/v1/friends/request")
+async def send_friend_request(request: FriendRequestRequest, user_id: str = Depends(require_auth)):
+    """
+    Send a friend request to another user by username.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.send_friend_request(user_id, request.receiver_username)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Send friend request error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send friend request")
+
+
+@app.post("/api/v1/friends/accept")
+async def accept_friend_request(request: FriendActionRequest, user_id: str = Depends(require_auth)):
+    """
+    Accept a pending friend request.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.accept_friend_request(user_id, request.sender_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Accept friend request error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to accept friend request")
+
+
+@app.post("/api/v1/friends/reject")
+async def reject_friend_request(request: FriendActionRequest, user_id: str = Depends(require_auth)):
+    """
+    Reject a pending friend request.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.reject_friend_request(user_id, request.sender_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Reject friend request error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reject friend request")
+
+
+@app.get("/api/v1/friends/requests")
+async def get_friend_requests(
+    type: str = Query("received", description="Type of requests: 'sent' or 'received'"),
+    user_id: str = Depends(require_auth)
+):
+    """
+    Get pending friend requests.
+    Requires authentication.
+    
+    Args:
+        type: 'sent' for outgoing requests, 'received' for incoming requests
+    """
+    try:
+        friend_service = get_friend_service()
+        requests = friend_service.get_friend_requests(user_id, type)
+        return {
+            "status": "success",
+            "type": type,
+            "requests": requests,
+            "count": len(requests)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get friend requests error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get friend requests")
+
+
+@app.get("/api/v1/friends")
+async def get_friends(user_id: str = Depends(require_auth)):
+    """
+    Get list of friends.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        friends = friend_service.get_friends(user_id)
+        return {
+            "status": "success",
+            "friends": friends,
+            "count": len(friends)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get friends error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get friends")
+
+
+@app.delete("/api/v1/friends/{friend_id}")
+async def remove_friend(friend_id: str, user_id: str = Depends(require_auth)):
+    """
+    Remove a friend.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        result = friend_service.remove_friend(user_id, friend_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Remove friend error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to remove friend")
+
+
+@app.post("/api/v1/friends/search")
+async def search_users(
+    q: str = Query(..., description="Username to search for"),
+    limit: int = Query(20, ge=1, le=50, description="Maximum results"),
+    user_id: str = Depends(require_auth)
+):
+    """
+    Search for users by username.
+    Requires authentication.
+    """
+    try:
+        friend_service = get_friend_service()
+        users = friend_service.search_user_by_username(q, limit)
+        # Filter out the current user from results
+        users = [u for u in users if u["user_id"] != user_id]
+        return {
+            "status": "success",
+            "query": q,
+            "users": users,
+            "count": len(users)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Search users error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to search users")
+
+
+# ============================================================
+# Room Management Endpoints
+# ============================================================
+
+@app.post("/api/v1/rooms/create")
+async def create_room(request: CreateRoomRequest, user_id: str = Depends(require_auth)):
+    """
+    Create a new music room.
+    Requires authentication.
+    """
+    try:
+        room_service = get_room_service()
+        result = room_service.create_room(
+            host_id=user_id,
+            name=request.name,
+            is_friends_only=request.is_friends_only
+        )
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Create room error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create room")
+
+
+@app.post("/api/v1/rooms/join")
+async def join_room(request: JoinRoomRequest, user_id: str = Depends(require_auth)):
+    """
+    Join an existing music room.
+    Requires authentication.
+    """
+    try:
+        room_service = get_room_service()
+        result = room_service.join_room(request.room_id, user_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Join room error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to join room")
+
+
+@app.post("/api/v1/rooms/{room_id}/leave")
+async def leave_room(room_id: str, user_id: str = Depends(require_auth)):
+    """
+    Leave a music room.
+    Requires authentication.
+    """
+    try:
+        room_service = get_room_service()
+        result = room_service.leave_room(room_id, user_id)
+        return {
+            "status": "success",
+            **result
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        import logging
+        logging.error(f"Leave room error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to leave room")
+
+
+@app.get("/api/v1/rooms/{room_id}")
+async def get_room_state(room_id: str, user_id: str = Depends(require_auth)):
+    """
+    Get current room state.
+    Requires authentication.
+    """
+    try:
+        room_service = get_room_service()
+        result = room_service.get_room_state(room_id)
+        if not result:
+            raise HTTPException(status_code=404, detail="Room not found")
+        return {
+            "status": "success",
+            **result
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import logging
+        logging.error(f"Get room error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get room")
+
+
+@app.get("/api/v1/rooms")
+async def get_user_rooms(user_id: str = Depends(require_auth)):
+    """
+    Get all rooms the user is currently in.
+    Requires authentication.
+    """
+    try:
+        room_service = get_room_service()
+        rooms = room_service.get_user_rooms(user_id)
+        return {
+            "status": "success",
+            "rooms": rooms,
+            "count": len(rooms)
+        }
+    except Exception as e:
+        import logging
+        logging.error(f"Get user rooms error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get rooms")
+
 @app.get("/api/v1/songs/search")
 async def search_songs(
     q: str = Query(..., description="Search query"),
@@ -557,6 +832,7 @@ async def search_songs(
         return {
             "query": query,
             "results": results,
+            "songs": results, # For compatibility with play.html
             "count": len(results)
         }
     except Exception as e:

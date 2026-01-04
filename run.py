@@ -51,7 +51,7 @@ if __name__ == "__main__":
     print("\nPress Ctrl+C to stop\n")
     
     uvicorn.run(
-        "src.api.main:app",
+        "src.api.main:socketio_asgi",
         host="0.0.0.0",
         port=8000,
         reload=True,

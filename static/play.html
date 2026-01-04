@@ -799,8 +799,27 @@
             <div class="mb-8 fade-in" x-show="currentSong">
                 <h2 class="text-3xl md:text-4xl font-bold mb-2" x-text="currentSong?.song?.title || 'No song selected'">
                 </h2>
-                <p class="text-lg text-gray-400 mb-1"
-                    x-text="currentSong?.song?.artists?.join(', ') || 'Unknown Artist'"></p>
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-1">
+                    <p class="text-lg text-gray-400"
+                        x-text="currentSong?.song?.artists?.join(', ') || 'Unknown Artist'"></p>
+                    <template x-if="friendRoom.currentRoomId">
+                        <div
+                            class="flex items-center bg-indigo-500/10 border border-indigo-500/30 rounded-full px-3 py-1 ml-2">
+                            <span
+                                class="text-[10px] font-bold text-indigo-400 mr-2 uppercase tracking-tighter">Room:</span>
+                            <span class="text-xs font-mono font-bold text-white tracking-widest"
+                                x-text="friendRoom.currentRoomId"></span>
+                            <button
+                                @click="navigator.clipboard.writeText(friendRoom.currentRoomId); showToast('success', 'Copied', 'Code copied!')"
+                                class="ml-2 hover:text-indigo-400 transition-colors">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
                 <p class="text-sm text-gray-500" x-text="currentSong?.song?.album || ''"></p>
             </div>
 
@@ -892,6 +911,27 @@
                     <span>Skip</span>
                 </button>
 
+                <button @click="friendRoom.isOpen = true"
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-indigo-500/20 transition-all active:scale-95 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Social</span>
+                    <span x-show="friendRoom.requests.length > 0"
+                        class="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full"
+                        x-text="friendRoom.requests.length"></span>
+                </button>
+
+                <button @click="searchModal = true"
+                    class="glass px-6 py-3 rounded-full text-sm hover:bg-cyan-500/20 transition-all active:scale-95 flex items-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>Search Songs</span>
+                </button>
+
                 <a :href="currentSong?.platform_links?.spotify" target="_blank"
                     class="glass px-6 py-3 rounded-full text-sm hover:bg-green-500/20 transition-all active:scale-95 flex items-center space-x-2"
                     x-show="currentSong">
@@ -935,6 +975,265 @@
                     Get Recommendations
                 </a>
             </div>
+            <!-- Friend & Room Panel Modal -->
+            <div x-show="friendRoom.isOpen"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                x-transition.opacity style="display: none;">
+
+                <div class="glass w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl bg-black/40"
+                    @click.away="friendRoom.isOpen = false">
+                    <!-- Header -->
+                    <div class="p-4 border-b border-white/10 flex justify-between items-center">
+                        <h2 class="text-lg font-bold">Social Hub</h2>
+                        <button @click="friendRoom.isOpen = false" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="flex border-b border-white/10">
+                        <button @click="friendRoom.activeTab = 'friends'"
+                            class="flex-1 py-3 text-sm font-medium transition-colors"
+                            :class="friendRoom.activeTab === 'friends' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">Friends</button>
+                        <button @click="friendRoom.activeTab = 'rooms'"
+                            class="flex-1 py-3 text-sm font-medium transition-colors"
+                            :class="friendRoom.activeTab === 'rooms' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">Rooms</button>
+                        <button @click="friendRoom.activeTab = 'requests'"
+                            class="flex-1 py-3 text-sm font-medium transition-colors relative"
+                            :class="friendRoom.activeTab === 'requests' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-gray-200'">
+                            Requests
+                            <span x-show="friendRoom.requests.length > 0"
+                                class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6 h-96 overflow-y-auto">
+
+                        <!-- Friends Tab -->
+                        <div x-show="friendRoom.activeTab === 'friends'">
+                            <!-- Add Friend Search -->
+                            <div class="flex space-x-2 mb-6">
+                                <input type="text" x-model="friendRoom.searchQuery"
+                                    placeholder="Find user by username..."
+                                    class="flex-1 glass px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                <button @click="sendFriendRequest()"
+                                    class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Add</button>
+                            </div>
+
+                            <!-- List -->
+                            <div class="space-y-3">
+                                <h3 class="text-xs uppercase text-gray-500 font-bold tracking-wider mb-2">My Friends
+                                </h3>
+                                <template x-for="friend in friendRoom.friends" :key="friend.user_id">
+                                    <div class="flex items-center justify-between glass p-3 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-full bg-indigo-500/30 flex items-center justify-center text-sm font-bold"
+                                                x-text="friend.username.charAt(0).toUpperCase()"></div>
+                                            <div>
+                                                <div class="text-sm font-medium" x-text="friend.username"></div>
+                                                <div class="text-xs text-green-400" x-text="friend.status || 'Online'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button @click="removeFriend(friend.user_id)"
+                                                class="text-gray-400 hover:text-red-400 p-1" title="Remove Friend">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div x-show="friendRoom.friends.length === 0"
+                                    class="text-center text-gray-500 text-sm py-4">No friends added yet.</div>
+                            </div>
+                        </div>
+
+                        <!-- Rooms Tab -->
+                        <div x-show="friendRoom.activeTab === 'rooms'">
+                            <div class="mb-6">
+                                <h3 class="text-sm font-medium mb-3">Create Room</h3>
+                                <div class="flex space-x-2">
+                                    <input type="text" x-model="friendRoom.newRoomName" placeholder="Room Name"
+                                        class="flex-1 glass px-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                                    <button @click="createRoom()"
+                                        class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Create</button>
+                                </div>
+                            </div>
+
+                            <!-- Current Room Info if joined ... -->
+                            <div x-show="friendRoom.currentRoomId"
+                                class="glass p-4 rounded-lg bg-indigo-500/10 border-indigo-500/30 mb-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div>
+                                        <h3 class="text-sm font-bold text-indigo-300">Current Room</h3>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-lg font-mono font-bold tracking-wider"
+                                                x-text="friendRoom.currentRoomId"></span>
+                                            <button
+                                                @click="navigator.clipboard.writeText(friendRoom.currentRoomId); showToast('success', 'Copied', 'Room code copied!')"
+                                                class="p-1 hover:text-indigo-400 transition-colors" title="Copy Code">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="bg-indigo-500/20 text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                        Live Sync</div>
+                                </div>
+                                <button @click="leaveRoom()"
+                                    class="w-full bg-red-500/20 hover:bg-red-500/40 text-red-200 text-xs py-2 rounded transition-colors">Leave
+                                    Room</button>
+                            </div>
+                        </div>
+
+                        <!-- Requests Tab -->
+                        <div x-show="friendRoom.activeTab === 'requests'">
+                            <div class="space-y-3">
+                                <template x-for="req in friendRoom.requests" :key="req.user_id">
+                                    <div class="flex items-center justify-between glass p-3 rounded-lg">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-sm font-bold"
+                                                x-text="req.username.charAt(0).toUpperCase()"></div>
+                                            <div class="text-sm font-medium" x-text="req.username"></div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            <button @click="acceptRequest(req.user_id)"
+                                                class="text-green-400 hover:text-green-300 p-1 bg-green-400/10 rounded">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                            <button @click="rejectRequest(req.user_id)"
+                                                class="text-red-400 hover:text-red-300 p-1 bg-red-400/10 rounded">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div x-show="friendRoom.requests.length === 0"
+                                    class="text-center text-gray-500 text-sm py-4">No pending requests.</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Songs Modal -->
+            <div x-show="searchModal"
+                class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                x-transition.opacity style="display: none;">
+
+                <div class="glass w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl bg-black/40 max-h-[80vh] flex flex-col"
+                    @click.away="searchModal = false">
+                    <!-- Header -->
+                    <div class="p-4 border-b border-white/10 flex justify-between items-center flex-shrink-0">
+                        <h2 class="text-lg font-bold">Search Songs</h2>
+                        <button @click="searchModal = false" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="p-4 border-b border-white/10 flex-shrink-0">
+                        <div class="relative">
+                            <input x-model="songSearchQuery" @input="searchSongsInModal()"
+                                @keydown.enter.prevent="searchSongsInModal()" type="text"
+                                placeholder="Search for songs, artists, albums..."
+                                class="w-full glass px-4 py-3 pl-12 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all placeholder:text-gray-600">
+                            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <div x-show="searchingSongs" class="absolute right-4 top-1/2 -translate-y-1/2">
+                                <div
+                                    class="w-5 h-5 border-2 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Results -->
+                    <div class="p-4 overflow-y-auto flex-1">
+                        <!-- Results -->
+                        <div x-show="songSearchResults.length > 0" class="space-y-2">
+                            <template x-for="(song, index) in songSearchResults"
+                                :key="song.platform_id || (song.title + '-' + index)">
+                                <div @click="playSongFromSearch(song); searchModal = false"
+                                    class="flex items-center space-x-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 cursor-pointer transition-all group">
+                                    <div
+                                        class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-cyan-500 to-indigo-500 flex-shrink-0">
+                                        <img :src="song.image" :alt="song.title" class="w-full h-full object-cover"
+                                            @error="$el.style.display='none'">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="font-bold text-sm truncate" x-text="song.title"></p>
+                                        <p class="text-xs text-gray-400 truncate"
+                                            x-text="song.artists?.join(', ') || 'Unknown Artist'"></p>
+                                        <p class="text-xs text-gray-500 truncate" x-show="song.album"
+                                            x-text="song.album">
+                                        </p>
+                                    </div>
+                                    <svg class="w-8 h-8 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                        fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div x-show="!songSearchQuery && songSearchResults.length === 0"
+                            class="text-center py-12 text-gray-500">
+                            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <p class="text-sm">Search for songs to play</p>
+                        </div>
+
+                        <!-- No Results -->
+                        <div x-show="songSearchQuery && songSearchResults.length === 0 && !searchingSongs"
+                            class="text-center py-12 text-gray-500">
+                            <p>No songs found</p>
+                            <p class="text-xs mt-2">Try a different search term</p>
+                        </div>
+
+                        <!-- Loading -->
+                        <div x-show="searchingSongs" class="text-center py-12">
+                            <div
+                                class="w-12 h-12 mx-auto border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin">
+                            </div>
+                            <p class="text-sm text-gray-500 mt-4">Searching...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -967,7 +1266,7 @@
                 loading: true,
                 userId: localStorage.getItem('aura_user_id') || 'guest_' + Math.random().toString(36).substr(2, 9),
                 username: localStorage.getItem('aura_username') || 'Guest',
-                authToken: localStorage.getItem('aura_token'),
+                authToken: localStorage.getItem('aura_user_token'),
                 socket: null,
                 room: null,
                 isHost: false,
@@ -984,6 +1283,25 @@
                 maxRetries: 3,      // Max retries before skip
                 mobileMode: false,  // Mobile optimization flag
                 keepAliveInterval: null, // Heartbeat interval
+
+                // Friend & Room State
+                friendRoom: {
+                    isOpen: false,
+                    activeTab: 'friends', // 'friends', 'requests', 'rooms'
+                    friends: [],
+                    requests: [],
+                    rooms: [],
+                    searchQuery: '',
+                    searchResults: [],
+                    newRoomName: ''
+                },
+
+                // Search Modal State
+                searchModal: false,
+                songSearchQuery: '',
+                songSearchResults: [],
+                searchingSongs: false,
+                songSearchTimeout: null,
 
                 // Toast notification helper
                 showToast(type, title, message, duration = 4000) {
@@ -1022,6 +1340,43 @@
                     }, duration);
                 },
 
+                // Initialize Socket.IO for real-time room sync
+                initSocket() {
+                    try {
+                        // Socket.IO is optional - FriendRoomClient handles most functionality
+                        if (typeof io !== 'undefined') {
+                            const socketUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                                ? 'http://localhost:8000'
+                                : window.location.origin;
+
+                            this.socket = io(socketUrl, {
+                                transports: ['websocket', 'polling'],
+                                reconnection: true,
+                                reconnectionAttempts: 5,
+                                reconnectionDelay: 1000
+                            });
+
+                            this.socket.on('connect', () => {
+                                console.log('🔌 Socket.IO connected');
+                            });
+
+                            this.socket.on('disconnect', () => {
+                                console.log('🔌 Socket.IO disconnected');
+                            });
+
+                            this.socket.on('connect_error', (error) => {
+                                console.log('🔌 Socket.IO connection error (non-critical):', error.message);
+                                // Socket is optional, don't block functionality
+                            });
+                        } else {
+                            console.log('📡 Socket.IO not loaded, using REST API fallback');
+                        }
+                    } catch (error) {
+                        console.log('📡 Socket.IO initialization skipped:', error.message);
+                        // Socket is optional, continue without it
+                    }
+                },
+
                 // Get cache key for a song
                 getCacheKey(song) {
                     const title = (song?.song?.title || song?.title || '').toLowerCase().trim();
@@ -1031,7 +1386,8 @@
 
                 async init() {
                     // 0. Detect Mobile Mode (Optimization)
-                    this.mobileMode = window.innerWidth < 768 || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+                    // Refined: Only use width. Touchscreen laptops often have maxTouchPoints > 0.
+                    this.mobileMode = window.innerWidth < 768;
                     if (this.mobileMode) {
                         console.log('📱 Mobile mode detected: Disabling 3D Cat & optimizing visualizer');
                         document.body.classList.add('mobile-mode');
@@ -1048,14 +1404,269 @@
 
                     // 2. Initialize Socket.IO
                     this.initSocket();
+                    this.initFriendRoom(); // Initialize FriendRoom Client
 
                     // 3. Initialize Visualizer
                     this.resizeVisualizer();
                     window.addEventListener('resize', () => this.resizeVisualizer());
                     window.playAppInstance = this;
 
+                    // 4. Initialize YouTube player and load songs
+                    await this.waitForYouTubeAndLoad();
+
                     // 5. Start Keep-Alive System
                     this.startKeepAlive();
+                },
+
+                // Wait for YouTube API and then load songs
+                async waitForYouTubeAndLoad() {
+                    // Wait for YouTube API to be ready
+                    const maxWaitTime = 10000; // 10 seconds max
+                    const startTime = Date.now();
+
+                    while (!ytApiReady && (Date.now() - startTime) < maxWaitTime) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+
+                    if (ytApiReady) {
+                        // Initialize the player
+                        this.initPlayer();
+
+                        // Wait a bit for player to be created
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    } else {
+                        console.warn('YouTube API not ready after timeout, loading songs anyway');
+                    }
+
+                    // Now load songs
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const songParam = urlParams.get('song');
+                    const roomParam = urlParams.get('room');
+
+                    if (roomParam) {
+                        console.log('Joining room from URL parameter:', roomParam);
+                        await this.joinRoomById(roomParam.toUpperCase());
+                    }
+
+                    if (songParam) {
+                        console.log('Loading song from URL parameter');
+                        await this.loadSongFromId(songParam);
+                    } else if (!roomParam) {
+                        console.log('Loading recommendations...');
+                        await this.loadRecommendations();
+                    }
+                },
+
+                // Initialize Friend & Room Client
+                async initFriendRoom() {
+                    if (!window.FriendRoomClient) {
+                        console.error('FriendRoomClient not loaded');
+                        return;
+                    }
+
+                    window.friendRoomClient = new FriendRoomClient(API_BASE, this.authToken);
+
+                    // Setup Callbacks
+                    window.friendRoomClient.onRoomStateChange = (state) => {
+                        console.log('Room State Changed:', state);
+
+                        // Sync current song if different
+                        if (state.current_song) {
+                            // Handle both nested (.song.title) and flat (.title) song structures
+                            const incomingTitle = state.current_song.song?.title || state.current_song.title;
+                            const currentTitle = this.currentSong?.song?.title || this.currentSong?.title;
+
+                            if (incomingTitle && incomingTitle !== currentTitle) {
+                                console.log('Syncing song from room:', incomingTitle);
+                                this.currentSong = state.current_song;
+                                this.loadSong(this.currentSong);
+                            }
+                        }
+
+                        // Sync playback state
+                        if (state.playback_state) {
+                            const pb = state.playback_state;
+                            console.log('Syncing playback state:', pb);
+
+                            if (pb.is_playing !== this.playing) {
+                                if (pb.is_playing) {
+                                    if (ytPlayer && typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
+                                } else {
+                                    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
+                                }
+                            }
+
+                            // Seek if drift is > 2 seconds
+                            if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
+                                const current = ytPlayer.getCurrentTime();
+                                if (Math.abs(current - pb.current_time) > 2 && typeof ytPlayer.seekTo === 'function') {
+                                    ytPlayer.seekTo(pb.current_time, true);
+                                }
+                            }
+                        }
+                    };
+
+                    window.friendRoomClient.onUserJoined = (user) => {
+                        this.showToast('info', 'Room Update', `${user.username || 'User'} joined the room`, 3000);
+                        // Refresh room data
+                        this.refreshRoomData();
+                    };
+
+                    window.friendRoomClient.onUserLeft = (user) => {
+                        this.showToast('info', 'Room Update', `${user.username || 'User'} left the room`, 3000);
+                        this.refreshRoomData();
+                    };
+
+                    // New: Join room by ID
+                    this.joinRoomById = async (roomId) => {
+                        try {
+                            const response = await fetch(`${API_BASE}/rooms/join`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${this.authToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ room_id: roomId })
+                            });
+
+                            if (response.ok) {
+                                const data = await response.json();
+                                this.showToast('success', 'Joined Room', `Joined room ${roomId}`);
+                                await window.friendRoomClient.joinRoom(roomId);
+                                this.refreshRoomData();
+                            } else {
+                                this.showToast('warning', 'Join Failed', `Could not join room ${roomId}`);
+                            }
+                        } catch (e) {
+                            console.error('Join room error:', e);
+                        }
+                    };
+
+                    // Connect
+                    if (this.authToken) {
+                        await window.friendRoomClient.connect();
+                        this.refreshFriendData();
+                        this.refreshRoomData();
+
+                        // Start synchronization if in a room
+                        if (window.friendRoomClient.currentRoom) {
+                            this.startRoomSync();
+                        }
+                    }
+                },
+
+                startRoomSync() {
+                    if (!window.friendRoomClient || !window.friendRoomClient.isHost) return;
+
+                    console.log('Starting Room Sync as Host');
+                    window.friendRoomClient.startSync(() => {
+                        if (!this.currentSong) return null;
+
+                        return {
+                            playback_state: {
+                                is_playing: this.playing,
+                                current_time: ytPlayer ? ytPlayer.getCurrentTime() : 0,
+                                timestamp: Date.now()
+                            },
+                            current_song: this.currentSong
+                        };
+                    }, 2000); // Sync every 2 seconds
+                },
+
+                async refreshFriendData() {
+                    if (!window.friendRoomClient) return;
+                    try {
+                        const friends = await window.friendRoomClient.getFriends();
+                        this.friendRoom.friends = friends.friends || []; // Adjust based on actual API response
+                        const requests = await window.friendRoomClient.getFriendRequests();
+                        this.friendRoom.requests = requests.requests || [];
+                    } catch (e) { console.error('Error fetching friends:', e); }
+                },
+
+                async refreshRoomData() {
+                    if (!window.friendRoomClient) return;
+                    // Logic to fetch room participants would go here if API supports it directly
+                    // For now we might rely on socket updates or a separate call
+                    if (window.friendRoomClient.currentRoom) {
+                        this.friendRoom.currentRoomId = window.friendRoomClient.currentRoom;
+                        // In a real implementation, we'd fetch room details including participants
+                    } else {
+                        this.friendRoom.currentRoomId = null;
+                    }
+                },
+
+                // --- Friend Actions ---
+                async sendFriendRequest() {
+                    const username = this.friendRoom.searchQuery.trim();
+                    if (!username) return;
+
+                    try {
+                        const res = await window.friendRoomClient.sendFriendRequest(username);
+                        if (res.status === 'success') {
+                            this.showToast('success', 'Request Sent', `Friend request sent to ${username}`);
+                            this.friendRoom.searchQuery = '';
+                        } else {
+                            this.showToast('warning', 'Failed', res.detail || 'Could not send request');
+                        }
+                    } catch (e) {
+                        this.showToast('error', 'Error', 'Failed to send request');
+                        console.error(e);
+                    }
+                },
+
+                async removeFriend(friendId) {
+                    if (!confirm('Are you sure you want to remove this friend?')) return;
+                    try {
+                        await window.friendRoomClient.removeFriend(friendId);
+                        this.showToast('success', 'Removed', 'Friend removed');
+                        this.refreshFriendData();
+                    } catch (e) { console.error(e); }
+                },
+
+                async acceptRequest(senderId) {
+                    try {
+                        await window.friendRoomClient.acceptFriendRequest(senderId);
+                        this.showToast('success', 'Accepted', 'Friend request accepted');
+                        this.refreshFriendData();
+                    } catch (e) { console.error(e); }
+                },
+
+                async rejectRequest(senderId) {
+                    try {
+                        await window.friendRoomClient.rejectFriendRequest(senderId);
+                        this.showToast('info', 'Rejected', 'Friend request rejected');
+                        this.refreshFriendData();
+                    } catch (e) { console.error(e); }
+                },
+
+                // --- Room Actions ---
+                async createRoom() {
+                    const name = this.friendRoom.newRoomName.trim() || `${this.username}'s Room`;
+                    try {
+                        const res = await window.friendRoomClient.createRoom(name);
+                        if (res.status === 'success') {
+                            this.showToast('success', 'Room Created', `You are now host of "${name}"`);
+                            this.friendRoom.newRoomName = '';
+                            this.refreshRoomData();
+
+                            // Join the socket room and start syncing
+                            await window.friendRoomClient.joinRoom(res.room_id);
+                            this.startRoomSync();
+                        }
+                    } catch (e) {
+                        this.showToast('error', 'Error', 'Failed to create room');
+                        console.error(e);
+                    }
+                },
+
+                async leaveRoom() {
+                    if (!this.friendRoom.currentRoomId) return;
+                    try {
+                        await window.friendRoomClient.leaveRoom();
+                        this.showToast('info', 'Left Room', 'You have left the room');
+                        this.refreshRoomData();
+                        // Reset player state if needed, or keep playing locally
+                    } catch (e) { console.error(e); }
                 },
 
                 // Keep-Alive System (Client-side)
@@ -1111,6 +1722,15 @@
                                     this.playing = true;
                                     this.syncCatState();
 
+                                    // Sync play state to room
+                                    if (window.friendRoomClient && window.friendRoomClient.isHost) {
+                                        window.friendRoomClient.syncState({
+                                            is_playing: true,
+                                            current_time: ytPlayer.getCurrentTime(),
+                                            timestamp: Date.now()
+                                        }, this.currentSong);
+                                    }
+
                                     // Start aggressive ad monitoring
                                     this.startAdMonitoring();
 
@@ -1121,6 +1741,16 @@
                                 } else if (event.data === YT.PlayerState.PAUSED) {
                                     this.playing = false;
                                     this.syncCatState();
+
+                                    // Sync pause state to room
+                                    if (window.friendRoomClient && window.friendRoomClient.isHost) {
+                                        window.friendRoomClient.syncState({
+                                            is_playing: false,
+                                            current_time: ytPlayer.getCurrentTime(),
+                                            timestamp: Date.now()
+                                        }, this.currentSong);
+                                    }
+
                                     this.stopAdMonitoring();
                                 } else if (event.data === YT.PlayerState.ENDED) {
                                     this.playing = false;
@@ -1441,6 +2071,15 @@
                         this.currentTime = 0;
                         this.duration = 0;
 
+                        // Trigger immediate sync for room
+                        if (window.friendRoomClient && window.friendRoomClient.isHost) {
+                            window.friendRoomClient.syncState({
+                                is_playing: false,
+                                current_time: 0,
+                                timestamp: Date.now()
+                            }, song);
+                        }
+
                         // Start monitoring for ads after video loads
                         setTimeout(() => {
                             if (ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
@@ -1516,9 +2155,13 @@
                     if (!ytPlayer || !this.currentSong) return;
 
                     if (this.playing) {
-                        ytPlayer.pauseVideo();
+                        if (typeof ytPlayer.pauseVideo === 'function') {
+                            ytPlayer.pauseVideo();
+                        }
                     } else {
-                        ytPlayer.playVideo();
+                        if (typeof ytPlayer.playVideo === 'function') {
+                            ytPlayer.playVideo();
+                        }
                     }
                     this.vibrate(10); // Haptic feedback
                 },
@@ -1725,31 +2368,73 @@
                             // Store might not be initialized yet
                         }
                     }
-                }
-            },
+                },
+
+                // Search Songs in Modal
+                async searchSongsInModal() {
+                    if (this.songSearchTimeout) {
+                        clearTimeout(this.songSearchTimeout);
+                    }
+
+                    if (!this.songSearchQuery || this.songSearchQuery.length < 2) {
+                        this.songSearchResults = [];
+                        return;
+                    }
+
+                    this.songSearchTimeout = setTimeout(async () => {
+                        this.searchingSongs = true;
+                        try {
+                            const response = await fetch(`${API_BASE}/songs/search?q=${encodeURIComponent(this.songSearchQuery)}&limit=15`);
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                this.songSearchResults = data.results || data.songs || [];
+                                if (this.songSearchResults.length === 0 && this.songSearchQuery.length >= 2) {
+                                    console.log('No results found for query:', this.songSearchQuery);
+                                }
+                            } else {
+                                this.songSearchResults = [];
+                                if (data.error) {
+                                    this.showToast('error', 'Search Error', data.error, 3000);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Search error:', error);
+                            this.songSearchResults = [];
+                        } finally {
+                            this.searchingSongs = false;
+                        }
+                    }, 300);
+                },
+
+                async playSongFromSearch(song) {
+                    console.log('Playing song from search:', song);
+                    // Load the song immediately
+                    await this.loadSong(song);
+                },
 
                 // Mobile Haptics
                 vibrate(ms) {
-                if (this.mobileMode && navigator.vibrate) {
-                    navigator.vibrate(ms);
-                }
-            },
+                    if (this.mobileMode && navigator.vibrate) {
+                        navigator.vibrate(ms);
+                    }
+                },
 
-            // Visualizer Initialization & Tuning
-            resizeVisualizer() {
-                const canvas = document.querySelector('canvas'); // Or wherever visualizer is
-                // Note: We don't have a canvas visualizer in this HTML, it uses div bars.
-                // If we did, we would do:
-                /*
-                if (this.mobileMode) {
-                     analyser.fftSize = 128; // Low quality for mobile
-                } else {
-                     analyser.fftSize = 2048; // High quality
+                // Visualizer Initialization & Tuning
+                resizeVisualizer() {
+                    const canvas = document.querySelector('canvas'); // Or wherever visualizer is
+                    // Note: We don't have a canvas visualizer in this HTML, it uses div bars.
+                    // If we did, we would do:
+                    /*
+                    if (this.mobileMode) {
+                         analyser.fftSize = 128; // Low quality for mobile
+                    } else {
+                         analyser.fftSize = 2048; // High quality
+                    }
+                    */
+                    // For CSS bars, we just adjust logic if needed, but current CSS bars are lightweight.
                 }
-                */
-                // For CSS bars, we just adjust logic if needed, but current CSS bars are lightweight.
             }
-        }
         }
 
         // Cat Emotion System
@@ -2497,6 +3182,8 @@
 
 
     </script>
+    <!-- Friend & Room Client -->
+    <script src="/static/friend-room-client.js"></script>
 </body>
 
 </html>
