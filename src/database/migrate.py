@@ -38,9 +38,25 @@ def migrate():
                     conn.commit()
                     print("✓ Added 'username' column successfully")
                 except Exception as e:
-                    print(f"✗ Failed to add column: {e}")
+                    print(f"✗ Failed to add username column: {e}")
         else:
             print("✓ 'username' column exists")
+            
+        # Check for profile column
+        if "profile" not in columns:
+            print("⚠ Column 'profile' missing in 'users' table. Adding it...")
+            with engine.connect() as conn:
+                try:
+                    if engine.url.get_backend_name() == 'postgresql':
+                        conn.execute(text("ALTER TABLE users ADD COLUMN profile JSONB DEFAULT '{}'::jsonb"))
+                    else:
+                        conn.execute(text("ALTER TABLE users ADD COLUMN profile JSON"))
+                    conn.commit()
+                    print("✓ Added 'profile' column successfully")
+                except Exception as e:
+                    print(f"✗ Failed to add profile column: {e}")
+        else:
+            print("✓ 'profile' column exists")
             
     else:
         print("⚠ 'users' table not found. Run init_database() first.")

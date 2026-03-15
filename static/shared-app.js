@@ -6,9 +6,17 @@
 const SharedApp = {
     // Detect API Base URL
     get API_BASE() {
-        return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-            ? 'http://localhost:8000/api/v1'
-            : window.location.origin + '/api/v1';
+        // 1. Standard Web Logic: Use current origin unless it's localhost (which might need port 8000)
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            return 'http://localhost:8000/api/v1';
+        }
+
+        // Handle case where accessed via IP in browser (not native)
+        if (/^\d+\.\d+\.\d+\.\d+$/.test(window.location.hostname) && window.location.port !== '8000') {
+            return `http://${window.location.hostname}:8000/api/v1`;
+        }
+
+        return window.location.origin + '/api/v1';
     },
 
     // Initialize the shared features
@@ -116,10 +124,12 @@ const SharedApp = {
     // Mobile Detection
     checkMobileMode() {
         const isMobile = window.innerWidth < 768;
-        if (isMobile) {
-            document.body.classList.add('mobile-mode');
-        } else {
-            document.body.classList.remove('mobile-mode');
+        if (document.body) {
+            if (isMobile) {
+                document.body.classList.add('mobile-mode');
+            } else {
+                document.body.classList.remove('mobile-mode');
+            }
         }
         return isMobile;
     },

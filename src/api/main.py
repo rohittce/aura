@@ -65,7 +65,7 @@ async def add_security_headers(request, call_next):
     
     # Content Security Policy to block ad domains (must be single line)
     # Relaxed CSP for Render deployment - allow necessary external resources
-    csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://www.gstatic.com https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.replicate.com https://api-inference.huggingface.co https://www.youtube.com https://www.youtube-nocookie.com https://itunes.apple.com https://ws.audioscrobbler.com https://cdn.socket.io https://cdnjs.cloudflare.com; media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';"
+    csp = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://www.gstatic.com https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://api.openai.com https://api.replicate.com https://api-inference.huggingface.co https://www.youtube.com https://www.youtube-nocookie.com https://itunes.apple.com https://ws.audioscrobbler.com https://cdn.socket.io https://cdnjs.cloudflare.com https://www.gstatic.com https://identitytoolkit.googleapis.com; media-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self';"
     
     response.headers["Content-Security-Policy"] = csp
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -355,6 +355,14 @@ async def play():
         return FileResponse(static_file)
     return {"error": "Play page not found"}
 
+@app.get("/room/{room_id}")
+async def room_page(room_id: str):
+    """Serve room page for social listening"""
+    static_file = os.path.join(static_dir, "room.html")
+    if os.path.exists(static_file):
+        return FileResponse(static_file)
+    return {"error": "Room page not found"}
+
 @app.get("/login")
 async def login_page():
     """Serve login page"""
@@ -423,7 +431,7 @@ async def register(request: RegisterRequest):
     except Exception as e:
         import logging
         logging.error(f"Registration error: {e}")
-        raise HTTPException(status_code=500, detail="Registration failed")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 
 @app.post("/api/v1/auth/login")
