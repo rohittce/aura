@@ -252,6 +252,13 @@ def get_database_url():
         
         # If we're in deployment, always use DATABASE_URL
         if is_deployment:
+            # Render internal urls might not resolve when using the web service depending on the plan, allow overriding
+            if "dpg-" in db_url and "render.com" not in db_url:
+                external_db_url = os.getenv("RENDER_EXTERNAL_DB_URL")
+                if external_db_url:
+                    print("✓ Using external PostgreSQL from RENDER_EXTERNAL_DB_URL")
+                    return external_db_url
+            
             print("✓ Using PostgreSQL from DATABASE_URL (deployment environment)")
             return db_url
         

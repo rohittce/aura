@@ -166,15 +166,26 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 static_dir = os.path.join(BASE_DIR, "static")
 
+from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
+
+class NoCacheStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope) -> Response:
+        response = await super().get_response(path, scope)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
 # Ensure static directory exists (try multiple paths for different deployment scenarios)
 if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/static", NoCacheStaticFiles(directory=static_dir), name="static")
 else:
     # Try alternative path for deployment (Render uses different working directory)
     static_dir_alt = os.path.join(os.getcwd(), "static")
     if os.path.exists(static_dir_alt):
         static_dir = static_dir_alt
-        app.mount("/static", StaticFiles(directory=static_dir), name="static")
+        app.mount("/static", NoCacheStaticFiles(directory=static_dir), name="static")
     else:
         print(f"⚠ Warning: Static directory not found at {static_dir} or {static_dir_alt}")
 
