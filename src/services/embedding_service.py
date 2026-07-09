@@ -45,11 +45,21 @@ class EmbeddingService:
         self._load_cache()
     
     def _get_model(self) -> SentenceTransformer:
-        """Lazy load the embedding model"""
+        """Lazy load the embedding model with CPU-only for low-memory environments"""
         if self._model is None:
-            print(f"Loading embedding model: {self.model_name}")
-            self._model = SentenceTransformer(self.model_name)
-            print("✓ Model loaded")
+            print(f"Loading embedding model: {self.model_name} (CPU-only mode)")
+            try:
+                # Force CPU usage to reduce memory footprint
+                import torch
+                self._model = SentenceTransformer(
+                    self.model_name,
+                    device='cpu',
+                    model_kwargs={'torch_dtype': torch.float32}
+                )
+                print("✓ Model loaded successfully")
+            except Exception as e:
+                print(f"⚠ Error loading model: {e}")
+                raise
         return self._model
     
     def _generate_embedding_id(self, title: str, artists: List[str], genre: Optional[List[str]] = None) -> str:
